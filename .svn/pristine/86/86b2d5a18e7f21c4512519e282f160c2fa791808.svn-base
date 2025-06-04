@@ -1,0 +1,231 @@
+void CState_Testing::mouseMoved( const OIS::MouseEvent  & event)
+{
+  /*
+	If we are in Freelook mode , rotate the camera and lock the mouse position (And hide the cursor) and maybe draw a little bullseye in the center..
+	
+	easiest way to do Freelook is just rotate the m_minimap_camera. _should_ be pretty easy.
+  */
+	CEGUI::Window* sheet = CEGUI::System::getSingleton().getGUISheet();
+	CEGUI::Point mousePos = CEGUI::MouseCursor::getSingleton().getPosition();
+	CEGUI::Window* active_window = sheet->getChildAtPosition(mousePos);
+	if(active_window)
+	WinMan->getWindow("lblCurrentCEGUISheet")->setText(active_window->getName());
+    if( ismiddlemouse){//&&  (FreelookEditMode || FreelookEditModeFPS)&&!m_texture_atlas->isVisible()) {
+		float mRotate = 0.13;
+		mCamNode->yaw(Ogre::Degree(-mRotate * event.state.X.rel), Ogre::Node::TS_WORLD);
+		mCamNode->pitch(Ogre::Degree(-mRotate * event.state.Y.rel), Ogre::Node::TS_LOCAL);
+		/*
+		mMinimapCamNode->yaw(Ogre::Degree(-mRotate * event.state.X.rel), Ogre::Node::TS_WORLD);
+			mMinimapCamNode->pitch(Ogre::Degree(-mRotate * event.state.Y.rel), Ogre::Node::TS_LOCAL);
+			*/
+      
+    } else {
+	  SysMan->injectMouseMove( event.state.X.rel, event.state.Y.rel );
+    }
+}
+CEGUI::MouseButton convertOISMouseButtonToCegui(int buttonID)	{
+	    switch (buttonID)
+	    {
+		case 0: return CEGUI::LeftButton;
+		case 1: return CEGUI::RightButton;
+		case 2:	return CEGUI::MiddleButton;
+		case 3: return CEGUI::X1Button;
+		default: return CEGUI::LeftButton;
+	    }
+	}
+void CState_Testing::mousePressed( const OIS::MouseEvent  & event, OIS::MouseButtonID identifier )
+{
+
+  CEGUI::System::getSingleton().injectMouseButtonDown(convertOISMouseButtonToCegui(identifier));
+  CEGUI::Window* sheet = CEGUI::System::getSingleton().getGUISheet();
+	CEGUI::Point mousePos = CEGUI::MouseCursor::getSingleton().getPosition();
+	CEGUI::Window* active_window = sheet->getChildAtPosition(mousePos);
+	if(active_window &&  ( active_window->getName() != "TextureAtlas") ) return;
+  
+  switch ( identifier )
+    {
+    case OIS::MB_Left:
+    {
+    //    SysMan->injectMouseButtonDown( CEGUI::LeftButton );
+	
+	isleftmouse = true;
+	// Add in a repeat every .5-1 seconds to the frame rendering part.
+	   
+	CEGUI::Window* sheet = CEGUI::System::getSingleton().getGUISheet();
+	CEGUI::Point mousePos = CEGUI::MouseCursor::getSingleton().getPosition();
+	CEGUI::Window* active_window = sheet->getChildAtPosition(mousePos);
+	if(!(active_window && active_window->getName() == "ItemEditorWindow") 
+		&& !(active_window && active_window->getParent() && active_window->getParent()->getName() == "ItemEditorWindow" )
+		&& !(active_window && active_window->getParent() && active_window->getParent()->getParent() && active_window->getParent()->getParent()->getName() == "ItemEditorWindow" ))
+	if(FreelookEditMode || FreelookEditModeFPS || (active_window&& active_window->getName() == "TextureAtlas")
+		) {
+		std::string output;
+		output+=(to_value(NetCommand));
+		output+=(to_value(PushChunk));
+		/*
+			Next, switch which "editor" is used based on state of radio buttons on terrain editor, can be set to add, remove, and modify and can call:
+			class NewHeightmapLoader {
+				...
+				std::string editor_add();
+				std::string editor_modify();
+				std::string editor_remove();
+				...
+			};
+			then just send a PushChunk to the server to store it. note: Must have admin flag marked as 1 in database on server for it to not ignore the push_chunk.
+			It's kind of dangerous right now, changes only get a timestamp attached to them, no way yet to monitor all changes from specific user, which
+			would be useful in the long run.
+		*/
+		std::string eout;
+		std::vector<std::string> neout;
+		if(current_editmode == Add) {
+			eout = NewHeightmapLoader::get_instance()->editor_add();
+		} else if(current_editmode == Modify) {
+			if(m_texture_atlas->isVisible()) {
+				if(active_window &&  active_window->getName() == "TextureAtlas") {
+					CEGUI::Rect orect = active_window->getInnerRectClipper();
+					float x = (float)((float)mousePos.d_x-(float)orect.d_left)/((float)orect.d_right-orect.d_left);
+					float y = (float)((float)mousePos.d_y-(float)orect.d_top) / ((float)orect.d_bottom-orect.d_top);
+					vec3 t(x,y,0);
+					t=t*8;
+					t.floor();
+					eout = NewHeightmapLoader::get_instance()->editor_modify(int ((t.y*8)+t.x));
+					m_texture_atlas->hide();
+					//m_minimap_window->show();
+					auto *evtmgr = CEventManager::ReturnSingletonPointer();
+					CEGUI::Point mousePos = CEGUI::MouseCursor::getSingleton().getPosition();  
+					CEGUI::System::getSingleton().injectMouseMove(-mousePos.d_x,-mousePos.d_y);
+					{
+					  unsigned int width,height, colourDepth;
+					  int left, top;
+					  CGameManager::ReturnSingletonPointer()->GetRenderWindow()->getMetrics (width,height, colourDepth,left, top);
+					  CEGUI::System::getSingleton().injectMouseMove(width/2, height/2);
+					  mousePos = CEGUI::MouseCursor::getSingleton().getPosition();  
+					}
+					OIS::MouseState &mutableMouseState = const_cast<OIS::MouseState &>(evtmgr->ReturnMouse()->getMouseState());
+					mutableMouseState.X.abs = mousePos.d_x;
+					mutableMouseState.Y.abs = mousePos.d_y;
+				} 
+			} else {
+			    m_texture_atlas->show();
+			  //  m_minimap_window->hide();
+			} 
+		}
+		else if(current_editmode == Remove)
+			  eout = NewHeightmapLoader::get_instance()->editor_remove();
+		else if(current_editmode == Select_Point_One)
+			NewHeightmapLoader::get_instance()->editor_select_p1();
+		else if(current_editmode == Select_Point_Two)
+			NewHeightmapLoader::get_instance()->editor_select_p2();
+		else if(current_editmode == Add_between)
+			neout = NewHeightmapLoader::get_instance()-> editor_add_between();
+		else if(current_editmode == Building_Gen_One) 
+			eout = NewHeightmapLoader::get_instance()-> editor_building_gen1();
+		else if(current_editmode == Stair_Down_Gen)
+			eout = NewHeightmapLoader::get_instance()->editor_stair_gen1();
+		
+		else if(current_editmode == Modify_between){
+			if(m_texture_atlas->isVisible()) {
+				
+				if(active_window &&  active_window->getName() == "TextureAtlas") {
+					CEGUI::Rect orect = active_window->getInnerRectClipper();
+					float x = (float)((float)mousePos.d_x-(float)orect.d_left)/((float)orect.d_right-orect.d_left);
+					float y = (float)((float)mousePos.d_y-(float)orect.d_top) / ((float)orect.d_bottom-orect.d_top);
+					vec3 t(x,y,0);
+					t=t*8;
+					t.floor();
+					neout =NewHeightmapLoader::get_instance()->editor_modify_between(int ((t.y*8)+t.x));
+					m_texture_atlas->hide();
+					//m_minimap_window->show();
+					auto *evtmgr = CEventManager::ReturnSingletonPointer();
+					CEGUI::Point mousePos = CEGUI::MouseCursor::getSingleton().getPosition();  
+					CEGUI::System::getSingleton().injectMouseMove(-mousePos.d_x,-mousePos.d_y);
+					{
+					  unsigned int width,height, colourDepth;
+					  int left, top;
+					  CGameManager::ReturnSingletonPointer()->GetRenderWindow()->getMetrics (width,height, colourDepth,left, top);
+					  CEGUI::System::getSingleton().injectMouseMove(width/2, height/2);
+					  mousePos = CEGUI::MouseCursor::getSingleton().getPosition();  
+					}
+					OIS::MouseState &mutableMouseState = const_cast<OIS::MouseState &>(evtmgr->ReturnMouse()->getMouseState());
+					mutableMouseState.X.abs = mousePos.d_x;
+					mutableMouseState.Y.abs = mousePos.d_y;
+				} 
+			} else {
+			    m_texture_atlas->show();
+//			    m_minimap_window->hide();
+			} 
+		}
+		else if(current_editmode == Remove_between)
+			neout = NewHeightmapLoader::get_instance()->editor_remove_between();
+		
+		if(eout.size()!= 0) {
+			output.append(eout);
+			mPlayer->send_text(output,mPlayer->socket);
+		}
+		if(neout.size() != 0) {
+		      std::vector<std::string>::iterator oiter = neout.begin(), nend = neout.end();
+		      for(;oiter!=nend;++oiter) {
+			    std::string outputtwo;
+			    outputtwo+=(to_value(NetCommand));
+			    outputtwo+=(to_value(PushChunk));
+			    outputtwo.append( (*oiter));
+			    mPlayer->send_text(outputtwo,mPlayer->socket);
+		      }
+		}
+	} 
+        break;
+    }
+    case OIS::MB_Right:
+    {
+		if(WinMan->getWindow("LeaveButton")->isVisible())WinMan->getWindow("LeaveButton")->hide();
+  //      SysMan->injectMouseButtonDown( CEGUI::RightButton );
+        isrightmouse = true;
+	instant_rightmouse_movement_initiate = true;
+        break;
+    }
+    case OIS::MB_Middle:
+    {
+		if(WinMan->getWindow("LeaveButton")->isVisible())WinMan->getWindow("LeaveButton")->hide();
+		ismiddlemouse = true;
+   //     SysMan->injectMouseButtonDown( CEGUI::MiddleButton );
+        break;
+    }
+    default:
+    {
+  //      SysMan->injectMouseButtonDown( CEGUI::LeftButton);
+    }
+    }
+}
+void CState_Testing::mouseReleased( const OIS::MouseEvent  & event, OIS::MouseButtonID identifier )
+{
+
+  CEGUI::System::getSingleton().injectMouseButtonUp(convertOISMouseButtonToCegui(identifier));
+    switch ( identifier )
+    {
+    case OIS::MB_Left:
+    {
+  //      SysMan->injectMouseButtonUp( CEGUI::LeftButton );
+	isleftmouse = false;
+        break;
+    }
+
+    case OIS::MB_Right:
+    {
+    //    SysMan->injectMouseButtonUp( CEGUI::RightButton );
+        isrightmouse = false;
+        break;
+    }
+
+    case OIS::MB_Middle:
+    {
+		ismiddlemouse = false;
+//       SysMan->injectMouseButtonUp( CEGUI::MiddleButton );
+        break;
+    }
+
+    default:
+    {
+ //       SysMan->injectMouseButtonUp( CEGUI::LeftButton);
+    }
+    }
+}

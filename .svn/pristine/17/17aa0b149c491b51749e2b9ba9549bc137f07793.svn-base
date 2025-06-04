@@ -1,0 +1,57 @@
+void inet_player::call_net_command(std::string &c) {
+	if(c.size() < 2) return; // error.. all commands are at least 2 bytes.
+	char ida,idb;
+	std::string arguments;
+	if(c.size() > 2) arguments = c.substr(2,c.size()-2);
+	ida = c[0];
+	idb = c[1];
+auto i = Players.begin(), e = Players.end();
+	for(;i!=e; ++i) if( (*i).get() == this) {
+	myCommandProcessor.Call(ida,idb,arguments, true,*i);
+	break;
+	}
+	 
+}
+void inet_player::send_to_client(net_commands arg) {
+	send_updates(arg,socket);
+}
+void inet_player::inet_update_other_players(const Ogre::FrameEvent &evt){} // client only
+void inet_player::pump_net_messages(){} // client only
+inet_player::~inet_player() {}
+
+void inet_player::recv_text(std::string &i) {
+//	std::cout << "Recv'd some on socket " << socket << std::endl;
+	
+	static int size_tsize = sizeof(size_t);
+	commandBuffer.append(i);
+	while(1) {
+		if(commandBuffer.size() < (unsigned int) size_tsize){
+			return;
+		}
+		size_t header_size;
+		memcpy(&header_size, commandBuffer.substr(0,size_tsize).c_str(), size_tsize);
+		if(commandBuffer.size() >= header_size+size_tsize) {
+			std::string comm = commandBuffer.substr(size_tsize,header_size);
+			commandBuffer = commandBuffer.substr(size_tsize+header_size, commandBuffer.size()-(size_tsize+header_size));
+			
+			call_net_command(comm);
+		} else { return; }
+	}
+}
+void inet_player::send_text(std::string &i, unsigned int &_socketout) {
+  
+	using namespace boost::iostreams;
+	size_t size = i.size();
+	static int size_tsize = sizeof(size_t);
+	char sarr[size_tsize];
+	memcpy(sarr, &size, size_tsize);
+	std::string s;
+	s.append(sarr,size_tsize);
+	s.append(i);
+	size_t amnt = send(_socketout, s.c_str(), s.size(), MSG_NOSIGNAL);
+	
+	while(amnt < s.size()) { // ensure it's ALL sent.
+		s = s.substr(amnt, s.size()-amnt);
+		amnt = send(_socketout, s.c_str(), s.size(), MSG_NOSIGNAL);
+	}
+}

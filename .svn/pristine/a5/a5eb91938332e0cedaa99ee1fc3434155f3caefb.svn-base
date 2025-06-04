@@ -1,0 +1,56 @@
+Step 1) Create the UI window.
+Step 2, open CState-Testing_createGui.hpp
+step 3. Add the window. Figure it out from CState-Testing_createGui..
+
+Step 4) Open ./include/CState_Testing.h , add new functions for callbacks from the UI elements to CState_Testing
+
+Step 5) Open inet.h , Add new commands to the large group of enums. All network traffic is 2 enums:
+COMMAND_TYPE ACTUAL_COMMAND
+Limit enums to 255!!! We can have a maximum of 255*255 commands. 
+Step 6) in inet.h, add functions for the commands on the inet_player structure
+Step 7) Impliment the commands, using the same function names, for the clients and servers.
+inet-client_createCommands.hpp - \
+inet-server_createCommands.hpp -  - Add the commands
+	inet-(client|server)_networkCallbacks.hpp - Examples of commands. Can be added here, or included from a new
+							.hpp file for that command from this file.
+
+
+Step 8) Finish implimentation of CState_Testing of the UI elements to initiate the callbacks.
+
+
+Total files needing modified:
+
+ ___________________________________________________
+|                                                   |
+|    inet-client_createCommands.hpp                 |
+|    inet-server_createCommands.hpp                 |
+|    inet-(client|server)_networkCallbacks.hpp      |
+|    ./include/CState_Testing.h                     |
+|    CState-Testing_createGui.hpp                   |
+|    ./include/inet.h                               |
+|                                                   |
+|___________________________________________________|
+
+Example flor {
+	Open player editor.
+	{ search bar:
+		On entering * display all users.
+		Allow SQL LIKE queries by beginning with a question mark ?%a% (Will find every username with the letter a anywhere init, % is wildcard in SQL LIKE.
+	OnSearchResults:
+		fill listbox with results.
+	Results Listbox on element click:
+		Request data from server on user with the exact name given (Name should be a unique key)
+		OnPlayerDetailsResults:
+			Fill in UI elements
+	UI Element Save Button:
+		if no player selected, do nothing.
+		create output string and append command type & command id
+		If player results, get current text of each ui element, serialize, append to output string
+		send the output string
+		
+	UI Element Delete Button:
+		if no player selected, do nothig,blahblahblah.
+		if player selected, send the player id along with the command type and command id..
+}
+
+

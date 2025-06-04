@@ -1,0 +1,315 @@
+#include <mysql/mysql.h>
+#include <string>
+#include <boost/regex.hpp>
+#include <sstream>
+/*
+Usage Documentation.
+create a MySQL_Helper database_connection; in one of your cpp files.
+either use the constructor or the setup() function to create the connection.
+MySQL_Helper(const string &host, const string &user, const string &password, const string &database)
+void setup(const string &host, const string &user, const string &password, const string &database)
+
+For multiple database connections, just make multiple MySQL_Helper objects.
+The last argument to both Query and MultiQuery's constructors are the database connection. It defaults to
+a global named database_connection if not specified.
+
+Anywhere in execution after connecting, you can create a query:
+MySQL_Helper::Query query;
+query.prepare("Select id,name from employees where age='?'", 42); // Any number of arguments can be passed to prepare(). Just make sure there are enough ?'s for them all.
+query.run();
+for(int x = 0; x < query.numrows; x++) {
+	auto row = query.row()
+	auto *lengths = query.lengths();
+	int id = fromstring<int>(row[0],lengths[0]); /// *** fromstring implimentation at bottom of this doc section
+	string name = fromstring<string>(row[1],lengths[1]); // this could be std::string name;name.append(row[1],lengths[1]); but for the sake of keeping style I would use all fromstring<>
+	std::cout << id << " " << name << std::endl;
+}
+Or a MultiQuery:
+// of course in reality there would be a lot more fields than just name, age, salary. This is an example!
+MySQL_Helper::MultiQuery multiQuery("insert into employees (name,age,salary) values ", "('?','?','?')",",",1024);
+
+for(auto i = someVectorOfNewEmployees.begin(); i!=someVectorOfNewEmployees.end(); i++)
+	multiQuery.prepare( (*i).name, (*i).age, get_salary((*i).paygrade) );
+multiQuery.run(); 
+// MultiQuery.prepare compacted as many of the prepared datas 
+// into a single insert as it could, limiting the size of each insert to 1024 bytes.
+// It used ('?','?','?') as the template (arg2 to MultiQuery constructor), arg3 "," to seperate templates
+// 
+// If you had two new employees to add at once the query generated would be:
+// insert into employees (name,age,salary) values ('John Smith','34','22000'),('Sarah Smith','33','24325')
+// If you had a thousand new employees it would fit as many as it could into one query, then start to make
+// a new one that's capable of storing the next 1024bytes(4th argument). until it fits them all in to seperate large queries. 
+// Then run runs them one at a time until they're all finished.
+//
+
+template<typename T>
+T fromstring(const char*sc, size_t length) {
+	string s;
+	s.append(sc,length);
+	std::istringstream f(s);
+	T ans;
+	f >> ans;
+	// validation omitted
+	return ans;
+}
+
+*/
+using std::string;
+extern std::string to_string(const std::string &o);// { return o; }
+class MySQL_Helper;
+extern MySQL_Helper database_connection;
+class MySQL_Helper {
+	bool inited;
+	public:
+	MYSQL *connection;
+	MYSQL mysql;
+	MYSQL_ROW trow;
+	MYSQL_RES *tresult;
+	std::string _host, _user, _password, _database;
+	int numrows;
+	int m_errno;
+	int insertid;
+	MySQL_Helper() {
+		connection = 0x0;
+		inited = false;
+		tresult = 0x0;
+	}
+	struct Query {
+	    MySQL_Helper *h;
+	    std::ostringstream restqry;
+	    std::ostringstream builtqry;
+	    MYSQL_ROW trow;
+	    MYSQL_RES *tresult;
+	    std::string error;
+	    int numrows,insertid;
+	    int m_errno;
+	    Query(MySQL_Helper &_h = database_connection) : h(&_h) {tresult=0x0;} 
+	    ~Query() {
+		if(tresult != 0x0) mysql_free_result(tresult);
+	    }
+	    bool _intset() { builtqry << restqry.str(); return true; }
+	    template< typename T, typename... Args>
+	    bool _intset( const T&t, const Args&... args )
+	    {
+	        // find first ? skipping \?'s 
+	        unsigned int at = 0; bool fnd = false;
+			std::string ltmp = restqry.str();
+			for(;at<ltmp.size();++at) 
+			 if( ltmp[at] == '?') {
+				if(at>1) { 
+				  if(ltmp[at-1] != '\\') {
+				fnd=true;
+				break;
+				  }
+				} else { fnd=true; break;} 
+			 }
+			if(!fnd) {
+			   std::cout << "restqry: " << restqry.str() << std::endl << "To many args, not enough ?'s!" << std::endl;
+			   return false;
+			}
+			std::string firsthalf = ltmp.substr(0,at);
+			std::string secondhalf = ltmp.substr(at+1, (ltmp.size())-(at+1));
+			std::string orig_data = tostring(t);
+			char *all = new char[(orig_data.size()*2)+1];
+			auto size = mysql_real_escape_string(&(h->mysql),all,orig_data.c_str(),orig_data.size());
+			std::string oqry;
+			oqry.append(all, size);
+			delete[] all;
+			builtqry << firsthalf;
+			builtqry << oqry;
+			restqry.str(secondhalf);
+			return _intset(args...);
+	    }
+	    template< typename T, typename... Args>
+	    bool prepare( const T& t, const Args&... args )
+	    {
+			builtqry.str("");
+			restqry.str(t);
+			return _intset( args... );
+	    }
+	    void run() {
+			altQuery(builtqry.str());
+	    }
+	    MYSQL_RES *result() { 
+			if(tresult)
+				return tresult;
+			else
+				return mysql_store_result(h->connection); 
+	    }
+	    MYSQL_ROW& row(MYSQL_RES *result) { return trow = mysql_fetch_row(result); }
+	    MYSQL_ROW& row() { return trow = mysql_fetch_row(tresult); }
+	    unsigned long *lengths() { return mysql_fetch_lengths(tresult); }
+	    void start_transaction() {
+	        altQuery("start transaction");
+	    }
+	    void commit() {
+			altQuery("commit");
+	    }
+	    int altQuery(const string &query) { // This is the exact same as mysql_helper::runQuery except that it stores results on the stmt
+		    int state = -1;
+		    try {
+			    state = mysql_query(h->connection, query.c_str());
+			    if(state != 0) {
+				    m_errno = mysql_errno(h->connection);
+				    if(m_errno == 2006) {
+					    h->setup(h->_host,h->_user,h->_password,h->_database);
+					    return altQuery(query);
+				    } else {
+    #if !(defined DISABLE_DEBUG)
+					    std::cout << "MySQL Error: " << m_errno << " " << mysql_error(h->connection) << std::endl;
+					    std::cout << "Query was: " << query << std::endl;
+    #endif
+				    }
+			    } else {
+					if(tresult != 0x0) {
+						mysql_free_result(tresult);
+						tresult = 0x0;
+					} 
+				    tresult = result();
+				    insertid = 0;
+				    if(tresult) {
+					    numrows = mysql_num_rows(tresult);
+					    if( mysql_field_count(h->connection) == 0 && mysql_insert_id(h->connection) != 0)
+					    {
+						    insertid = mysql_insert_id(h->connection);
+					    }
+				    }
+				    return state;
+			    }
+		    } catch(...) {
+			    return -1;
+		    }
+		    return state;//mysql_query(connection, query.c_str()); 	
+	    }
+	};
+	struct MultiQuery : public Query {
+	    std::vector<std::string> queries;
+	    unsigned int maxsize;
+	    std::string repeated;
+	    std::string query;
+	    std::string seperator;
+	    MultiQuery(std::string _query="", std::string _repeated="", std::string _seperator="", unsigned int _maxsize=-1, MySQL_Helper &_h = database_connection) : Query(_h), maxsize(_maxsize), repeated(_repeated), query(_query),seperator(_seperator) {}
+	    template< typename T, typename... Args>
+	    bool prepare( const T& t, const Args&... args )
+	    {
+			builtqry.str("");
+			restqry.str(repeated);
+			bool good = _intset(t,args...);
+			if(!good) {
+			  return good;
+			} else {
+			  if(queries.size() == 0) {
+				std::string fullquery = query;
+				fullquery.append(builtqry.str());
+				std::string t;
+				queries.push_back(t);
+				queries.back().append(fullquery);
+			  } else {
+				  if(maxsize>0 && queries.back().size()+builtqry.str().size() > maxsize) {
+					std::string fullquery = query;
+					fullquery.append(builtqry.str());
+					std::string t;
+					queries.push_back(t);
+					queries.back().append(fullquery);
+				  } else {
+					queries.back().append(seperator);
+					queries.back().append(builtqry.str());
+				  }
+			  }
+			  return good;
+			}
+	    }
+	    void run() {
+			for(auto i = queries.begin(), e = queries.end();i!=e;i++) 
+				altQuery((*i));
+	    }
+	    void runOnce() {
+			run();
+			clear();
+	    }
+	    void clear() {
+			queries.clear();
+	    }
+	};
+	MYSQL& getConn() { return mysql; }
+	MySQL_Helper(const string &host, const string &user, const string &password, const string &database) {
+		connection = 0x0;
+		inited = false;
+		tresult = 0x0;
+		setup(host,user,password,database);
+	}
+	void setup(const string &host, const string &user, const string &password, const string &database)
+	{
+	  _host = host;
+	  _user = user;
+	  _password = password;
+	  _database = database;
+		if(!inited) { 
+			inited = true;
+			mysql_init(&mysql);
+		} else destroy();
+		connection = mysql_real_connect(&mysql, host.c_str(), user.c_str(), password.c_str(), database.c_str(), 0, NULL, 0);
+		tresult = 0x0;
+	}
+	~MySQL_Helper() { // Make sure the results are free'd after use!!!!!!!!!!!!!!!
+		destroy();
+	}
+	void destroy() {
+		if(connection != 0x0) {
+			if(tresult != 0x0) {
+				mysql_free_result(tresult);
+			}
+			mysql_close(connection);
+		}
+	}
+	inline int query(const string &query) { 
+	  return runQuery(query);
+	}
+	int runQuery(const string &query) {
+		int state = -1;
+		try {	
+			state = mysql_query(connection, query.c_str());
+			if(state != 0) { 
+				m_errno = mysql_errno(connection);
+				if(m_errno == 2006) {
+					setup(_host,_user,_password,_database);
+					return runQuery(query);
+				} else {
+#if !(defined DISABLE_DEBUG)
+					std::cout << "MySQL Error: " << m_errno << " " << mysql_error(connection) << std::endl;
+					std::cout << "Query was: " << query << std::endl;
+#endif
+				}
+			} else {
+				if(tresult != 0x0) {
+					mysql_free_result(tresult);
+					tresult = 0x0;
+				} 
+				tresult = result();
+				insertid = 0;
+				if(tresult) {
+					numrows = mysql_num_rows(tresult);
+					if( mysql_field_count(connection) == 0 && mysql_insert_id(connection) != 0)
+					{
+						insertid = mysql_insert_id(connection);
+					}
+				}
+				return state;
+			}
+		} catch(...) {
+			return -1;
+		}
+		return state; 	
+	}
+	string error() {
+		return mysql_error(connection);
+	}
+	MYSQL_RES *result() { 
+		if(tresult)
+			return tresult;
+		else
+			return mysql_store_result(connection); 
+	}
+	MYSQL_ROW& row(MYSQL_RES *result) { return trow = mysql_fetch_row(result); }
+	MYSQL_ROW& row() { return trow = mysql_fetch_row(tresult); }
+};

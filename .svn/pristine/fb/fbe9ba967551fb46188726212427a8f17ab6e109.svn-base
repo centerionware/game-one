@@ -1,0 +1,47 @@
+struct ItemEditorClientNetmodule : public net_module {
+    void initialize() {
+      	mPlayer.lock()->netbind(mPlayer.lock().get(), &inet_player::itemLocalSearch,OLC,GetItemLocalList);
+	mPlayer.lock()->netbind(mPlayer.lock().get(), &inet_player::itemGlobalSearch,OLC,GetItemGlobalList);
+	mPlayer.lock()->netbind(mPlayer.lock().get(), &inet_player::itemModifyPress,OLC,ModifyItem);
+	mPlayer.lock()->netbind(mPlayer.lock().get(), &inet_player::itemDeletePress,OLC,DeleteItem);
+	mPlayer.lock()->netbind(mPlayer.lock().get(), &inet_player::itemLockPress,OLC,LockItem);
+	mPlayer.lock()->netbind(mPlayer.lock().get(), &inet_player::itemDetailsRequest,OLC,GetItemDetails);
+	mPlayer.lock()->netbind(mPlayer.lock().get(), &inet_player::itemAddPress,OLC,AddItem);
+    }
+};
+ItemEditorClientNetmodule bedorfloorisleep;
+void inet_player::itemLocalSearch(std::vector<std::string> &in){
+
+    std::string &b = in[0];
+  ((CEGUI::Listbox*)(CState_Testing::ReturnInstance()->WinMan->getWindow("ItemEditor/SearchResultsListbox")))->resetList();
+  std::string lm = non_safe_string_deserialize(b);
+  while(lm != "") {
+    CEGUI::String un = lm;
+    ((CEGUI::Listbox*)(CState_Testing::ReturnInstance()->WinMan->getWindow("ItemEditor/SearchResultsListbox")))->addItem(new CEGUI::ListboxTextItem(un));
+    lm = non_safe_string_deserialize(b);
+  }
+
+}
+void inet_player::itemGlobalSearch(std::vector<std::string> &in){}
+void inet_player::itemModifyPress(std::vector<std::string> &in){}
+void inet_player::itemDeletePress(std::vector<std::string> &in){}
+void inet_player::itemLockPress(std::vector<std::string> &in){}
+void inet_player::itemDetailsRequest(std::vector<std::string> &in){
+      std::string &b = in[0];
+#undef discern
+      #define discern(X,Y) std::string X = non_safe_string_deserialize(b); \
+   WinMan->getWindow("ItemEditor/"#Y)->setText(X); 
+
+  auto WinMan = CState_Testing::ReturnInstance()->WinMan;
+
+  discern(id,ItemID)
+  discern(name, ItemName)
+  
+  std::string level = non_safe_string_deserialize(b);
+  std::string type = non_safe_string_deserialize(b);
+  //std::string item_image = non_safe_string_deserialize(b); Don't do the image like this. It will take excessive b/w. Better to store local copies of the images and only update when timestamp mismatch
+  discern(etxt, ExtraText);//std::string extra_text = non_safe_string_deserialize(b);
+  discern(ilvl,LevelList);
+  discern(itype,ItemTypeList);
+}
+void inet_player::itemAddPress(std::vector<std::string> &in){}

@@ -1,0 +1,48 @@
+void inet_player::addPlayer(std::vector<std::string>&in) {
+	unsigned int player_socket;
+	unsigned int model_id;
+	memcpy(&player_socket,in[0].c_str(),sizeof(unsigned int));
+	memcpy(&model_id, in[0].substr(sizeof(unsigned int), sizeof(unsigned int)).c_str(), sizeof(unsigned int));
+	
+	for(auto i = Players.begin(), e = Players.end();i!=e;++i)
+		if( (*i)->socket == player_socket) {
+			std::cout << "Trying to add player that already exists?? WTF\n";
+			return;
+		}
+//	std::cout << "Adding player " << player_socket << std::endl;
+	{
+		std::string sgetname;
+		sgetname += to_value(NetCommand);
+		sgetname += to_value(GetName);
+		sgetname.append(in[0].c_str(),sizeof(unsigned int));
+		send_text(sgetname, socket);
+		std::cout << "Sending getName()..\n";
+	}
+	std::string mid;
+	switch(model_id) {
+	  case 0:
+	    mid = "soldier.mesh";
+	    break;
+	  case 1:
+	    mid = "robot.mesh";
+	    break;
+	  case 2:
+	    mid = "jaique.mesh";
+	    break;
+	  case 3:
+	    mid = "barrel.mesh";
+	    break;
+	  case 4:
+	    mid = "fish.mesh";
+	    break;
+	  case 5:
+	    mid = "RZR-002.mesh";
+	    break;
+	  default:
+	    mid = "ninja.mesh";
+	}
+	
+	new inet_player(mSceneMgr,mid.c_str(),"unnamed",mCamera,player_socket);
+	Players.back()->create_commands();
+	Players.back()->socket = player_socket;
+}

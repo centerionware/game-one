@@ -1,0 +1,334 @@
+#define IS_A_SERVER
+//http://www.tenouk.com/Module41.html
+
+/*******select.c*********/
+/*******Using select() for I/O multiplexing */
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include "inet.h"
+
+#include "command.h"
+#include "database_utilities.h"
+#include "server-map.h"
+/* port we're listening on */
+
+struct LobbyFunctor_base {
+   LobbyFunctor_base(){};
+   ~LobbyFunctor_base(){};
+    virtual void Call(int sock, std::string &c)=0;
+};
+template <class T>
+struct LobbyFunctor : LobbyFunctor_base {
+    T *lp;
+    void (T::*fpt)(int, std::string &);
+    ~LobbyFunctor(){};
+    LobbyFunctor(T*_lp, void (T::*_fpt)(int, std::string &)) {
+	fpt=_fpt;
+	lp=_lp;
+    }
+    void Call(int sock, std::string &c) {
+	(*lp.*fpt)(sock,c);
+    }
+};
+enum LobbyCommands {
+  FindGame,
+  JoinGame,
+  CreateGame,
+  ShowPlayerModel,
+  CreateCharactor,
+  SwitchCharactor,
+  CharactorList,
+  JoinChatroom,
+  CreateChatroom,
+  ListChatroom,
+  Chat,
+  LeaveChatroom,
+  KickPlayer,
+  MutePlayer,
+  SetOps
+};
+
+struct LobbyCommandProc {
+    std::map<char,LobbyFunctor_base*> commands;
+    ~LobbyCommandProc() {
+	auto i = commands.begin();
+	while(i!=commands.end()) {delete i->second; i = commands.erase(i); }
+    }
+    void addCommand(LobbyCommands com, LobbyFunctor_base*c) {
+      if(commands.find(to_value(com)) != commands.end()) {
+	  std::cout << "Warning, overwriting command " << to_value(com) << "\n";
+	  delete commands.find(to_value(com))->second;
+      }
+	commands[to_value(com)] = c;
+    }
+    void Call(char ida, int sock, std::string args) {
+      if(commands.find(ida) == commands.end() ) {
+	  std::cout << "Command " << ida << " Coming from socket " << sock << " Was not found!\n";
+      } else {
+	 commands[ida]->Call(sock, args);
+      }
+    }
+};
+
+
+
+enum game_type { pvp, pve, rpg, permaworld };
+struct lobby {
+  struct chat_room {
+      std::vector<int> player_list;
+      std::string room_name;
+      std::string room_password;
+      std::string room_creator_name;
+  };
+  struct game_instance {
+      std::vector<int> player_list;
+      std::string game_name;
+      std::string game_password;
+      std::string type;
+      std::string level;
+  };
+  std::vector<chat_room> Rooms;
+  std::vector<game_instance> Games;
+  
+  void find_game(std::string type, std::string max_players, int sock_in){};
+    // build a packet in response and send it
+  void join_game(std::string name, std::string password, int sock_in){};
+  void create_game(std::string level, std::string type, std::string name, std::string password, int sock_in){};
+  void show_players_model(int sock_in){};
+   // return basically model info for what the player is wearing so the client can then use ogre to render an image of their player model wearing their clothes.
+  void create_charactor(std::string type, std::string name, int sock_in){};
+  void switch_charactor(std::string num, int sock_in){};
+      // charactors are stored sequentially in order of creation. 
+  void charactor_list(int sock_in){};
+      // return individual socket(players) charactor list.
+  void join_chatroom(std::string name, std::string password, int sock_in){};
+    // password is default blank ?but always sent by client?
+  void create_chatroom(std::string name, std::string password, int sock_in){};
+  void list_chatrooms(int sock_in){};
+  void chat(std::string in, int sock_in){};
+    // it says to all rooms it's in?
+    // NO! It says to active room! use beginning of string to determine active room.. /room . / is reserved [0] charactor.
+  void leave_room(std::string name, int sock_in){};
+  void kick_player(std::string name, int sock_in){};
+      // ensure the sock_in is either the room owner or an admin
+  void mute_player(std::string name, int sock_in){};
+      // of sock_in player is admin mute the player system wide, otherwise mute the player in whatever rooms sock_in has authority in
+      // which can only be given by the room creator
+  void set_ops(std::string op, std::string options, int sock_in){};
+      // allow ops setting for room admins et al. use active room for sock_in, verify either room or server admin op
+};
+#define lobby_discern(X) std::string X = non_safe_string_deserialize(b);
+#define lby_cmdproc_functor(CommandID, function) { LobbyFunctor<lobby_cmdproc_boiler> *tmp = new LobbyFunctor<lobby_cmdproc_boiler>(this, &lobby_cmdproc_boiler::function ); myCommandProcessor.addCommand(CommandID,tmp); }
+
+/*
+enum LobbyCommands {
+  FindGame,
+  JoinGame,
+  CreateGame,
+  ShowPlayerModel,
+  CreateCharactor,
+  SwitchCharactor,
+  CharactorList,
+  JoinChatroom,
+  CreateChatroom,
+  ListChatroom,
+  Chat,
+  LeaveChatroom,
+  KickPlayer,
+  MutePlayer,
+  SetOps
+};
+*/
+
+struct lobby_cmdproc_boiler {
+    lobby the_lobby;
+    LobbyCommandProc myCommandProcessor;
+    lobby_cmdproc_boiler() {
+        lby_cmdproc_functor(FindGame, find_game)
+	lby_cmdproc_functor(JoinGame, join_game)
+	lby_cmdproc_functor(CreateGame, create_game)
+	lby_cmdproc_functor(ShowPlayerModel, show_players_model)
+	lby_cmdproc_functor(CreateCharactor, create_charactor)
+	lby_cmdproc_functor(SwitchCharactor, switch_charactor)
+	lby_cmdproc_functor(CharactorList, charactor_list)
+	lby_cmdproc_functor(JoinChatroom, join_chatroom)
+	lby_cmdproc_functor(CreateChatroom, create_chatroom)
+	lby_cmdproc_functor(ListChatroom, list_chatrooms)
+	lby_cmdproc_functor(Chat, chat)
+	lby_cmdproc_functor(LeaveChatroom, leave_room)
+	lby_cmdproc_functor(KickPlayer, kick_player)
+	lby_cmdproc_functor(MutePlayer, mute_player)
+	lby_cmdproc_functor(SetOps, set_ops)
+    }
+    void find_game(int sock, std::string &b){
+      
+      lobby_discern(type)
+      lobby_discern(max_players)
+      the_lobby.find_game(type, max_players, sock);
+    }
+    void join_game(int sock, std::string &b) {
+	lobby_discern(gamename);
+	lobby_discern(password);
+	the_lobby.join_game(gamename, password, sock);
+    }
+    void create_game(int sock, std::string &b){
+      
+     lobby_discern(level)
+     lobby_discern(type)
+     lobby_discern(name)
+     lobby_discern(password)
+     the_lobby.create_game(level, type, name, password, sock);
+    }
+    void show_players_model(int sock, std::string &b){
+     // 
+     the_lobby.show_players_model(sock);
+    }
+    void create_charactor(int sock, std::string &b){
+      
+     lobby_discern(type)
+     lobby_discern(name)
+     the_lobby.create_charactor(type, name, sock);
+    }
+    void switch_charactor(int sock, std::string &b){
+      
+     lobby_discern(num)
+     the_lobby.switch_charactor(num, sock);
+    }
+    void charactor_list(int sock, std::string &b){
+      the_lobby.charactor_list(sock);
+    }
+    void join_chatroom(int sock, std::string &b){
+      
+      lobby_discern(name)
+      lobby_discern(password)
+      the_lobby.join_chatroom(name, password, sock);
+    }
+    void create_chatroom(int sock, std::string &b){
+      
+     lobby_discern(name)
+     lobby_discern(password)
+     the_lobby.create_chatroom(name, password, sock);
+    }
+    void list_chatrooms(int sock, std::string &b){
+     the_lobby.list_chatrooms(sock);
+    }
+    void chat(int sock, std::string &b){
+      
+     lobby_discern(txt)
+     the_lobby.chat(txt, sock);
+    }
+    void leave_room(int sock, std::string &b){
+      
+     lobby_discern(name)
+     the_lobby.leave_room(name, sock);
+    }
+    void kick_player(int sock, std::string &b){
+      
+     lobby_discern(name)
+     the_lobby.kick_player(name, sock);
+    }
+    void mute_player(int sock, std::string &b){
+      
+     lobby_discern(name)
+     the_lobby.mute_player(name, sock);
+    }
+    void set_ops(int sock, std::string &b){
+      
+     lobby_discern(Operation)
+     lobby_discern(Options);
+     the_lobby.set_ops(Operation, Options, sock);
+    }
+    
+    std::map<int, std::string> commandBuffer;
+    void call_net_command(int sock, std::string &c) {
+	if(c.size() < 1) return; // error.. all commands are at least 2 bytes.
+	char ida;
+	std::string arguments;
+	if(c.size() > 1) arguments = c.substr(1,c.size()-1);
+	ida = c[0];
+	
+	//auto i = Players.begin(), e = Players.end();
+	//for(;i!=e; ++i) if( (*i).get() == this) {
+	  myCommandProcessor.Call(ida,sock,arguments);
+	//break;
+	//}
+	 
+    }
+    void recv_text(int sock, std::string &i) {
+	if(commandBuffer.find(sock) == commandBuffer.end()) commandBuffer[sock] = "";
+	static int size_tsize = sizeof(size_t);
+	commandBuffer[sock].append(i);
+	while(1) {
+		if(commandBuffer[sock].size() < (unsigned int) size_tsize){
+			return;
+		}
+		size_t header_size;
+		memcpy(&header_size, commandBuffer[sock].substr(0,size_tsize).c_str(), size_tsize);
+		if(commandBuffer[sock].size() >= header_size+size_tsize) {
+			std::string comm = commandBuffer[sock].substr(size_tsize,header_size);
+			commandBuffer[sock] = commandBuffer[sock].substr(size_tsize+header_size, commandBuffer[sock].size()-(size_tsize+header_size));
+			
+			call_net_command(sock, comm);
+		} else { return; }
+	}
+    }
+};
+struct ServerControl {
+    lobby_cmdproc_boiler lby_interface;
+      void on_accept(int fd) {
+	player_login_queue(fd);
+      }
+      void on_recv(int fd, std::string&data, fd_set &master){ 
+	inet_player *lplayer = find_player(fd);
+	if(lplayer){
+		lby_interface.recv_text(fd,data);
+		if(lplayer->deleteMe) {
+			std::cout << "Remove player bit set\n";
+			remove_player(fd);
+		}
+	}else {
+	      // login queue
+		std::cout << "Login Queue Recieve\n";
+		login_queue_receive(fd,data,master);
+	}
+      }
+      void on_close(int fd) {
+	if(find_player(fd)) {
+	    find_player(fd)->broadcastNearby(RemPlayer); // sends a global broadcast.
+	    remove_player(fd);
+	}
+      }
+      void on_full(int newfd) {
+	send(newfd, "Full\0",5,MSG_NOSIGNAL);
+      }
+};
+
+std::vector<Ogre::FrameListener*> Removed_Frame_Listeners; //unused in this binary. required for linking.
+extern int spawn_server_and_pass_control(int MAX_PLAYERS, int PORT, server_functor_base &on_accept, server_functor_base &on_close, server_functor_base &on_recv,server_functor_base &on_full);
+int main(int argc, char *argv[])
+{
+  	if(argc<2) {std::cout << "Not enough arguments! Must provide port number!"<<std::endl;return 1;}
+	std::stringstream io;
+	io << argv[1];
+	int PORT = 6720;
+	io >> PORT;
+	int MAX_PLAYERS=2048; // Arbitrarily picked. If we ever actually reach this many players, try raising it. Though current hardware would be strained anyway/
+	if(argc==3) {
+	    io.str("");
+	    io << argv[2];
+	    io >> MAX_PLAYERS;
+	}
+	  ServerControl pl;
+	  ServerFunctor<ServerControl> onaccept(&pl, &ServerControl::on_accept);
+	  ServerFunctor<ServerControl> onclose(&pl, &ServerControl::on_close);
+	  ServerFunctor<ServerControl> onrecv(&pl, &ServerControl::on_recv);
+	  ServerFunctor<ServerControl> onfull(&pl, &ServerControl::on_full);
+	  
+	  spawn_server_and_pass_control(0,6720, onaccept,onclose,onrecv,onfull);
+}

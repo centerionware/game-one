@@ -1,0 +1,95 @@
+/**
+ * GAME-ONE APPLICATION FRAMEWORK
+ * Filename: CState_MainMenu.h
+ * Description: Introductory Game State
+ * Legal stuff ~
+ */
+
+
+#ifndef CSTATE_MAINMENU_H
+#define CSTATE_MAINMENU_H
+
+#include <Ogre.h>
+#include <OgreViewport.h>
+
+#include <OIS.h>
+
+#include <CEGUI.h>
+#include <CEGUI/RendererModules/Ogre/CEGUIOgreRenderer.h>
+
+#include <SdkCameraMan.h>
+
+#include "dotscene/dotscene.h"
+
+#include "CState.h"
+#include "CState_Splash.h"
+#include "CState_Testing.h"
+#include "CState_MainMenu_Login.h"
+#include "CState_MainMenu_Settings.h"
+#include "server-map.h"
+
+
+class CState_MainMenu : public CState
+{
+public:
+    void Enter();
+    
+    void Exit();
+    
+    
+    void Pause();
+    
+    void Resume();
+    
+    
+    bool frameStarted( const Ogre::FrameEvent & event );
+    
+    bool frameRenderingQueued( const Ogre::FrameEvent &event);
+    
+    bool frameEnded( const Ogre::FrameEvent & event );
+    
+    
+    void keyPressed( const OIS::KeyEvent & event );
+    
+    void keyReleased( const OIS::KeyEvent & event );
+    
+    
+    void mouseMoved( const OIS::MouseEvent & event );
+    
+    void mousePressed( const OIS::MouseEvent & event, OIS::MouseButtonID identifier );
+    
+    void mouseReleased( const OIS::MouseEvent & event, OIS::MouseButtonID identifier );
+    
+    static CState_MainMenu * ReturnInstance() { return & STATE_MAINMENU; }
+    
+    float Alpha;
+    
+    void FadeIn();
+    
+    void FadeOut();
+    
+    bool ActivateFadeOut;
+    
+protected:
+    CState_MainMenu() {};
+    
+    void CreateGUI( void );
+    
+	bool OnLogin( const CEGUI::EventArgs &event );
+	
+	bool OnSettings( const CEGUI::EventArgs &event );
+	
+	bool OnLeave( const CEGUI::EventArgs &event );
+    
+    bool ActivateLogin;
+    
+    bool ActivateSettings;
+	
+    bool IsRunning;
+
+    
+private:
+    static CState_MainMenu STATE_MAINMENU;
+};
+
+#endif // CSTATE_MAINMENU_H

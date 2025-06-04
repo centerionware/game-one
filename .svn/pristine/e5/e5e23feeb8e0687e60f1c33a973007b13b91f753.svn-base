@@ -1,0 +1,234 @@
+#ifndef INET_H
+#define INET_H
+
+#include "generic_utilities.h"
+#include "player-class.h"
+#include "command.h"
+
+
+//
+// chat_client.cpp
+// ~~~~~~~~~~~~~~~
+//
+// Copyright (c) 2003-2011 Christopher M. Kohlhoff (chris at kohlhoff dot com)
+//
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+//
+
+#include <cstdlib>
+#include <deque>
+#include <iostream>
+#include <boost/bind.hpp>
+#include <boost/asio.hpp>
+#include <boost/thread/thread.hpp>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#ifndef WIN32
+#include <unistd.h>
+
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#endif
+#include "items.h"
+
+#define INET_CALLBACK(X, Y) void _cb_ ## X ## _ ## Y (inet_player &player, std::vector<std::string>&in)
+#define CALLBACK_REGISTER(X,Y) myCommandProcessor.Add(new InetPlayerFunctor(this, _cb_ ## X ## _ ## Y ),  to_value(X), to_value(Y));
+#define INET_PLAYER_COMMAND(X, Y, Z) myCommandProcessor.Add(new VecFunctor<inet_player>(this, &inet_player::X), to_value(Y), to_value(Z));
+
+
+using boost::asio::ip::tcp;
+
+typedef std::deque<std::string> chat_message_queue;
+
+class chat_client : public boost::enable_shared_from_this<chat_client>
+{
+public:
+  chat_client(boost::asio::io_service& io_service, tcp::resolver::iterator endpoint_iterator);
+  void write(std::string msg);
+  void close();
+  ~chat_client();
+private:
+  void handle_connect(const boost::system::error_code& error,
+      tcp::resolver::iterator endpoint_iterator);
+  void handle_read_header(const boost::system::error_code& error);
+  void handle_read_body(const boost::system::error_code& error);
+  void do_write(std::string msg);
+  void handle_write(const boost::system::error_code& error);
+  void do_close();
+private:
+  boost::asio::io_service& io_service_;
+  tcp::socket socket_;
+  char* read_msg_;
+  chat_message_queue write_msgs_;
+  unsigned int msg_len;
+public:
+  bool isConnected;
+  chat_message_queue msg_queue;
+  
+};
+//*****END CHAT_CLIENT.CPP******//
+
+struct inet_player;
+extern std::vector<boost::shared_ptr<inet_player> > Players;
+enum net_commands { HeadText, Position, AddPlayer, RemPlayer, Teleport, PreAuth, LoginAuth, AdminAuth, GetChunk,PushChunk, GetName, FollowPlayer,UnFollowPlayer, UnKnownCommand};
+enum login_commands { BadLogin, GoodLogin, TryLogin, DoLogin, UnknownLoginCommand };
+enum local_events { Connected, Disconnected, UnknownLocalEvent };
+enum registration_commands { TryRegister, GoodRegister, PasswordToShort, InvalidPassword, InvalidUsername, InvalidEmail, UnknownRegistrationResponse };
+enum inventory_commands { WearItem, RemoveItem, DropItem };
+enum shop_commands { BuyItem, SellItem, ListItems };
+enum combat_commands { Attack, Cast, ListCommands, HelpCommand/*return the description from the server to be displayed in txt with a box outlining*/ };
+enum skill_commands { Learn, UpdateLevel, SetUsed };
+#include "OLC/OLC_Enum.hpp"
+enum command_types { NetCommand, LoginCommand, UnKnownCommandType, LocalEvent, InventoryCommand, ShopCommands, Combat, Skill, Register, OLC };
+
+
+/* Utility enum to char and char to enum */
+template<class T> unsigned char to_value(T c) {
+  unsigned int my_enum_val = static_cast<unsigned int>(c);
+  return my_enum_val;
+}
+template<class T> T to_command(unsigned char c) {
+	T my_enum_val = static_cast<T>(c);
+	return my_enum_val;
+}
+struct basic_chunk_update;
+class net_module;
+struct inet_player : public Player {
+	friend class net_module;
+	unsigned int socket;
+	//std::string username;
+	std::string headtext;
+	Commands::Proc myCommandProcessor;
+	std::string commandBuffer;
+	int commandSize;
+	chat_client* m_chatClient;
+	boost::shared_ptr<boost::thread> m_chatThread;
+	std::vector<inet_player*> players_in_range;
+	std::vector<Item> inventory;
+	std::map<wear_locations, Item> worn_items;
+	std::map<wield_locations, Item> wielded_items;
+	
+	bool is_client;
+	bool logged_in;
+	bool deleteMe;
+	
+	boost::asio::io_service io_service;
+	inet_player() : Player(){is_client=false;deleteMe=false;admin=false;following_player = NULL;m_chatClient=NULL;}
+	inet_player(Ogre::SceneManager*scmi,std::string meshFileName, std::string playername,Ogre::Camera*cam,int s): Player(scmi,meshFileName,playername,cam,s){following_player=NULL; is_client = s==0?true:false;deleteMe= false;admin=false;m_chatClient=NULL;};
+	~inet_player();
+	virtual void inet_update_other_players(const Ogre::FrameEvent &);
+	virtual void pump_net_messages();
+	void create_commands();
+	void login_menu_conndisconn();
+	void testing_state_conndisconn();
+	void loginToServer(std::string servername, std::string port, std::string username, std::string password); // Only implimented in the inet_client file.
+	void call_net_command(std::string &c);
+	void changeHeadText(std::vector<std::string>&in);
+	void changePosition(std::vector<std::string>&in);
+	void send_updates(net_commands &arg, unsigned int &other_player_socket);
+	void send_to_server(net_commands arg);
+	void send_to_client(net_commands arg);
+	void broadcastNearby(net_commands arg,unsigned int *other_player_socket=NULL);
+	void recv_text(std::string &i);
+	void send_text(std::string &i, unsigned int &_socketout);
+	void addPlayer(std::vector<std::string>&in);
+	void remPlayer(std::vector<std::string>&in);
+	void PTeleport(std::vector<std::string>&in);
+	void preAuthenticate(std::vector<std::string>&in);
+	void loginAuthenticate(std::vector<std::string>&in);
+	void TryRegistration(std::vector<std::string>&in);
+	void add_in_range(inet_player*);
+	void ensure_not_in_range(inet_player*);
+	void isAdmin(std::vector<std::string>&in);
+	void requestChunk(std::vector<std::string>&);
+	void getChunk(std::vector<std::string>&);
+	basic_chunk_update& db_retrieve_chunk(unsigned int id, unsigned int timestamp);
+	void clientChunkPush(std::vector<std::string>&);
+	void initChunkNet(std::vector<std::string>&);
+	void getName(std::vector<std::string>&);
+	void dropItem(std::vector<std::string>&);
+	void wearItem(std::vector<std::string>&);
+	void unwearItem(std::vector<std::string>&);
+	void sellItem(std::vector<std::string>&);
+	void followPlayer(std::vector<std::string>&);
+	void unFollowPlayer(std::vector<std::string>&);
+	template<typename Object, typename CEGUI_Object, typename CommandType, typename CommandId>
+	void netbind(Object a, CEGUI_Object x, CommandType y, CommandId z) {myCommandProcessor.Add(new VecFunctor<inet_player>(a, x), to_value(y), to_value(z));} 
+	/*
+	 * GetPlayerList,ModifyPlayer,DeletePlayer,LockPlayer,GetPlayerDetails
+	 */
+#include "OLC/base_inet.h"
+	
+	
+	void clientChunkPush_internal(std::string&, bool temporary_override = false);
+	// Mostly unimplimented
+//	void getZoneList(std::vector<std::string>&);
+//	void getItemLocalList(std::vector<std::string>&);
+//	void getItemGlobalList(std::vector<std::string>&);
+//	void getItemDetails(std::vector<std::string>&);
+//	void addItem(std::vector<std::string>&);
+//	void deleteItem(std::vector<std::string>&);
+//	void getModelList(std::vector<std::string>&);
+//	void getModelDetails(std::vector<std::string>&);
+//	void addModel(std::vector<std::string>&);
+//	void deleteModel(std::vector<std::string>&);
+	
+};
+class InetPlayerFunctor : public TFunctor 
+{
+	private:
+		void (*fpt)(inet_player &p, std::vector<std::string> &d);
+		inet_player *p;
+        public:
+		virtual std::string Call(std::vector<std::string> &d, void *caller,boost::shared_ptr<inet_player>){std::string x; return x;};//don't use this one.
+		
+		virtual void *Call(std::vector<std::string>&d, int &sock_in, bool *isDown,boost::shared_ptr<inet_player>) {
+				if(fpt!= NULL)  (*fpt)(*p, d);
+				return &(attribs._return);
+				return NULL;
+		}
+		InetPlayerFunctor(inet_player *_p, void(*_fpt)(inet_player &p, std::vector<std::string> &d))
+		{  p=_p; fpt=_fpt; };		
+		virtual ~InetPlayerFunctor(){};
+};
+extern inet_player *find_player(unsigned int socket);
+extern void remove_player(unsigned int socket);
+extern void run_player_server_movements();
+extern void player_login_queue(int);
+extern void login_queue_receive(int,std::string&,fd_set&);
+extern void tick_login_queue(fd_set&);
+extern void erase_all_players();
+extern void tick_server(unsigned long int last_frame, unsigned long int current_frame);
+extern void player_follow_test(inet_player *p, vec3 &i);
+#define print_string_as_ints(p) for(unsigned int l = 0; l < p.size(); l++) { std::cout << " (" << (int)p[l]<<")"; } std::cout <<std::endl; 
+
+
+/*
+ALL these replaced with that teeny little template above.. sweet.
+extern unsigned char to_value(command_types c);
+extern unsigned char to_value(net_commands c);
+extern unsigned char to_value(local_events c);
+extern unsigned char to_value(login_commands c);
+extern unsigned char to_value(registration_commands c);
+extern unsigned char to_value(inventory_commands c);
+extern unsigned char to_value(shop_commands c);
+extern unsigned char to_value(combat_commands c);
+extern unsigned char to_value(skill_commands c);
+*/
+/*
+extern net_commands to_command(char c);
+extern command_types to_command_type(char c);
+extern local_events to_local_event(char c);
+extern login_commands to_login_command(char c); 
+extern registration_commands to_register_command(char c);
+*/
+
+
+#endif

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<GUILayout >
+    <Window Type="DefaultWindow" Name="PDA" >
+        <Property Name="InheritsAlpha" Value="False" />
+        <Property Name="Visible" Value="True" />
+        <Property Name="UnifiedAreaRect" Value="{{0,0},{0,0},{1,0},{1,0}}" />
+        <Window Type="TaharezLook/StaticImage" Name="MinimapImage" >
+               <Property Name="UnifiedAreaRect" Value="{{0,0},{0,0},{1,0},{1,0}}" />
+		    <Property Name="Image" Value="set:minimap image:minimap_img" />
+		    <Window Type="TaharezLook/VerticalScrollbar" Name="MinimapZoom" >
+                   <Property Name="Tooltip" Value="Zoom The Minimap" />
+                   <Property Name="PageSize" Value="0" />
+                   <Property Name="StepSize" Value="1" />
+                   <Property Name="OverlapSize" Value="0" />
+                   <Property Name="DocumentSize" Value="1" />
+                   <Property Name="ScrollPosition" Value="0" />
+                   <Property Name="UnifiedAreaRect" Value="{{0.975055,0},{0.0192052,0},{0.991155,0},{0.969869,0}}" />
+                </Window>
+        </Window>
+        
+
+    </Window>
+</GUILayout>

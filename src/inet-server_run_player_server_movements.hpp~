@@ -1,0 +1,41 @@
+void run_player_server_movements() {
+
+  
+	auto iter = Players.begin(), end = Players.end();
+	for(;iter!=end;iter++) {
+	  	
+		(*iter)->noAnimFrameRenderingQueued();
+		
+                if((*iter)->logged_in)check_close_player_chunks( (*iter).get());
+		
+		//std::cout << vec3((*iter)->actual_target_position).print() << " - " << vec3((*iter)->position).print() << std::endl;
+		if( (*iter)->actual_target_position != (*iter)->position) {
+			//..std::cout << "Run Player server movements."<<std::endl;			
+			auto i = standing_still_timer.find( (*iter).get() );
+			if(i!=standing_still_timer.end()) {
+				(*i).second.timer.reset();
+				(*i).second.has_teleported = false;
+			} else {
+				movement_teleporter_helperthingy tmp;
+				tmp.has_teleported = false;
+				tmp.timer.reset();
+				standing_still_timer[(*iter).get()] = tmp;
+			}
+			//..std::cout <<vec3((*iter)->actual_target_position).print("actual_target_position") <<" "<< //vec3((*iter)->position).print("position")<<"\n";
+		}  else {
+			auto i = standing_still_timer.find( (*iter).get());
+			if(i!=standing_still_timer.end()) {
+				if( !(*i).second.has_teleported) {
+					if( (*i).second.timer.getMilliseconds() > 250) {
+						(*iter)->broadcastNearby(Teleport, &((*iter)->socket));
+						auto l = Teleport;
+						std::cout << "Trying to send self teleport.\n";
+						(*iter)->send_updates(l,(*iter)->socket);
+						(*i).second.has_teleported = true;
+					}
+				}
+			}
+		}  
+	}
+	
+}

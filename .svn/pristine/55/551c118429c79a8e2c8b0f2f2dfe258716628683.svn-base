@@ -1,0 +1,291 @@
+#version 150
+#extension GL_EXT_geometry_shader4 : enable
+
+layout (points) in;
+layout (triangle_strip,max_vertices=64) out;
+uniform vec4 isGlass;
+uniform float curTime;
+
+struct IOStruct {
+ vec4 textureAtlasOffset;
+ vec3 worldPosition;
+ float glass;
+ float water;
+ float lava;
+ float stained_glass;
+ vec4 vertex;
+ vec4 color;
+ bool inView;
+ bool isGrass;
+ bool isWater;
+ vec3 rendering_stuff;
+ vec3 vPos3;
+ vec3 normal;
+};
+out vec3 normal;
+in IOStruct vsOutput[];
+out IOStruct gsOutput;
+uniform mat4x4 worldMatrix;
+uniform mat4x4 viewProj;
+uniform mat4x4 worldViewProj;
+uniform mat4x4 viewMatrix;
+uniform mat4x4 projMatrix;
+uniform vec4 cameraPos;
+#define CVEC3(x,y,z) vec4(x, y, z,0.0)
+
+
+// For terrain smoothing
+int valuel[27] = int[](1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536,131072,262144,524288,1048576,2097152,4194304,8388608,16777216,33554432,67108864);
+const vec4 neighbor_list[27]= vec4[](
+	CVEC3(-1.0,-1.0,-1.0), 
+	CVEC3(-1.0,-1.0,0.0), CVEC3(-1.0,-1.0,1.0), CVEC3(-1.0,0.0,-1.0), CVEC3(-1.0,0.0,0.0), 
+	CVEC3(-1.0,0.0,1.0), CVEC3(-1.0,1.0,-1.0), CVEC3(-1.0,1.0,0.0), CVEC3(-1.0,1.0,1.0), 
+	CVEC3(0.0,-1.0,-1.0), CVEC3(0.0,-1.0,0.0), CVEC3(0.0,-1.0,1.0), CVEC3(0.0,0.0,-1.0), 
+	CVEC3(0.0,0.0,0.0), CVEC3(0.0,0.0,1.0), CVEC3(0.0,1.0,-1.0), CVEC3(0.0,1.0,0.0), 
+	CVEC3(0.0,1.0,1.0), CVEC3(1.0,-1.0,-1.0), CVEC3(1.0,-1.0,0.0), CVEC3(1.0,-1.0,1.0), 
+	CVEC3(1.0,0.0,-1.0), CVEC3(1.0,0.0,0.0), CVEC3(1.0,0.0,1.0), CVEC3(1.0,1.0,-1.0), 
+	CVEC3(1.0,1.0,0.0), CVEC3(1.0,1.0,1.0)
+);
+// From the CPP: (The order it's encoded, so do it in reverse while decoding..)
+// For face culling
+// left, right,  bottom, top, back, front. Why? Because.
+const int faces[6] = int[]( 32, 16, 8, 4, 2, 1); 
+
+const int cubeFaceIndices[24] = int[]( 
+	1,0,5,4, //front  
+	6,2,7,3, // back
+//	3,1,7,5, // top 
+	7,3,5,1,
+	4,0,6,2,  //bottom
+	5,4,7,6,  //right
+	0,1,2,3  // left
+); 
+vec4 cubeVerts[8] = vec4[](
+	CVEC3(-0.5, -0.5, 0.5), CVEC3(-0.5,0.5,0.5), CVEC3(-0.5,-0.5,-0.5), CVEC3(-0.5,0.5,-0.5),
+	CVEC3(0.5, -0.5, 0.5), CVEC3(0.5,0.5,0.5), CVEC3(0.5,-0.5,-0.5), CVEC3(0.5,0.5,-0.5)
+);
+void offVerts(bool[27] neighbors) {
+//return;
+	if(!neighbors[1] && !neighbors[2] && !neighbors[4] && !neighbors[5]) { cubeVerts[0].x = cubeVerts[0].x*0.15; }
+	if(!neighbors[1] && !neighbors[2] && !neighbors[10] && !neighbors[11]) { cubeVerts[0].y = cubeVerts[0].y*0.15; }
+	if(!neighbors[2] && !neighbors[5] && !neighbors[11] && !neighbors[14]) { cubeVerts[0].z = cubeVerts[0].z*0.15; }
+	if(!neighbors[4] && !neighbors[5] && !neighbors[7] && !neighbors[8]) { cubeVerts[1].x = cubeVerts[1].x*0.15; }
+	if(!neighbors[7] && !neighbors[8] && !neighbors[16] && !neighbors[17]) { cubeVerts[1].y = cubeVerts[1].y*0.15; }
+	if(!neighbors[5] && !neighbors[8] && !neighbors[14] && !neighbors[17]) { cubeVerts[1].z = cubeVerts[1].z*0.15; }
+	if(!neighbors[0] && !neighbors[1] && !neighbors[3] && !neighbors[4]) { cubeVerts[2].x = cubeVerts[2].x*0.15; }
+	if(!neighbors[0] && !neighbors[1] && !neighbors[9] && !neighbors[10]) { cubeVerts[2].y = cubeVerts[2].y*0.15; }
+	if(!neighbors[0] && !neighbors[3] && !neighbors[9] && !neighbors[12]) { cubeVerts[2].z = cubeVerts[2].z*0.15; }
+	if(!neighbors[3] && !neighbors[4] && !neighbors[6] && !neighbors[7]) { cubeVerts[3].x = cubeVerts[3].x*0.15; }
+	if(!neighbors[6] && !neighbors[7] && !neighbors[15] && !neighbors[16]) { cubeVerts[3].y = cubeVerts[3].y*0.15; }
+	if(!neighbors[3] && !neighbors[6] && !neighbors[12] && !neighbors[15]) { cubeVerts[3].z = cubeVerts[3].z*0.15; }
+	if(!neighbors[19] && !neighbors[20] && !neighbors[22] && !neighbors[23]) { cubeVerts[4].x = cubeVerts[4].x*0.15; }
+	if(!neighbors[10] && !neighbors[11] && !neighbors[19] && !neighbors[20]) { cubeVerts[4].y = cubeVerts[4].y*0.15; }
+	if(!neighbors[11] && !neighbors[14] && !neighbors[20] && !neighbors[23]) { cubeVerts[4].z = cubeVerts[4].z*0.15; }
+	if(!neighbors[22] && !neighbors[23] && !neighbors[25] && !neighbors[26]) { cubeVerts[5].x = cubeVerts[5].x*0.15; }
+	if(!neighbors[16] && !neighbors[17] && !neighbors[25] && !neighbors[26]) { cubeVerts[5].y = cubeVerts[5].y*0.15; }
+	if(!neighbors[14] && !neighbors[17] && !neighbors[23] && !neighbors[26]) { cubeVerts[5].z = cubeVerts[5].z*0.15; }
+	if(!neighbors[18] && !neighbors[19] && !neighbors[21] && !neighbors[22]) { cubeVerts[6].x = cubeVerts[6].x*0.15; }
+	if(!neighbors[9] && !neighbors[10] && !neighbors[18] && !neighbors[19]) { cubeVerts[6].y = cubeVerts[6].y*0.15; }
+	if(!neighbors[9] && !neighbors[12] && !neighbors[18] && !neighbors[21]) { cubeVerts[6].z = cubeVerts[6].z*0.15; }
+	if(!neighbors[21] && !neighbors[22] && !neighbors[24] && !neighbors[25]) { cubeVerts[7].x = cubeVerts[7].x*0.15; }
+	if(!neighbors[15] && !neighbors[16] && !neighbors[24] && !neighbors[25]) { cubeVerts[7].y = cubeVerts[7].y*0.15; }
+	if(!neighbors[12] && !neighbors[15] && !neighbors[21] && !neighbors[24]) { cubeVerts[7].z = cubeVerts[7].z*0.15; }
+}
+#define GOREAL float
+float _get3d_vecdistref(vec3 p, vec3 y) {
+		GOREAL c_x = p.x-y.x;
+		GOREAL c_y = p.y-y.y;
+		GOREAL c_z = p.z-y.z;
+		return sqrt((c_x*c_x)+(c_y*c_y)+(c_z*c_z));
+}
+float v4dist(vec4 p, vec4 y) {
+		GOREAL c_x = p.x-y.x;
+		GOREAL c_y = p.y-y.y;
+		GOREAL c_z = p.z-y.z;
+		return sqrt((c_x*c_x)+(c_y*c_y)+(c_z*c_z));
+}
+float rand(vec2 co){
+    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
+float random(vec4 i) { return rand(i.xy); }
+void draw_fire(vec4 vert, float time, float rand_seed) {
+	 // just draw some rectangles facing the camera over the position
+	 // waving the vertices along a sin|cos wave with random small jumps along the curve
+	 // maybe 2 or 3 semi-overlapping that might bounce together or apart to create flickers.
+	 // then texture with alpha'd and flame colored texture
+	 // Some small rectangles can billow upward too before dissappearing, textured in greyish for smoke.
+
+}
+void create_grass(vec4 vert, float time, float rand_seed) {
+/***
+ 4
+2^3
+/_\
+1  0
+1-0-2-3-4 should do it.
+***/
+//time=mod(time,10);
+	time += rand(vec2((vert.x+vert.y+vert.z)*rand_seed,rand_seed))*5;
+	const vec4 grass_verts[5] = vec4[](
+		CVEC3(.006, 0, 0),CVEC3(-.006, 0,0),
+		CVEC3(.003,.17,0),CVEC3(-.003,.17,0),
+		CVEC3(0,.2,0) );
+	
+	//vec4 otpos = vert+vec4(0,0.5,0,0);
+	vec4 otpos = vec4(0.0,0.0,0.0,0.0);
+
+
+
+
+
+	otpos.x += rand(vec2((vert.x+vert.y+vert.z)*rand_seed,rand_seed))-0.5;
+	otpos.z += rand(vec2((vert.x+vert.y+vert.z)*rand_seed,rand_seed))-0.5;
+	otpos.x = clamp(otpos.x, (cubeVerts[3].x+cubeVerts[1].x)/2.0,(cubeVerts[7].x+cubeVerts[5].x)/2.0);
+	otpos.z = clamp(otpos.z, (cubeVerts[3].z+cubeVerts[1].z)/2.0,(cubeVerts[7].z+cubeVerts[5].z)/2.0);
+	otpos.y = clamp(otpos.y, 0, (cubeVerts[3].y+cubeVerts[1].y+cubeVerts[5].y+cubeVerts[7].y)/4.0);
+	otpos +=vert;
+
+
+	{
+	const int tristrip[5] = int[] (0,1,2,3,4);
+
+	for(int lp = 0; lp < 5; lp++) {
+		vec4 ld = grass_verts[tristrip[lp]]*5.0;
+		vec4 tpos = otpos;
+		 if(lp>1)ld.z += sin(0.3 * ld.x + time) * cos(0.03 * ld.y + time) * 0.1;
+		 if(lp==4) ld.z += sin(0.3 * ld.x + time) * cos(0.03 * ld.y + time) * 0.1;
+		tpos = tpos+ld;
+		gl_Position =worldViewProj*tpos;
+		gsOutput = vsOutput[0];
+		gsOutput.worldPosition = tpos.xyz+vec3(0.5,0.5,0.5);
+		EmitVertex();
+	}
+	EndPrimitive(); 
+	}
+	{
+	const int tristrip[5] = int[] (1,0,3,2,4);
+	for(int lp = 0; lp < 5; lp++) {
+		vec4 ld = grass_verts[tristrip[lp]]*5.0;
+		vec4 tpos =otpos;
+		 if(lp>1)ld.z += sin(0.3 * ld.x + time) * cos(0.03 * ld.y + time) * 0.1;
+		 if(lp==4) ld.z += sin(0.3 * ld.x + time) * cos(0.03 * ld.y + time) * 0.1;
+		tpos = tpos+ld;
+		gl_Position = worldViewProj*tpos;
+		gsOutput = vsOutput[0];
+		gsOutput.worldPosition = tpos.xyz+vec3(0.5,0.5,0.5);
+		
+		EmitVertex();
+	}
+	EndPrimitive(); 
+	}
+}
+void draw_cube(int zed) {
+	vec3 normals[8];
+	for(int i = 0; i<8; i++) {
+	    vec3 normall = vec3(0,0,0);
+	    for(int j = 0; j < 24; j+=4) {
+			if(cubeFaceIndices[j]  == i ||cubeFaceIndices[j+1]  == i ||cubeFaceIndices[j+2]  == i) {
+			  vec3 p0 = cubeVerts[cubeFaceIndices[j]].xyz;
+			  vec3 p1 = cubeVerts[cubeFaceIndices[j+1]].xyz;
+			  vec3 p2 = cubeVerts[cubeFaceIndices[j+2]].xyz;
+			  normall += cross(p1-p0,p2-p0);
+			}
+			if(cubeFaceIndices[j+1]  == i ||cubeFaceIndices[j+2]  == i || cubeFaceIndices[j+3]  == i) {
+			  vec3 p1 = cubeVerts[cubeFaceIndices[j+1]].xyz;
+			  vec3 p2 = cubeVerts[cubeFaceIndices[j+2]].xyz;
+			  vec3 p3 = cubeVerts[cubeFaceIndices[j+3]].xyz;
+			  vec3 td = p2-p1;
+			  vec3 te = p3-p1;
+		  	  normall += cross(p2-p1,p3-p1);
+			}
+	    }
+	    normals[i]=normall/8;
+	}
+
+
+
+
+
+		for(int i = 0; i < 6; i++) {
+			if(zed >= faces[i]) {
+				zed -= faces[i];
+				for(int lp = 0; lp < 4; lp++) {
+					vec4 tpos = vsOutput[0].vertex + cubeVerts[cubeFaceIndices[(i*4)+lp]];
+					if(_get3d_vecdistref(cameraPos.xyz,tpos.xyz) < 70)
+					if(vsOutput[0].isWater) {
+						float oset = mod(tpos.x+tpos.z,3);
+						float time = curTime+oset;
+						tpos.y -= sin(0.7 * tpos.x + time) * cos(0.02 * tpos.z + time) * 0.6;
+					}
+					gl_Position = viewProj*tpos;
+					
+					gsOutput = vsOutput[0];
+					gsOutput.normal = normals[cubeFaceIndices[(i*4)+lp]];
+					gsOutput.worldPosition = tpos.xyz;////+vec3(0.5,0.5,0.5);
+					normal = gsOutput.normal;
+					//iVrt = vsOutput[0].vertex.xyz + cubeVerts[cubeFaceIndices[(i*4)+lp+
+					EmitVertex();
+				}
+				EndPrimitive();
+			}
+		}
+		if(vsOutput[0].isGrass) {
+			if(_get3d_vecdistref(cameraPos.xyz,vsOutput[0].vertex.xyz) < 30)
+			for(int x = 1; x < 6; x++) create_grass(vsOutput[0].vertex, curTime,x);
+		}
+	
+}
+
+void marching_crazythoughts(int lpacked, int zed, int lpackedtwo) {
+	int shalf = lpackedtwo;
+	int fhalf = lpacked;
+	if(!(vsOutput[0].isWater)) {
+		bool neighbors[27];
+		for(int x = 0; x < 27; x++) neighbors[x] = false;
+		for(int x = 26; x>=15;x--) {
+			if( shalf >= valuel[x-26+11] ) { neighbors[x] = true; shalf -= valuel[x-26+11]; }
+		}
+		for(int x = 14; x>=0;x--) {
+			if( fhalf >= valuel[x] ){ neighbors[x] = true; fhalf -= valuel[x]; }
+		}
+		offVerts(neighbors);
+	}
+	draw_cube(zed);
+}
+void main()
+{
+	int zed = int(vsOutput[0].rendering_stuff.x);// color.zed encodes which faces to render in base 10.
+	int yed = int(vsOutput[0].rendering_stuff.y);
+	int yedtwo = int(vsOutput[0].rendering_stuff.z);
+	//check faces from highest number to lowest
+	if(!vsOutput[0].inView) return;
+	
+	marching_crazythoughts(yed, zed,yedtwo);//draw_cube(zed);
+}
+
+		
+		/*****************************
+
+			Cube vertice order             
+						definition                       +Y
+                                                          |
+						3_______7_                        | +Z
+						/|       /| |                     | /
+                       / |      / | | +                   |/
+                      /  |     /  | | Y          -X-------/--------+X
+                    1/___|___5/_ 6| | -                  /| 
+                    |   /2   |   / /                  -Z  |
+                    |  /        / / +                     |
+                    | /      | / / Z                     -Y
+                    |/_______|/ / -
+                    0--------4-/ 
+                      - X +
+
+		Winding: Clockwise: (TWO TRI OR QUAD)
+		Left: 0-1-3,0-3-2 OR 1,3,0,2
+		Right: 4-5-7,4-7-6 OR 5,7,4,6
+		Front: 0-1-5,0,5,4 OR 1,5,0,4
+		back:6-7-3,6-3-2 OR 7,3,6,2
+		top: 1-3-7,1-7-5 OR 3,7,1,5
+		bottom: 6-4-0,6-0-2 OR 2,0,6,4
+		******************************/

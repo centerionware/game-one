@@ -1,0 +1,386 @@
+#define CHECK_FOR_MATCH(X,Y,Z) \
+auto l = c->NewNewVoxels.find(to_voxid(vec3(X,Y,Z)));\
+if(l != c->NewNewVoxels.end() && l->second.matid == c->NewNewVoxels[to_voxid(p)].matid )continue;
+
+
+  
+float test_xyz_int(vec3 &p, float current_depth, Chunk *c) {
+	using namespace Generic_Tools;
+	
+	//auto neighbors_matrix = arr_93_mul(voxel_neighbors,p);
+	
+	//:\.. vec3={x,y,z}; vec3 a(2000,-452,20); neighbors_normal=vec3[9][3]{ [-1,-1,-1] to [1,1,1]; }  vec3 pneighbors[9][3] = a+neighbors_normal; 
+giveup_priority();
+	for(float x = 0; x <= current_depth; ++x) 
+	    for(float y = 0; y <= current_depth; ++y) 
+	      for(float z = 0; z <= current_depth; ++z) {
+		
+		CHECK_FOR_MATCH(p.x+x, p.y+y,p.z+z);
+		return 0;
+	      }
+	return 1;
+}
+
+float test_xyz(vec3 &p, float max_depth, Chunk *c) {
+	using namespace Generic_Tools;
+	float r = 0;
+//	auto neighbors_matrix = arr_93_mul(voxel_neighbors,p);
+	
+	//:\.. vec3={x,y,z}; vec3 a(2000,-452,20); neighbors_normal=vec3[9][3]{ [-1,-1,-1] to [1,1,1]; }  vec3 pneighbors[9][3] = a+neighbors_normal; 
+	
+	for(float x = 1; x < max_depth; ++x) {
+	  if(p.x+x>30||p.z+x > 30||p.y+x >60) return r;
+	  float t = test_xyz_int(p,x,c);
+	    r = t==1?r+1:r;//r = t > r ? t : r ;
+	    if(t == 0) return r;
+	}
+      return r;
+}
+
+float test_xy_int(vec3 &p, float current_depth, Chunk *c) {
+	using namespace Generic_Tools;
+	
+	giveup_priority();
+	for(float x = 0; x <= current_depth; ++x) 
+	    for(float y = 0; y <= current_depth; ++y) {
+	      CHECK_FOR_MATCH(p.x+x, p.y+y,p.z)
+		
+		return 0;
+	    }
+
+  return 1;
+}
+float test_xy(vec3 &p, float max_depth, Chunk *c) {
+	using namespace Generic_Tools;
+	float r = 0;
+	
+	for(float x = 1; x < max_depth; ++x) {
+	  if(p.x+x>30||p.y+x > 60) return r;
+	    float t = test_xy_int(p,x,c);
+	    r = t==1?r+1:r;//r = t > r ? t : r ;
+	    if(t == 0) return r;
+	}
+  return r;
+}
+
+float test_xz_int(vec3 &p, float current_depth, Chunk *c) {
+	using namespace Generic_Tools;
+	giveup_priority();
+	for(float x = 0; x <= current_depth; ++x) 
+	    for(float z = 0; z <= current_depth; ++z) {
+	      CHECK_FOR_MATCH(p.x+x, p.y,p.z+z);
+		return 0;
+	    }
+
+  return 1;
+}
+float test_xz(vec3 &p, float &max_depth, Chunk *c) {
+	using namespace Generic_Tools;
+	float r = 0;
+	for(float x = 1; x < max_depth; ++x) {
+	   if(p.x+x>30||p.z+x > 30) return r;
+	  float t = test_xz_int(p,x,c);
+	    r = t==1?r+1:r;// > r ? t : r ;
+	    if(t == 0) return r;
+	}
+	
+
+  return r;
+}
+
+float test_zy_int(vec3 &p, float current_depth, Chunk *c) {
+	using namespace Generic_Tools;
+	
+	giveup_priority();
+	for(float z = 0; z <= current_depth; ++z) 
+	    for(float y = 0; y <= current_depth; ++y) {
+	      CHECK_FOR_MATCH(p.x, p.y+y,p.z+z);
+		return 0;
+	    }
+
+  return 1;
+}
+float test_zy(vec3 &p, float &max_depth, Chunk *c) {
+	using namespace Generic_Tools;
+	float r = 0;
+	for(float x= 1; x <max_depth; ++x) {
+	  if(p.z+x>30||p.y+x > 60) return r;
+	    float t = test_zy_int(p,x,c);
+	    r = t==1?r+1:r;// > r ? t : r ;
+	    if(t == 0) return r;
+	}
+
+  return r;
+}
+
+
+
+float test_neg_xyz_int(vec3 &p, float current_depth, Chunk *c) {
+	using namespace Generic_Tools;
+	
+	//auto neighbors_matrix = arr_93_mul(voxel_neighbors,p);
+	
+	//:\.. vec3={x,y,z}; vec3 a(2000,-452,20); neighbors_normal=vec3[9][3]{ [-1,-1,-1] to [1,1,1]; }  vec3 pneighbors[9][3] = a+neighbors_normal; 
+giveup_priority();
+	for(float x = 0; x <= current_depth; ++x) 
+	    for(float y = 0; y <= current_depth; ++y) 
+	      for(float z = 0; z <= current_depth; ++z) {
+		CHECK_FOR_MATCH(p.x-x, p.y-y,p.z-z);
+		
+		return 0;
+	      }
+	return 1;
+}
+
+float test_neg_xyz(vec3 &p, float max_depth, Chunk *c) {
+	using namespace Generic_Tools;
+	float r = 0;
+//	auto neighbors_matrix = arr_93_mul(voxel_neighbors,p);
+	
+	//:\.. vec3={x,y,z}; vec3 a(2000,-452,20); neighbors_normal=vec3[9][3]{ [-1,-1,-1] to [1,1,1]; }  vec3 pneighbors[9][3] = a+neighbors_normal; 
+	
+	for(float x = 1; x < max_depth; ++x) {
+	  if(p.x-x<0||p.z-x <0||p.y-x <0) return r;
+	  float t = test_neg_xyz_int(p,x,c);
+	    r = t==1?r+1:r;//r = t > r ? t : r ;
+	    if(t == 0) return r;
+	}
+      return r;
+}
+
+float test_neg_xy_int(vec3 &p, float current_depth, Chunk *c) {
+	using namespace Generic_Tools;
+	
+	giveup_priority();
+	for(float x = 0; x <= current_depth; ++x) 
+	    for(float y = 0; y <= current_depth; ++y) {
+	      CHECK_FOR_MATCH(p.x-x, p.y-y,p.z);
+		
+		return 0;
+	    }
+
+  return 1;
+}
+float test_neg_xy(vec3 &p, float max_depth, Chunk *c) {
+	using namespace Generic_Tools;
+	float r = 0;
+	
+	for(float x = 1; x < max_depth; ++x) {
+	  if(p.x-x<0||p.y-x < 0) return r;
+	    float t = test_neg_xy_int(p,x,c);
+	    r = t==1?r+1:r;//r = t > r ? t : r ;
+	    if(t == 0) return r;
+	}
+  return r;
+}
+
+float test_neg_xz_int(vec3 &p, float current_depth, Chunk *c) {
+	using namespace Generic_Tools;
+	giveup_priority();
+	for(float x = 0; x <= current_depth; ++x) 
+	    for(float z = 0; z <= current_depth; ++z) {
+	      CHECK_FOR_MATCH(p.x-x, p.y,p.z-z);
+	     
+		return 0;
+	    }
+
+  return 1;
+}
+float test_neg_xz(vec3 &p, float &max_depth, Chunk *c) {
+	using namespace Generic_Tools;
+	float r = 0;
+	for(float x = 1; x < max_depth; ++x) {
+	   if(p.x-x<0||p.z-x < 0) return r;
+	  float t = test_neg_xz_int(p,x,c);
+	    r = t==1?r+1:r;// > r ? t : r ;
+	    if(t == 0) return r;
+	}
+	
+
+  return r;
+}
+
+float test_neg_zy_int(vec3 &p, float current_depth, Chunk *c) {
+	using namespace Generic_Tools;
+	
+	giveup_priority();
+	for(float z = 0; z <= current_depth; ++z) 
+	    for(float y = 0; y <= current_depth; ++y) {
+	      CHECK_FOR_MATCH(p.x, p.y-y,p.z-z);
+		return 0;
+	    }
+
+  return 1;
+}
+float test_neg_zy(vec3 &p, float &max_depth, Chunk *c) {
+	using namespace Generic_Tools;
+	float r = 0;
+	for(float x= 1; x <max_depth; ++x) {
+	  if(p.z-x<0||p.y-x < 60) return r;
+	    float t = test_neg_zy_int(p,x,c);
+	    r = t==1?r+1:r;// > r ? t : r ;
+	    if(t == 0) return r;
+	}
+
+  return r;
+}
+vec8 &v8offset(vec8 &r, bool x, bool y, bool z, float CC, float amt) {
+  			  /*
+			  r[0] = vec3(temp_v.x-CC,temp_v.y-CC,temp_v.z-CC);
+			  r[1] = vec3(temp_v.x+CC,temp_v.y-CC,temp_v.z-CC);
+			  r[2] = vec3(temp_v.x-CC,temp_v.y+CC,temp_v.z-CC);
+			  r[3] = vec3(temp_v.x+CC,temp_v.y+CC,temp_v.z-CC);
+			  r[4] = vec3(temp_v.x-CC,temp_v.y-CC,temp_v.z+CC);
+			  r[5] = vec3(temp_v.x+CC,temp_v.y-CC,temp_v.z+CC);
+			  r[6] = vec3(temp_v.x-CC,temp_v.y+CC,temp_v.z+CC);
+			  r[7] = vec3(temp_v.x+CC,temp_v.y+CC,temp_v.z+CC);
+			  */
+			 // amt-=1;
+if(x) {
+  r[1].x += (CC*2)*amt;
+  r[3].x += (CC*2)*amt;
+  r[5].x += (CC*2)*amt;
+  r[7].x += (CC*2)*amt;
+}
+if(y) {
+  	r[2].y += (CC*2)*amt;
+	r[3].y += (CC*2)*amt;
+	r[6].y += (CC*2)*amt;
+	r[7].y += (CC*2)*amt;
+}
+if(z) {
+  r[4].z += (CC*2)*amt;
+  r[5].z += (CC*2)*amt;
+  r[6].z += (CC*2)*amt;
+  r[7].z += (CC*2)*amt;
+}
+return r;
+  /*
+	r[1].x += (CC*2)*amt;
+	  
+	r[2].y += (CC*2)*amt;
+	r[3].y += (CC*2)*amt;
+	r[3].x += (CC*2)*amt;
+	
+	r[4].z += (CC*2)*amt;
+	r[5].z += (CC*2)*amt;
+	r[5].x += (CC*2)*amt;
+	
+	r[6].y += (CC*2)*amt;
+	r[6].z += (CC*2)*amt;
+	
+	r[7].y += (CC*2)*amt;
+	r[7].x += (CC*2)*amt;
+	r[7].z += (CC*2)*amt;
+	*/
+}
+/*
+struct cvoxmap {
+  Chunk *c;
+  unsigned short idx;
+  cvoxmap(Chunk *_c, unsigned short _idx) : c(_c), idx(_idx) {}
+  bool operator==(cvoxmap&o){ return (o.c==_c&&o.idx==_idx); }
+};
+std::map<cvoxmap, unsigned int> removed_because;
+*/
+vec8 new_vertex_generator(unsigned short voxid , Chunk *c) {
+	// i don't fully know how this will work yet, but basically..
+	/** 
+	 * 
+	 * newvoxels will only contain the first corners
+	 * all_voxels must be scrolled through near voxid to generate the vertex data.
+	 * All cubes that can be combined without changing the look, should be.
+	 * How can this be done?
+	 * XYZ, XY, ZX, ZY
+	 * 
+	**/
+	
+	vec3 p = from_voxid(voxid);
+	//float msize = CUBE_SIZE;
+	vec3 temp_v = c->position; 
+	{
+	vec3 x = p;
+	x=x-vec3(15,30,15);
+	temp_v += x;
+	}
+	float CC = CUBE_SIZE;
+	unsigned short lods[7] = { 1, 2, 3, 5, 7, 10, 15 };
+	CC = CC*float(lods[0]);
+	float offset = float(lods[0]-1)*CUBE_SIZE;
+	{
+	temp_v.x += offset;
+	temp_v.y -= offset;
+	temp_v.z += offset;
+	}
+	vec8 r;
+
+	r[0] = vec3(temp_v.x-CC,temp_v.y-CC,temp_v.z-CC);
+	r[1] = vec3(temp_v.x+CC,temp_v.y-CC,temp_v.z-CC);
+	r[2] = vec3(temp_v.x-CC,temp_v.y+CC,temp_v.z-CC);
+	r[3] = vec3(temp_v.x+CC,temp_v.y+CC,temp_v.z-CC);
+	r[4] = vec3(temp_v.x-CC,temp_v.y-CC,temp_v.z+CC);
+	r[5] = vec3(temp_v.x+CC,temp_v.y-CC,temp_v.z+CC);
+	r[6] = vec3(temp_v.x-CC,temp_v.y+CC,temp_v.z+CC);
+	r[7] = vec3(temp_v.x+CC,temp_v.y+CC,temp_v.z+CC);
+
+	float max_depth = 31, max_xyz = 0, max_xy = 0, max_xz = 0, max_zy = 0;
+	max_xyz = test_xyz(p, max_depth,c);
+	max_xy = test_xy(p, max_depth, c);
+	max_xz = test_xz(p, max_depth,c);
+	max_zy = test_zy(p,max_depth,c);
+	float min_xyz = test_neg_xyz(p,max_depth,c), min_xy = test_neg_xy(p,max_depth,c),min_xz=test_neg_xz(p,max_depth,c),min_zy=test_neg_zy(p,max_depth,c);
+	
+	// Be sure to check the newvoxels array for ones combined in here, and strip them.. ordering them first.
+	// would be the best way to build the least amnt of geometry
+	if(min_xyz > 0 || min_xy > 0 || min_xz > 0 || min_zy > 0) {
+	      return r;
+	}
+	if(max_xyz == 0 && max_xy == 0 && max_xz == 0 && max_zy == 0) return r;
+	char comp = max_xyz;
+	if(comp >= max_xy && comp >= max_xz && comp >= max_zy) {
+		for(float x = 0; x <= comp; ++x) 
+			for(float y = 0; y <= comp; ++y) 
+				for(float z = 0; z <= comp; ++z) {
+					auto i = c->NewNewVoxels.find(to_voxid(p+vec3(x,y,z)));
+					if(i!= c->NewNewVoxels.end() && !(x==0&&y==0&&z==0)) i->second.render=false;
+				}
+		r = v8offset(r, true, true, true, CC, comp);
+		// xyz
+	 } else {
+		comp = max_xy;
+		if(comp > max_xyz && comp >= max_xz && comp >= max_zy) {
+			for(float x = 0; x <= comp; ++x) 
+				for(float y = 0; y <= comp; ++y) {
+					auto i = c->NewNewVoxels.find(to_voxid(p+vec3(x,y,0)));
+					if(i!= c->NewNewVoxels.end() && !(x==0&&y==0)) i->second.render=false;
+				}
+			r = v8offset(r, true, true, false, CC, comp);
+			// xy
+		} else {
+			comp = max_xz;
+			if(comp >= max_xy && comp >= max_zy && comp > max_xyz) {
+				for(float x = 0; x <= comp; ++x) 
+					for(float y = 0; y <= comp; ++y) {
+						auto i = c->NewNewVoxels.find(to_voxid(p+vec3(x,0,y)));
+						if(i!= c->NewNewVoxels.end() && !(x==0&&y==0)) i->second.render=false;
+					}
+				r = v8offset(r, true, false, true, CC, comp);
+				// xz
+			} else {
+				comp = max_zy;
+				if(comp >= max_xy && comp >= max_xz && comp > max_xyz) {
+					// z y
+					 for(float x = 0; x <= comp; ++x) 
+						for(float y = 0; y <= comp; ++y) {
+							auto i = c->NewNewVoxels.find(to_voxid(p+vec3(0,y,x)));
+							if(i!= c->NewNewVoxels.end() && !(x==0&&y==0)) i->second.render=false;
+						}
+						r = v8offset(r, false, true, true, CC, comp);
+				} else return r;
+			}
+		}
+	 }
+	 
+	 
+	return r;
+}

@@ -1,0 +1,195 @@
+struct ClientNetmodule : public net_module {
+    void initialize() {
+      	mPlayer->netbind(mPlayer,&inet_player::itemLocalSearch,OLC,GetItemLocalList);
+	mPlayer->netbind(mPlayer,&inet_player::itemGlobalSearch,OLC,GetItemGlobalList);
+	mPlayer->netbind(mPlayer,&inet_player::itemModifyPress,OLC,ModifyItem);
+	mPlayer->netbind(mPlayer,&inet_player::itemDeletePress,OLC,DeleteItem);
+	mPlayer->netbind(mPlayer,&inet_player::itemLockPress,OLC,LockItem);
+	mPlayer->netbind(mPlayer,&inet_player::itemDetailsRequest,OLC,GetItemDetails);
+	mPlayer->netbind(mPlayer,&inet_player::itemAddPress,OLC,AddItem);
+    }
+};
+ClientNetmodule bedorfloorisleep;
+void inet_player::itemLocalSearch(std::vector<std::string> &in){
+  if(!admin) {
+   std::cout << "Non admin user: " << name << " on socket " << socket << " requested item search local list!\n";
+   return;
+  }
+  std::string output;
+  output += to_value(OLC);
+  output += to_value(GetItemLocalList);
+
+  std::string safe_query = in[0];
+  
+  if(safe_query.size() == 0) return;
+  MySQL_Helper::Query stmt(database_connection);
+  std::string dbq;
+  bool like = false;
+  
+  if(safe_query.substr(0,1).compare("?") == 0) {
+    like = true;
+    safe_query = safe_query.substr(1,safe_query.size()-1);
+  }
+  
+  if(safe_query.size() == 1 && safe_query.compare("*") == 0){
+	  dbq = "select name from items";
+	  stmt.prepare(dbq);
+  }else if(!like){
+	  dbq = "select name from items where name='?'";
+	  stmt.prepare(dbq,safe_query);
+  }else {
+	  dbq = "select name from items where name like '?'";
+	  stmt.prepare(dbq,safe_query);
+  }
+  stmt.run();
+  auto  result_rows = stmt.numrows;
+
+  for(auto i=0;i<result_rows;++i) {
+      MYSQL_ROW& lmrow = stmt.row();
+      unsigned long *lengths = mysql_fetch_lengths(stmt.result()); // Need to try to delete[] this..     
+      std::string name;
+      name.append(lmrow[0],lengths[0]);
+      output.append(string_serialize(name));
+  }
+  
+  send_text(output,socket);
+}
+void inet_player::itemGlobalSearch(std::vector<std::string> &in){
+   if(!admin) {
+   std::cout << "Non admin user: " << name << " on socket " << socket << " requested item search global list!\n";
+   return;
+  }
+  std::string output;
+  output += to_value(OLC);
+  output += to_value(GetItemLocalList);
+
+  std::string safe_query = in[0];
+  
+  if(safe_query.size() == 0) return;
+  MySQL_Helper::Query stmt(database_connection);
+  std::string dbq;
+  bool like = false;
+  
+  if(safe_query.substr(0,1).compare("?") == 0) {
+    like = true;
+    safe_query = safe_query.substr(1,safe_query.size()-1);
+  }
+  
+  if(safe_query.size() == 1 && safe_query.compare("*") == 0){
+	  dbq = "select name from items";
+	  stmt.prepare(dbq);
+  }else if(!like){
+	  dbq = "select name from items where name='?'";
+	  stmt.prepare(dbq,safe_query);
+  }else {
+	  dbq = "select name from items where name like '?'";
+	  stmt.prepare(dbq,safe_query);
+  }
+  stmt.run();
+  auto  result_rows = stmt.numrows;
+
+  for(auto i=0;i<result_rows;++i) {
+      MYSQL_ROW& lmrow = stmt.row();
+      unsigned long *lengths = mysql_fetch_lengths(stmt.result()); // Need to try to delete[] this..     
+      std::string name;
+      name.append(lmrow[0],lengths[0]);
+      output.append(string_serialize(name));
+  }
+  
+  send_text(output,socket);
+  
+}
+void inet_player::itemModifyPress(std::vector<std::string> &in){
+  std::string &b = in[0];
+  if(!admin) {
+	  std::cout << "Non admin " << name << " tried to modify a item! " <<std::endl;
+	  return;
+  } else std::cout << "Admin is modifying a item.\n";
+  #define discern(X) std::string X = non_safe_string_deserialize(b);
+
+	discern(id)
+	discern(name)
+	discern(ilvl)
+	discern(itype)
+	discern(etxt)
+  std::cout << id << " " << name << "\n ";// << email << " " << AdminLevel << "\n";
+  
+  {std::string qry = "update items set name='?', ilvl='?', itype='?', extra_text='?' where id='?'";
+    MySQL_Helper::Query mstmt(database_connection);
+    mstmt.prepare(qry, name, ilvl, itype, etxt, id);
+    mstmt.run();}
+
+}
+void inet_player::itemDeletePress(std::vector<std::string> &in){
+  std::string &b = in[0];
+  #define discern(X) std::string X = non_safe_string_deserialize(b);
+
+  discern(id)
+  if(!admin) {
+	  std::cout << "Non admin " << name << " tried to delete item("<<id<<")! " <<std::endl;
+	  return;
+  } else std::cout << "Admin is deleting a item("<<id<<").\n";
+  std::string qry = "delete from items where id='?'";
+  MySQL_Helper::Query stmt(database_connection);
+  stmt.prepare(qry, id);
+  stmt.run();
+}
+void inet_player::itemLockPress(std::vector<std::string> &in){
+  
+}
+void inet_player::itemDetailsRequest(std::vector<std::string> &in){
+   if(!admin) {
+    std::cout << "Non admin user: " << name << " on socket " << socket << " requested Item details!\n";
+    return;
+  }
+  std::string output;
+  output += to_value(OLC);
+  output += to_value(GetItemDetails);
+  
+  std::string qry =  "select id,name,wearable,consumable,extra_text,ilvl,itype, add_dmg,add_armor,modifiers,contains,slots,chunkid from items where name='?'";
+  MySQL_Helper::Query stmt(database_connection);
+  stmt.prepare(qry, in[0]);
+  stmt.run();
+  //std::string ffsfufufu = dbq.str();
+ // database_connection.query(dbq.str());
+
+  if(stmt.numrows == 0) {
+    std::cout << "Search for item name " << in[0] << " found no result_rows!\n";
+    std::cout << stmt.builtqry.str() << "\n";
+    return; 
+  }
+#define streq(X,Y) std::string X; X.append(lmrow[Y],lengths[Y]); output.append(string_serialize(X)); 
+  {
+    MYSQL_ROW& lmrow = stmt.row();
+    unsigned long *lengths = stmt.lengths();
+    streq(id,0)
+    streq(name,1)
+    streq(wearable,2)
+    streq(consumable,3)
+    streq(extra_text,4)
+    streq(ilvl,5)
+    streq(itype,6)
+    
+  }
+  send_text(output,socket);
+}
+void inet_player::itemAddPress(std::vector<std::string> &in){
+  std::string &b = in[0];
+  if(!admin) {
+	  std::cout << "Non admin " << name << " tried to modify a item! " <<std::endl;
+	  return;
+  } else std::cout << "Admin is modifying a item.\n";
+  #define discern(X) std::string X = non_safe_string_deserialize(b);
+
+
+	discern(name)
+	discern(ilvl)
+	discern(itype)
+	discern(etxt)
+  //std::cout << << name << "\n";// << " " << email << " " << AdminLevel << "\n";
+  
+  {std::string qry = "insert into items (name,ilvl,itype,extra_text) values ('?','?','?','?')";
+    MySQL_Helper::Query mstmt(database_connection);
+    mstmt.prepare(qry, name, ilvl, itype, etxt);
+    mstmt.run();}
+}

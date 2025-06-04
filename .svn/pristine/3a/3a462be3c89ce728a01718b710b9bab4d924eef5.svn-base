@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<GUILayout >
+    <Window Type="DefaultWindow" Name="SplashAlpha" >
+        <Property Name="UnifiedAreaRect" Value="{{0.0,0},{0.0,0},{1.0,0},{1.0,0}}" />
+	<Window Type="GameOneLook/StaticImage" Name="SplashAlpha/imgSplashAlpha" >
+                <Property Name="UnifiedMaxSize" Value="{{1,0},{1,0}}" />
+                <Property Name="BackgroundImage" Value="set:SplashAlpha image:SplashAlpha" />
+        </Window>
+    </Window>
+</GUILayout>

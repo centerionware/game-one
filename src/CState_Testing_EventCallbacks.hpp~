@@ -1,0 +1,23 @@
+bool CState_Testing::OnMinimapSliderChanged(const CEGUI::EventArgs &event) {
+  const CEGUI::WindowEventArgs &args = (CEGUI::WindowEventArgs&)event;
+// std::cout << "Slider changed\n" << "Current value: " << ((CEGUI::Scrollbar*)args.window)->getScrollPosition() <<std::endl;
+ minimap_slider = 1-((CEGUI::Scrollbar*)args.window)->getScrollPosition();
+ return false;
+}
+bool CState_Testing::Event_LeaveGame(const CEGUI::EventArgs& e) {
+	EscPressed = true;
+        DoStateChange( CState_MainMenu::ReturnInstance() );
+		return true;
+}
+
+void CState_Testing::Toggle3DView(const CEGUI::EventArgs &event) {
+	if(FreelookEditMode) {
+		mCamNode->setPosition(mPlayer->position + Ogre::Vector3(0, 25, 0));
+		mCamNode->resetOrientation();
+		//mMinimapCamPitchNode->resetOrientation();
+		mCamNode->pitch(Ogre::Degree(-90),Ogre::Node::TS_LOCAL);
+		FreelookEditMode = false;
+	} else {
+		FreelookEditMode = true;
+	}
+}

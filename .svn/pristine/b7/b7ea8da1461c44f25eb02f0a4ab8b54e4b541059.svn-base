@@ -1,0 +1,384 @@
+
+#include "server_map_building_gen.hpp"
+
+void NewHeightmapLoader::viewportSelectionArea(float x, float y, const Ogre::Camera *inCam, unsigned short width) {
+static Ogre::Timer slowdown;
+
+if(slowdown.getMilliseconds() < 100 ) return;
+ slowdown.reset();
+   if(inCam == NULL) inCam = mCam;
+	//heightmap_globals::mut_c.lock();
+	Ogre::Ray SelRay = inCam->getCameraToViewportRay(x,y);
+	Ogre::Vector3 last_point(0,0,0);
+	for(float c = 0; c < 30; c+=0.1) {
+		Ogre::Vector3 pnt = SelRay.getPoint(c);
+	
+		pnt.x = sym_round(pnt.x);
+		pnt.y = sym_round(pnt.y); 
+		pnt.z = sym_round(pnt.z);
+		if(c!=0) if(last_point == pnt) continue;
+		
+		last_point = pnt;
+		Chunk *fChunk = qgetChunk(pnt);
+		
+		if(fChunk != NULL) {
+			chunk_lock locker(fChunk);
+			vec3 _position(pnt);
+			vec3 temp_v = _position-fChunk->position;
+			vec3 offset(15,30,15);
+			temp_v += offset;
+			unsigned short idx = ((temp_v.y*31*31)+(temp_v.x*31)+temp_v.z );
+
+			if(selectedChunk == fChunk && selectedChunk != NULL && selectedVoxel == idx) { // only rebuild if the selection changes.
+			 // fChunk->temporal_unlock();
+			  return;
+			} 
+			selectedChunk = NULL;
+			 
+			auto i = fChunk->NewNewVoxels.find(idx),ie=fChunk->NewNewVoxels.end();
+			for(;i!=ie;i++) {
+				if((*i).first == idx) {
+					selectedChunk = fChunk;
+					selectedVoxel = idx; 
+					selectedFace = find_selected_face(top, SelRay, pnt, c);
+					selcur->setFace(pnt, selectedFace);
+				//	fChunk->temporal_unlock();
+					return; // Found! No need to keep running...
+				}
+			}
+			//fChunk->temporal_unlock();
+		}
+		
+	}
+	return;
+}
+
+basic_chunk_update texture_change(Chunk *fC, unsigned short idx, int *texnum=NULL) {
+  basic_chunk_update output;
+  output.chunk.x = fC->position.x;
+  output.chunk.y = fC->position.y;
+  output.chunk.z = fC->position.z;
+  output.chunk.voxels.push_back(idx);
+  unsigned char matid = texnum!=NULL?(*texnum):fC->NewNewVoxels[idx].matid+1;
+  
+  if(matid > 63) matid=0;
+  output.chunk.matids.push_back(matid);
+  fC->NewNewVoxels[idx].matid = matid;
+  fC->cleanup();
+  return output;
+}
+std::string NewHeightmapLoader::editor_modify(int texnum) {
+  if(selectedChunk == NULL) return "";
+  
+  chunk_lock locker(selectedChunk);
+  basic_chunk_update output = texture_change(selectedChunk, selectedVoxel, &texnum);
+//  selectedChunk->temporal_unlock();
+  return output.serialize();
+}
+
+basic_chunk_update remove_voxel(Chunk *fC, unsigned short idx) {
+  basic_chunk_update output;
+  
+  output.chunk.x = fC->position.x;
+  output.chunk.y = fC->position.y;
+  output.chunk.z = fC->position.z;
+  output.removed_voxels.push_back(idx);
+  if(fC->NewNewVoxels.find(idx) != fC->NewNewVoxels.end()) fC->NewNewVoxels.erase(fC->NewNewVoxels.find(idx));
+  
+  fC->cleanup(); 
+  
+  return output;
+}
+std::string NewHeightmapLoader::editor_remove() {
+  if(selectedChunk == NULL) return "";
+ chunk_lock locker( selectedChunk);//->temporal_lock();
+  basic_chunk_update output = remove_voxel(selectedChunk, selectedVoxel);
+ // selectedChunk->temporal_unlock();
+  selectedChunk = NULL;
+  return output.serialize();
+}
+struct chunkvox {
+    Chunk *c;
+    unsigned short idx;
+};
+chunkvox add_voxel(vec3 &newpoint) {
+	chunkvox r;
+	
+	auto iter = find_by_point(newpoint);
+	chunk_iterator_locker itlocker;
+	r.c = (*iter);
+	itlocker.unlock();
+	vec3 temp_v = newpoint-(*iter)->position;
+	vec3 offset(15,30,15);
+	temp_v += offset;
+	int j = 31;
+	int k =j*j;
+	r.idx = ((temp_v.y*k)+(temp_v.x*j)+temp_v.z );
+	return r;
+}
+
+std::string NewHeightmapLoader::editor_add() {
+	// Add a voxel at the selected_voxel in the direction of selected_face.
+	/*
+	      Do so by creating a basic_chunk_update, test by sending to the chunk_update function.
+	      Once it's working, we can send it to the server, and use the same type of system to submit changes to the db
+	      then have the server replicate the chunk_updates to nearby clients, and mark it changed for those who aren't nearby
+	      but have already downloaded that section of the map since login, to trigger an update when they do come into range..
+	     
+	     Don't resend basic_chunk_update back to client that sent it, the simplest way to impliment it was through code-reuse
+	     from when the original terrain data was created
+	      
+	*/
+	
+	/*
+	    First off, find the position of the new voxel, then find the center position of the chunk that should contain it.
+	*/
+	if(selectedChunk == NULL) return "";
+	chunk_lock locker(selectedChunk);//->temporal_lock();
+//	heightmap_globals::mut_c.lock();
+	basic_chunk_update output;
+	std::map<selected_face,vec3> facemap;
+	facemap[top] = vec3 (0,1,0);
+	facemap[bottom] = vec3(0,-1,0);
+	facemap[left] = vec3(-1,0,0);
+	facemap[right] = vec3 (1,0,0);
+	facemap[front] = vec3 (0,0,1);
+	facemap[back] = vec3 (0,0,-1);
+	
+	vec3 newpoint = facemap[selectedFace];
+
+	int j = 31;
+	int k =j*j;
+	std::cout << "newpoint is " << newpoint.print() << std::endl;
+	
+	unsigned short idx = selectedVoxel;
+	
+	
+	vec3 temp_iv = selectedChunk->position;
+	// 30x60x30.. // follow vertice definition, first is at 0 (-x -z -y),  then goes through z, then y.
+	// the position of the chunk indicates it's center. The voxel at the exact center of 15x15x30 is equal to {x,y,z} = 0
+	
+	signed short y = idx/(k);
+	signed short x = (idx - y*k)/j;
+	signed short z = idx - y*k - x*j;
+	// now normalize to between {-15,-15,-30} - {15,15,30}
+	x-=15; z-=15;y-=30;
+	temp_iv.x += x;
+	temp_iv.y += y;
+	temp_iv.z += z;
+			
+			
+	newpoint = (temp_iv+vec3(newpoint));
+	
+	
+	newpoint.ceil();
+	
+	chunkvox c_v  = add_voxel(newpoint);
+	
+	output.chunk.x = c_v.c->position.x;
+	output.chunk.y = c_v.c->position.y;
+	output.chunk.z = c_v.c->position.z;
+
+	c_v.c->NewNewVoxels[c_v.idx].matid = selectedChunk->NewNewVoxels[selectedVoxel].matid; //voxel_materials[selectedVoxel];
+	output.chunk.voxels.push_back(c_v.idx);
+	output.chunk.matids.push_back(selectedChunk->NewNewVoxels[selectedVoxel].matid);
+	selectedVoxel = c_v.idx;
+	selectedChunk->cleanup();
+	//selectedChunk->temporal_unlock();
+	selectedChunk = c_v.c;
+	
+	return output.serialize();
+	
+}
+std::string NewHeightmapLoader::editor_addpnt(vec3 newpoint) {
+	
+	chunk_iterator_locker itlocker;
+	if(chunks._chunks.begin() == chunks._chunks.end()) {//last_inserted == 0x0) {
+	    //  heightmap_globals::mut_c.unlock();
+	      std::string r = "";
+	      return r;
+	}
+	basic_chunk_update output;
+	newpoint.ceil();
+	itlocker.unlock();
+	chunkvox c_v  = add_voxel(newpoint);
+	chunk_lock locker(c_v.c);//->temporal_lock();
+	selectedChunk = c_v.c;
+	
+	output.chunk.x = c_v.c->position.x;
+	output.chunk.y = c_v.c->position.y;
+	output.chunk.z = c_v.c->position.z;
+
+	c_v.c->NewNewVoxels[c_v.idx].matid = 1;
+	output	.chunk.voxels.push_back(c_v.idx);
+	output.chunk.matids.push_back(1);
+	selectedVoxel = c_v.idx;
+	
+	selectedChunk = c_v.c;
+	selectedChunk->cleanup();
+
+//	selectedChunk->temporal_unlock();
+	return output.serialize();
+}
+
+editor_2pnt selpnts;
+void NewHeightmapLoader::editor_select_p1() { 
+	if(selectedChunk == NULL) return;
+	chunk_lock locker(selectedChunk);
+	selpnts.setup(true, selectedChunk, selectedVoxel);
+	if(selpnts.c[0] != NULL && selpnts.c[1] != NULL) selpnts.set = true;
+	std::cout << "Set point 1\n";
+	
+}
+void NewHeightmapLoader::editor_select_p2() { 
+	if(selectedChunk == NULL) return;
+	chunk_lock locker(selectedChunk);//->temporal_lock();
+	selpnts.setup(false, selectedChunk, selectedVoxel);
+	if(selpnts.c[0] != NULL && selpnts.c[1] != NULL) selpnts.set = true;
+	std::cout << "Set point 2\n";
+	//selectedChunk->temporal_unlock();
+}
+
+
+struct multi_chunk_updates {
+	std::vector<basic_chunk_update> updates;
+	void add(multipoint &mp, multipoint::pnt &p) {
+	      basic_chunk_update *output;
+	      std::vector<basic_chunk_update>::iterator i = updates.begin(), ie = updates.end();
+	      bool found = false;
+	      for(;i!=ie;++i) 
+		    if( (*i).chunk.x == p.c->position.x && (*i).chunk.y == p.c->position.y && (*i).chunk.z == p.c->position.z ) {
+			    output = &(*i);
+			    found = true;
+			    break;
+		      }
+		      
+	      if(!found) {
+		      basic_chunk_update u;
+		    updates.push_back(u);
+		    
+		    output = &(updates.back());
+		     output->chunk.x = p.c->position.x;
+		    output->chunk.y = p.c->position.y;
+		    output->chunk.z = p.c->position.z;
+	      }
+	      output->chunk.voxels.push_back(p.idx);
+	      output->chunk.matids.push_back(mp.tex); 
+	      
+	}
+	void add_remove(multipoint &mp, multipoint::pnt &p) {
+	      basic_chunk_update *output;
+	      std::vector<basic_chunk_update>::iterator i = updates.begin(), ie = updates.end();
+	      bool found = false;
+	      for(;i!=ie;++i) 
+		    if( (*i).chunk.x == p.c->position.x &&
+		      (*i).chunk.y == p.c->position.y &&
+		      (*i).chunk.z == p.c->position.z ) {
+			    output = &(*i);
+			    found = true;
+			    break;
+		      }
+	      if(!found) {
+		    basic_chunk_update u;
+		    updates.push_back(u);
+		    output = &(updates.back());
+		    output->chunk.x = p.c->position.x;
+		    output->chunk.y = p.c->position.y;
+		    output->chunk.z = p.c->position.z;
+	      }
+	      output->removed_voxels.push_back(p.idx);
+	    //  output->chunk.matids.push_back(mp.tex); 
+	}
+	std::vector<std::string> serialize_all() {
+		std::vector<std::string> out;
+		std::vector<basic_chunk_update>::iterator i = updates.begin(), ie = updates.end();
+		for(;i!=ie;i++) out.push_back( (*i).serialize());
+		return out;
+	}
+};
+std::vector<std::string> NewHeightmapLoader::editor_add_between() {
+  //std::cout << "Add Between pre selpnts.set\n";
+  std::vector<std::string> r;
+  if(!selpnts.set) return r;
+  multipoint existing = selpnts.all_existing_between(this), all_potential = selpnts.all_points_between(this);
+  multi_chunk_updates output;
+  multipoint sendable;
+  sendable.tex = existing.tex;
+  std::vector<multipoint::pnt>::iterator iter = all_potential.pnts.begin(), end = all_potential.pnts.end();
+//  std::cout << "Add between\n";
+  
+  for(;iter!=end;iter++) if(!existing.contains( (*iter).c, (*iter).idx))
+	  sendable.pnts.push_back((*iter));
+  iter = sendable.pnts.begin(), end = sendable.pnts.end();
+  for(;iter!=end;iter++) output.add(sendable, (*iter));
+//  std::cout << "There where " << sendable.pnts.size() << "Sendable points.\n" << "There where " << existing.pnts.size() << "existing points, and "
+   //<< all_potential.pnts.size() << " potentials.\n";
+  return output.serialize_all();
+}
+std::vector<std::string> NewHeightmapLoader::editor_modify_between(int texnum) {
+  std::vector<std::string> r;
+  if(!selpnts.set) return r;
+  multi_chunk_updates output;
+  multipoint existing = selpnts.all_existing_between(this);
+  std::vector<multipoint::pnt>::iterator iter = existing.pnts.begin(), end = existing.pnts.end();
+  existing.tex = texnum;
+  if(existing.tex > 63) existing.tex = 0;
+ //selpnts.c[0]->voxel_materials[selpnts.idx[0]] = existing.tex;
+  
+  
+ // std::cout << "Modify between\n";
+  for(;iter!=end;iter++) output.add(existing, (*iter));
+  
+  return output.serialize_all();
+  
+}
+
+
+std::vector<std::string> NewHeightmapLoader::editor_remove_between() {
+  std::vector<std::string> r;
+  if(!selpnts.set) return r;
+  std::cout << "Remove Between\n";
+  multi_chunk_updates output;
+  multipoint existing = selpnts.all_existing_between(this);//, all_potential = selpnts.all_points_between(this);
+  
+  multipoint sendable;
+  
+  std::vector<multipoint::pnt>::iterator iter = existing.pnts.begin(), end = existing.pnts.end();
+  
+  
+  for(;iter!=end;iter++) output.add_remove(existing, (*iter));
+  
+  return output.serialize_all();
+}
+
+
+
+
+
+
+
+
+bool NewHeightmapLoader::is_voxel(vec3 &pnt) {
+	unsigned short t;
+	return is_voxel(pnt,t);
+}
+bool NewHeightmapLoader::is_voxel(vec3 &pnt, unsigned short &idx) {
+	Chunk *c;
+	return is_voxel(pnt,idx,c);
+}
+bool NewHeightmapLoader::is_voxel(vec3 &pnt, unsigned short &idx, Chunk *&c) {
+	Ogre::Vector3 p2 = pnt.toOgre();
+	Chunk *fChunk = qgetChunk(p2);
+	if(fChunk != NULL) {
+		chunk_lock locker(fChunk);
+		vec3 _position(pnt);
+		vec3 temp_v = _position-fChunk->position;
+		vec3 offset(15,30,15);
+		temp_v += offset;
+		idx = ((temp_v.y*31*31)+(temp_v.x*31)+temp_v.z );
+		c = fChunk;
+		if(fChunk->NewNewVoxels.find(idx) != fChunk->NewNewVoxels.end()) return true; 		
+	}
+	
+	return false;
+}

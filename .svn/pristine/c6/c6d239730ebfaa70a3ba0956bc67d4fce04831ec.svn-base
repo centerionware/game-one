@@ -1,0 +1,318 @@
+#include "player-class.h"
+#include "server-map.h"
+Player::Player(Ogre::SceneManager *scmi, std::string meshFileName, std::string playername, Ogre::Camera *cam,int _socket) :mSceneMgr(scmi), mCamera(cam), name(playername), currentmesh(meshFileName),mSceneNd(NULL) {
+	//socket = _socket;
+	ent = scmi->createEntity(meshFileName);
+	mSceneNd = scmi->getRootSceneNode()->createChildSceneNode();
+	mSceneNd->attachObject(ent);
+	mSceneNd->setScale(0.014,0.014,0.014);
+	position = Ogre::Vector3(0.0,0.5,0.0);
+	mSceneNd->setPosition(position);
+	mCharWalkAnimationState = ent->getAnimationState("Walk");
+	mSceneNd->setFixedYawAxis(true);
+	textBox = new ObjectTextDisplay(ent, cam,_socket);
+      // Ogre::Root::getSingletonPtr()->addFrameListener(textBox);
+	
+	textBox->enable(true);
+	textBox->setText("Good ninja.");
+	previous_time=0;
+	targetposition = vec3(0.0,0.5,0.0);
+	actual_target_position = vec3(0.0,0.5,0.0);
+	walking = false;
+}
+Player::Player() {
+	walking = false;
+	position = Ogre::Vector3(0.0,0.5,0.0);
+	targetposition = vec3(0.0,0.5,0.0);
+	actual_target_position = vec3(0.0,0.5,0.0);
+	mSceneNd = NULL;
+	previous_time=0;
+	textBox = NULL;
+}
+extern std::vector<Ogre::FrameListener*> Removed_Frame_Listeners;
+Player::~Player() {
+	if(textBox != NULL) {
+	//	Ogre::Root::getSingletonPtr()->removeFrameListener(textBox);
+	//	Removed_Frame_Listeners.push_back(textBox);
+	        textBox->enable(false);
+		delete textBox;
+		mSceneMgr->destroyEntity(ent);
+		//delete ent;
+		mSceneNd->removeAndDestroyAllChildren();
+		mSceneMgr->destroySceneNode(mSceneNd);
+		
+	}
+}
+#include "inet.h"
+bool another_players_target_or_current(Player *p, vec3 &_tp) {
+      auto i = Players.begin(), e = Players.end();
+      vec3 tp = _tp+ vec3(0,0.5,0);
+      for(;i!=e;++i) if( p != (Player*)((*i).get()) && (tp == (*i)->targetposition || tp == vec3((*i)->position )) ) return true;
+      return false;
+}
+void Player::pathfind_internal() {
+	    vec3 lb_pos = vec3(position)-vec3(0,.5,0);
+	    vec9x3 test(lb_pos.sym_round()), neighbor_identity; 
+	    // an empty vec9x3 will be initialized from integers [{-1,-1,-1} to {1,1,1}] in order of x,z,y
+	    // which happens to be relevant here, assume 0,0,0 is center(the current volume (C) ), -1,-1,-1 is Cx+-1, Cy+-1, Cz+-1
+	    // 1,1,1 is Cx+1, Cy+1,Cz+1, etc.
+	    test += neighbor_identity;
+	    vec3 besttest = vec3(position);
+//	    bool closer_found = false;
+	    unsigned int btest=0;
+	    unsigned int blktst=0;
+	    for(int ll=0, jj=0; ll < 9; ++ll) for(jj=0;jj<3;++jj) {
+		   if(_get3d_vecdistref(actual_target_position,test._int[ll][jj]) < _get3d_vecdistref(actual_target_position,besttest) &&
+		   NewHeightmapLoader::get_instance()->is_voxel(test._int[ll][jj]) ) { // using the newheightmaploader hides details aboot worldspace->chunkspace conversions
+//			closer_found = true;
+			vec3 lp  = (test._int[ll][jj])+vec3(0,1,0);
+			vec3 lp2 = (test._int[ll][jj])+vec3(0,2,0);
+			vec3 lp3 = (test._int[ll][jj])+vec3(0,3,0);
+			
+			if( !NewHeightmapLoader::get_instance()->is_voxel(lp) && !NewHeightmapLoader::get_instance()->is_voxel(lp2) && !NewHeightmapLoader::get_instance()->is_voxel(lp3) ){
+				++btest;
+				if(!another_players_target_or_current(this,test._int[ll][jj] ))
+					besttest = test._int[ll][jj];
+				else {
+					++blktst;
+					
+				}
+			}
+		   }
+	    }
+	    
+	    if(btest != 0 && btest == blktst) {
+	      
+	    	    for(int ll=0, jj=0; ll < 9; ++ll) for(jj=0;jj<3;++jj) {
+			if(_get3d_vecdistref(actual_target_position,test._int[ll][jj]) < _get3d_vecdistref(actual_target_position,besttest) &&
+			NewHeightmapLoader::get_instance()->is_voxel(test._int[ll][jj]) ) { // using the newheightmaploader hides details aboot worldspace->chunkspace conversions
+			      vec3 lp  = (test._int[ll][jj])+vec3(0,1,0);
+			      vec3 lp2 = (test._int[ll][jj])+vec3(0,2,0);
+			      vec3 lp3 = (test._int[ll][jj])+vec3(0,3,0);
+			      
+			      if( !NewHeightmapLoader::get_instance()->is_voxel(lp) && !NewHeightmapLoader::get_instance()->is_voxel(lp2) && !NewHeightmapLoader::get_instance()->is_voxel(lp3) )
+				   if(_get3d_vecdistref(actual_target_position,test._int[ll][jj])> 1)    besttest = test._int[ll][jj];
+				      
+			}
+		    }
+	    }
+	     if(besttest == position) {//mSceneNd->getPosition()  ) {
+	      actual_target_position = position;;
+	     } else if(besttest+vec3(0,.5,0) == position) {
+	       actual_target_position = position;
+	       besttest = besttest+vec3(0,.5,0);
+	     } else {
+		besttest = besttest+vec3(0,.5,0);
+	    } 
+	    
+            targetposition = besttest;
+	    orig_position = position;
+    
+            GMT_Clock.reset();
+            previous_time = 0;
+}
+void Player::Pathfind() {
+    if(following_player != NULL) { actual_target_position = following_player->actual_target_position; }
+   if(actual_target_position != vec3(0,0,0) && 
+      targetposition == mSceneNd->getPosition() && 
+      actual_target_position != vec3(mSceneNd->getPosition())) {
+	    position = mSceneNd->getPosition();
+	    pathfind_internal();
+            
+	   
+    } 
+   if(walking && actual_target_position == vec3(position)) {
+	mCharWalkAnimationState->setEnabled(false);
+	walking = false;
+   }
+}
+void Player::ServerPathfind() {
+  if(following_player != NULL) { actual_target_position = following_player->actual_target_position; }
+   if(actual_target_position != vec3(0,0,0) && 
+      targetposition == vec3(position)&& // mSceneNd->getPosition() && 
+      actual_target_position != vec3(position)) {
+	    pathfind_internal();
+	   
+    } 
+}
+void Player::frameRenderingQueued(const Ogre::FrameEvent &event) {
+	Pathfind();
+	if(targetposition != position) {/* CHARACTOR MOVEMENT ALL HERE. EXCEPT THE INITIAL RAYCAST WHEN RIGHT CLICKING */
+
+		float seconds_to_travel_one_square = admin == true ? 0.015 : 0.15; // Movement must be based on time, not frames, or it would be different for fast vs slow computers.
+		// The value seconds_to_travel_one_square can be offset by 'skills' in order to acheive speed bonuses etc. lower is faster.
+		vec3 target_distance = targetposition-orig_position;
+		float total_time_to_travel_to_point = target_distance.abs().total()*seconds_to_travel_one_square;
+
+		float target_time = total_time_to_travel_to_point*10E5;
+		float current_time = GMT_Clock.getMicroseconds();
+		if(current_time>=target_time) {
+			mSceneNd->setPosition(targetposition.toOgre());
+			position = targetposition.toOgre();
+			//mCharWalkAnimationState->setEnabled(false);
+		} else {
+			float time_now_end_normal = current_time/target_time;
+			float time_last_end_normal = previous_time/target_time;
+			vec3 off = target_distance*time_last_end_normal;
+			if(previous_time == 0) {
+			      off  = 0;
+			      mSceneNd->lookAt(vec3(targetposition.x,position.y,targetposition.z).toOgre(), Ogre::Node::TS_PARENT, Ogre::Vector3::NEGATIVE_UNIT_Z );
+			      if(!walking)mCharWalkAnimationState->setEnabled(true);
+			      walking = true;
+			}
+			previous_time = current_time;
+			vec3 current_target_position = (target_distance*time_now_end_normal) - off;
+			mCharWalkAnimationState->addTime(event.timeSinceLastFrame);
+
+			position += current_target_position.toOgre();
+			mSceneNd->setPosition(position);//Ogre::Vector3(current_target_position.toOgre()));
+		}
+	}
+	Pathfind();
+	textBox->update();
+}
+vec3 Player::getPositionAtFrame(unsigned int offset) {
+
+	if(targetposition != position) {/* CHARACTOR MOVEMENT ALL HERE. EXCEPT THE INITIAL RAYCAST WHEN RIGHT CLICKING */
+		float seconds_to_travel_one_square = admin == true ? 0.015 : 0.15; // Movement must be based on time, not frames, or it would be different for fast vs slow computers.
+		// The value seconds_to_travel_one_square can be offset by 'skills' in order to acheive speed bonuses etc. lower is faster.
+		vec3 target_distance = targetposition-orig_position;
+		float total_time_to_travel_to_point = target_distance.abs().total()*seconds_to_travel_one_square;
+		float target_time = total_time_to_travel_to_point*10E5;
+		float current_time = GMT_Clock.getMicroseconds();
+		if(offset <= current_time) current_time-=offset;
+		if(current_time>=target_time) {
+		//	    position = targetposition.toOgre();
+			return vec3(position);
+		} else {
+			float time_now_end_normal = current_time/target_time;
+			float time_last_end_normal = previous_time/target_time;
+			vec3 off = target_distance*time_last_end_normal;
+			if(previous_time == 0) off  = 0;
+			previous_time = current_time;
+			vec3 current_target_position = (target_distance*time_now_end_normal) - off;
+			return vec3(position) + current_target_position;
+		}
+	}
+	return vec3(position);
+}
+void Player::noAnimFrameRenderingQueued() {
+	ServerPathfind();
+	if(targetposition != position) {/* CHARACTOR MOVEMENT ALL HERE. EXCEPT THE INITIAL RAYCAST WHEN RIGHT CLICKING */
+		float seconds_to_travel_one_square = admin == true ? 0.015 : 0.15; // Movement must be based on time, not frames, or it would be different for fast vs slow computers.
+		// The value seconds_to_travel_one_square can be offset by 'skills' in order to acheive speed bonuses etc. lower is faster.
+		vec3 target_distance = targetposition-orig_position;
+		float total_time_to_travel_to_point = target_distance.abs().total()*seconds_to_travel_one_square;
+
+		float target_time = total_time_to_travel_to_point*10E5;
+		float current_time = GMT_Clock.getMicroseconds();
+		if(current_time>=target_time) {
+			position = targetposition.toOgre();
+		} else {
+			float time_now_end_normal = current_time/target_time;
+			float time_last_end_normal = previous_time/target_time;
+			vec3 off = target_distance*time_last_end_normal;
+			if(previous_time == 0) off  = 0;
+			previous_time = current_time;
+			vec3 current_target_position = (target_distance*time_now_end_normal) - off;
+			position += current_target_position.toOgre();
+		}
+	}
+	ServerPathfind();
+}
+
+void ObjectTextDisplay::update()  {
+	if (!m_enabled) return;
+	// get the projection of the object's AABB into screen space
+	const Ogre::AxisAlignedBox& bbox = m_p->getWorldBoundingBox(true);
+	Ogre::Matrix4 mat = m_c->getViewMatrix();
+	const Ogre::Vector3* corners = bbox.getAllCorners();
+	float min_x = 1.0f, max_x = 0.0f, min_y = 1.0f, max_y = 0.0f;
+	    // expand the screen-space bounding-box so that it completely encloses 
+	    // the object's AABB
+	for (int i=0; i<8; i++) {
+	    Ogre::Vector3 corner = corners[i];
+		    // multiply the AABB corner vertex by the view matrix to 
+		    // get a camera-space vertex
+	    corner = mat * corner;
+		    // make 2D relative/normalized coords from the view-space vertex
+		    // by dividing out the Z (depth) factor -- this is an approximation
+	    float x = corner.x / corner.z + 0.5;
+	    float y = corner.y / corner.z + 0.5;
+	    if (x < min_x) min_x = x;
+	    if (x > max_x) max_x = x;
+	    if (y < min_y) min_y = y;
+	    if (y > max_y) max_y = y;
+	}
+	// we now have relative screen-space coords for the object's bounding box; here
+	// we need to center the text above the BB on the top edge. The line that defines
+	// this top edge is (min_x, min_y) to (max_x, min_y)
+	m_pContainer->setPosition(1-max_x, min_y);  // Edited by alberts: This code works for me
+	m_pContainer->setDimensions(max_x - min_x, 0.1); // 0.1, just "because"
+}
+
+//Nearly all the ObjectTextDisplay code comes from the cookbook.
+//I've slightly modified the destructor to not segfault xD
+ObjectTextDisplay::ObjectTextDisplay(const Ogre::MovableObject* p, const Ogre::Camera* c, int idnum) {
+	m_p = p;
+	m_c = c;
+	m_enabled = false;
+	m_text = "";
+	std::stringstream contname;
+	std::stringstream tareaname;
+	// create an overlay that we can use for later
+	std::stringstream sname;
+	sname << "shapeName" << idnum;
+	contname << "Overheadtext" << idnum;
+	tareaname << "TextAreaName" << idnum;
+	nsname = tareaname.str();
+	m_pOverlay = Ogre::OverlayManager::getSingleton().create(sname.str().c_str());
+	m_pContainer = static_cast<Ogre::OverlayContainer*>(Ogre::OverlayManager::getSingleton().createOverlayElement(
+		  "Panel", contname.str().c_str()));
+	m_pOverlay->add2D(m_pContainer);
+	m_pText = Ogre::OverlayManager::getSingleton().createOverlayElement("TextArea", tareaname.str().c_str());
+	m_pText->setDimensions(1.0, 1.0);
+	m_pText->setMetricsMode(Ogre::GMM_PIXELS);
+	m_pText->setPosition(0, 0);
+	Ogre::FontPtr mFont = Ogre::FontManager::getSingleton().create("DejaVuSans", "General");
+	mFont->setType(Ogre::FT_TRUETYPE);
+	mFont->setSource("DejaVuSans.ttf");
+	mFont->setTrueTypeSize(16);
+	mFont->setTrueTypeResolution(96);
+	mFont->addCodePointRange(Ogre::Font::CodePointRange(33, 255));
+	m_pText->setParameter("font_name", "DejaVuSans");
+	m_pText->setParameter("char_height", "16");
+	m_pText->setParameter("horz_align", "center");
+	m_pText->setColour(Ogre::ColourValue(1.0, 1.0, 1.0));
+	m_pContainer->addChild(m_pText);
+	m_pOverlay->show();
+}
+ObjectTextDisplay::~ObjectTextDisplay() {
+	// overlay cleanup -- Ogre would clean this up at app exit but if your app 
+	// tends to create and delete these objects often it's a good idea to do it here.
+	m_pOverlay->hide();
+	Ogre::OverlayManager *overlayManager = Ogre::OverlayManager::getSingletonPtr();
+	m_pContainer->removeChild(nsname.c_str());
+	m_pOverlay->remove2D(m_pContainer);
+	overlayManager->destroyOverlayElement(m_pText);
+	overlayManager->destroyOverlayElement(m_pContainer);
+	overlayManager->destroy(m_pOverlay);
+}
+
+void ObjectTextDisplay::enable(bool enable) {
+	m_enabled = enable;
+	if (enable)
+		m_pOverlay->show();
+	else
+		m_pOverlay->hide();
+}
+
+void ObjectTextDisplay::setText(const Ogre::String& text) {
+	m_text = text;
+	m_pText->setCaption(m_text);
+}
+bool ObjectTextDisplay::frameRenderingQueued( const Ogre::FrameEvent &event) {
+	update();
+	return true;
+}
+    

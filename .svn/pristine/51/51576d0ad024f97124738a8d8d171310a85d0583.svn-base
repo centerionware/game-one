@@ -1,0 +1,56 @@
+
+void inet_player::preAuthenticate(std::vector<std::string>&in) {
+std::cout <<"Preauth"<<std::endl;
+	size_t unamesize, pwordsize;
+	memcpy(&unamesize, in[0].c_str(), sOfT);
+	memcpy(&pwordsize, in[0].substr(sOfT, sOfT).c_str(), sOfT);
+	std::cout << "Reading login preauth" << std::endl;
+	if(unamesize > 30 || pwordsize > 30) {
+		std::string update;
+		update += to_value(LoginCommand);
+		update += to_value(BadLogin);
+		send_text(update, socket);
+		deleteMe = true;
+      std::cout <<"Preauth failed, uname or pword to long! "<< in[0] << std::endl;
+		return;
+		  
+	}
+	char *n = new char[unamesize];
+	char *p = new char[pwordsize];
+	memcpy(n, in[0].substr( (sOfT*2), unamesize).c_str(), unamesize);
+	memcpy(p, in[0].substr( (sOfT*2)+unamesize, pwordsize).c_str(), pwordsize);
+	
+	std::string uname,pword;
+	uname.append(n, unamesize);
+	pword.append(p, pwordsize);
+	
+	char *nenc = new char[unamesize*2+1];
+	char *penc = new char[pwordsize*2+1];
+	unsigned long nencsize = mysql_real_escape_string(&(database_connection.getConn()),nenc, uname.c_str(), uname.size()); 
+	unsigned long pencsize = mysql_real_escape_string(&(database_connection.getConn()),penc, pword.c_str(), pword.size());
+	std::string query;
+	query.append("select id from users where name = \"");
+	query.append(nenc,nencsize);
+	query.append("\" and password=\"");
+	query.append(penc, pencsize);
+	query.append("\"");
+	database_connection.runQuery(query);
+	if(database_connection.numrows == 1) {
+		std::string update;
+		update += to_value(LoginCommand);
+		update += to_value(GoodLogin);
+		send_text(update, socket);
+		std::cout <<"Preauth success! Sent goodLogin packet!"<<std::endl;
+	} else {
+		std::string update;
+		update += to_value(LoginCommand);
+		update += to_value(BadLogin);
+		send_text(update, socket);
+		std::cout <<"PreAuth failed. Bad uname or pword." <<std::endl;//<< database_connection.error() << std::endl << "Preauth failed, bad uname or pword!("<<uname<<") ("<<pword<<")"<<query<<std::endl;
+	}
+	//deleteMe = true;
+	delete[] nenc;
+	delete[] penc;
+	delete[] n;
+	delete[] p;
+}

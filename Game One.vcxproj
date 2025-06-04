@@ -1,0 +1,235 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <Keyword>Win32Proj</Keyword>
+    <ProjectName>Game One Client</ProjectName>
+    <ProjectGuid>{299ED6F3-0DE8-401F-6B10-4CA0D2778F55}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+    <CLRSupport>false</CLRSupport>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+    <UseOfMfc>false</UseOfMfc>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <WarningLevel>Level1</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>external_includes\tinyxml;include\dotscene;$(OGRE_HOME)\include;external_includes\CEGUI;external_includes\OIS;external_includes\OGRE;D:\Downloads\boost_1_49_0;external_includes;$(OGRE_HOME)\include\OIS;$(OGRE_HOME)\include\OGRE;$(OGRE_HOME)\Samples\Common\include;$(ProjectDir)\include</AdditionalIncludeDirectories>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>$(OGRE_HOME)\lib\$(Configuration);$(OGRE_HOME)\boost\lib;C:\cygwin\home\deadc0de\CEGUI-0.7.7\lib;C:\cygwin\home\deadc0de\CEGUI-0.7.7\dependencies\lib\dynamic;C:\cygwin\home\deadc0de\tinyxml_2_6_2\tinyxml\DebugtinyxmlSTL;D:\Downloads\boost_1_49_0\stage\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>boost_thread-vc100-mt-gd-1_49.lib;CEGUIOgreRenderer_d.lib;zlib_d.lib;OgreMain_d.lib;OgrePaging_d.lib;OgreProperty_d.lib;OgreRTShaderSystem_d.lib;OgreTerrain_d.lib;OIS_d.lib;CEGUIBase_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <DelayLoadDLLs>
+      </DelayLoadDLLs>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>LIBCMTD;LIBCPMTD;</IgnoreSpecificDefaultLibraries>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy "$(OutDir)\$(TargetFileName)" "$(OGRE_HOME)\Bin\$(Configuration)"</Command>
+    </PostBuildEvent>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <WarningLevel>Level1</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>external_includes\tinyxml;include\dotscene;$(OGRE_HOME)\include;external_includes\CEGUI;external_includes\OIS;external_includes\OGRE;external_includes;$(OGRE_HOME)\include\OIS;$(OGRE_HOME)\include\OGRE;$(OGRE_HOME)\Samples\Common\include;$(ProjectDir)\include;D:\Downloads\boost_1_49_0</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>false</EnableCOMDATFolding>
+      <OptimizeReferences>false</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(OGRE_HOME)\lib\$(Configuration);$(OGRE_HOME)\boost\lib;C:\cygwin\home\deadc0de\CEGUI-0.7.7\lib;C:\cygwin\home\deadc0de\CEGUI-0.7.7\dependencies\lib\dynamic;C:\cygwin\home\deadc0de\tinyxml_2_6_2\tinyxml\Debugtinyxml;D:\Downloads\boost_1_49_0\stage\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>CEGUIOgreRenderer.lib;tinyxml.lib;zlib_d.lib;OgreMain.lib;OgrePaging.lib;OgreProperty.lib;OgreRTShaderSystem.lib;OgreTerrain.lib;OIS.lib;CEGUIBase.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <DelayLoadDLLs>
+      </DelayLoadDLLs>
+      <EntryPointSymbol>
+      </EntryPointSymbol>
+      <RandomizedBaseAddress>true</RandomizedBaseAddress>
+      <AdditionalOptions>/NODEFAULTLIB:LIBCMTD /NODEFAULTLIB:MSVCRTD %(AdditionalOptions)</AdditionalOptions>
+      <IgnoreSpecificDefaultLibraries>LIBCMT;LIBCPMT;</IgnoreSpecificDefaultLibraries>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy "$(OutDir)\$(TargetFileName)" "$(OGRE_HOME)\Bin\$(Configuration)"</Command>
+    </PostBuildEvent>
+    <ProjectReference>
+      <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="src\BaseApplication.cpp" />
+    <ClCompile Include="src\CEventManager.cpp" />
+    <ClCompile Include="src\CGameManager.cpp" />
+    <ClCompile Include="src\CGUI.cpp" />
+    <ClCompile Include="src\CHUD.cpp" />
+    <ClCompile Include="src\client-map.cpp" />
+    <ClCompile Include="src\command.cpp" />
+    <ClCompile Include="src\CState.cpp" />
+    <ClCompile Include="src\CState_Lobby.cpp" />
+    <ClCompile Include="src\CState_MainMenu.cpp" />
+    <ClCompile Include="src\CState_MainMenu_Login.cpp" />
+    <ClCompile Include="src\CState_MainMenu_Settings.cpp" />
+    <ClCompile Include="src\CState_Splash.cpp" />
+    <ClCompile Include="src\CState_Testing.cpp" />
+    <ClCompile Include="src\dotscene\dotscene.cpp" />
+    <ClCompile Include="src\Game-One.cpp" />
+    <ClCompile Include="src\generic_utilities.cpp" />
+    <ClCompile Include="src\inet-client.cpp" />
+    <ClCompile Include="src\inet-physics.cpp" />
+    <ClCompile Include="src\inet.cpp" />
+    <ClCompile Include="src\items.cpp" />
+    <ClCompile Include="src\player-class.cpp" />
+    <ClCompile Include="src\player-items.cpp" />
+    <ClCompile Include="src\player-physics.cpp" />
+    <ClCompile Include="src\server-map.cpp" />
+    <ClCompile Include="src\weapon-physics.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Xsd Include="data\gui\xml_schemas\Animation.xsd" />
+    <Xsd Include="data\gui\xml_schemas\CEGUIConfig.xsd" />
+    <Xsd Include="data\gui\xml_schemas\Font.xsd" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\BaseApplication.h" />
+    <ClInclude Include="include\CEventManager.h" />
+    <ClInclude Include="include\CGameManager.h" />
+    <ClInclude Include="include\CGUI.h" />
+    <ClInclude Include="include\chat_message.hpp" />
+    <ClInclude Include="include\CHUD.h" />
+    <ClInclude Include="include\command.h" />
+    <ClInclude Include="include\CState.h" />
+    <ClInclude Include="include\CState_Lobby.h" />
+    <ClInclude Include="include\CState_MainMenu.h" />
+    <ClInclude Include="include\CState_MainMenu_Login.h" />
+    <ClInclude Include="include\CState_MainMenu_Settings.h" />
+    <ClInclude Include="include\CState_Splash.h" />
+    <ClInclude Include="include\CState_Testing.h" />
+    <ClInclude Include="include\database_utilities.h" />
+    <ClInclude Include="include\dotscene\dotscene.h" />
+    <ClInclude Include="include\functors.h" />
+    <ClInclude Include="include\Game-One.h" />
+    <ClInclude Include="include\GameOneTest.h" />
+    <ClInclude Include="include\generic_utilities.h" />
+    <ClInclude Include="include\inet.h" />
+    <ClInclude Include="include\items.h" />
+    <ClInclude Include="include\map_sorters.hpp" />
+    <ClInclude Include="include\physics.h" />
+    <ClInclude Include="include\player-class.h" />
+    <ClInclude Include="include\player-items.h" />
+    <ClInclude Include="include\server-map.h" />
+    <ClInclude Include="include\tga_loader.h" />
+    <ClInclude Include="include\tools.h" />
+    <ClInclude Include="src\CState_Testing_Borrowed_Editstring.hpp" />
+    <ClInclude Include="src\CState_Testing_createGui.hpp" />
+    <ClInclude Include="src\CState_Testing_createViewportSceneCamera.hpp" />
+    <ClInclude Include="src\CState_Testing_Enter.hpp" />
+    <ClInclude Include="src\CState_Testing_EventCallbacks.hpp" />
+    <ClInclude Include="src\CState_Testing_EverythingMouse.hpp" />
+    <ClInclude Include="src\CState_Testing_Exit.hpp" />
+    <ClInclude Include="src\CState_Testing_FrameRendering.hpp" />
+    <ClInclude Include="src\CState_Testing_Globals.hpp" />
+    <ClInclude Include="src\CState_Testing_KeyboardMappings.hpp" />
+    <ClInclude Include="src\CState_Testing_keyPressed.hpp" />
+    <ClInclude Include="src\inet-client_addPlayer.hpp" />
+    <ClInclude Include="src\inet-client_asoi_threaded_chatclient.hpp" />
+    <ClInclude Include="src\inet-client_changeHeadText.hpp" />
+    <ClInclude Include="src\inet-client_changePosition.hpp" />
+    <ClInclude Include="src\inet-client_chunk_cacher.hpp" />
+    <ClInclude Include="src\inet-client_create_commands.hpp" />
+    <ClInclude Include="src\inet-client_followPlayer.hpp" />
+    <ClInclude Include="src\inet-client_getName.hpp" />
+    <ClInclude Include="src\inet-client_globals.hpp" />
+    <ClInclude Include="src\inet-client_inet_core.hpp" />
+    <ClInclude Include="src\inet-client_initChunkNet.hpp" />
+    <ClInclude Include="src\inet-client_network_callbacks.hpp" />
+    <ClInclude Include="src\inet-client_PTeleport.hpp" />
+    <ClInclude Include="src\inet-client_remPlayer.hpp" />
+    <ClInclude Include="src\inet_protocol.hpp" />
+    <ClInclude Include="src\server_map_building_gen.hpp" />
+    <ClInclude Include="src\server_map_chunk.hpp" />
+    <ClInclude Include="src\server_map_chunk_serialization.hpp" />
+    <ClInclude Include="src\server_map_circlescraper_gen.hpp" />
+    <ClInclude Include="src\server_map_depricated.hpp" />
+    <ClInclude Include="src\server_map_editor.hpp" />
+    <ClInclude Include="src\server_map_editor2pnt.hpp" />
+    <ClInclude Include="src\server_map_fileloading_extras.hpp" />
+    <ClInclude Include="src\server_map_globals.hpp" />
+    <ClInclude Include="src\server_map_multipoint.hpp" />
+    <ClInclude Include="src\server_map_netchunkupdate.hpp" />
+    <ClInclude Include="src\server_map_ogreobject.hpp" />
+    <ClInclude Include="src\server_map_playermovement.hpp" />
+    <ClInclude Include="src\server_map_vertex_gen.hpp" />
+    <ClInclude Include="src\server_map_voxel_drawer.hpp" />
+    <ClInclude Include="src\tinyxmlfix.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="external_includes\tinyxml\tinyxml_lib.vcxproj">
+      <Project>{c406daec-0886-4771-8dea-9d7329b46cc1}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

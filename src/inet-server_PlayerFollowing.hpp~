@@ -1,0 +1,5 @@
+void remove_following(unsigned int socket) {
+auto i = Players.begin(), e = Players.end();
+for(;i!=e;++i) if( (*i)->following_player!= NULL &&(*i)->following_player->socket == socket) (*i)->following_player = NULL;
+
+}

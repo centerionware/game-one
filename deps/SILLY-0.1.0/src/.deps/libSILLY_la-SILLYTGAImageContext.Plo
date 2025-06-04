@@ -1,0 +1,96 @@
+libSILLY_la-SILLYTGAImageContext.lo: loaders/SILLYTGAImageContext.cpp \
+ ../config.h ../include/loaders/SILLYTGAImageContext.h \
+ ../include/SILLYBase.h /usr/include/c++/4.4/cassert \
+ /usr/include/assert.h /usr/include/features.h \
+ /usr/include/bits/predefs.h /usr/include/sys/cdefs.h \
+ /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
+ /usr/include/gnu/stubs-32.h /usr/include/c++/4.4/cstddef \
+ /usr/include/c++/4.4/i486-linux-gnu/bits/c++config.h \
+ /usr/include/c++/4.4/i486-linux-gnu/bits/os_defines.h \
+ /usr/include/c++/4.4/i486-linux-gnu/bits/cpu_defines.h \
+ /usr/lib/gcc/i486-linux-gnu/4.4.3/include/stddef.h \
+ ../include/SILLYOptions.h ../include/SILLYImageContext.h \
+ ../include/SILLYBase.h ../include/SILLYImageContext.icpp \
+ ../include/loaders/SILLYTGAImageContext.icpp \
+ /usr/include/c++/4.4/cstring /usr/include/string.h \
+ /usr/include/xlocale.h /usr/include/bits/string3.h \
+ /usr/include/c++/4.4/cstdio /usr/include/stdio.h \
+ /usr/include/bits/types.h /usr/include/bits/typesizes.h \
+ /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
+ /usr/lib/gcc/i486-linux-gnu/4.4.3/include/stdarg.h \
+ /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
+ /usr/include/bits/stdio.h /usr/include/bits/stdio2.h
+
+../config.h:
+
+../include/loaders/SILLYTGAImageContext.h:
+
+../include/SILLYBase.h:
+
+/usr/include/c++/4.4/cassert:
+
+/usr/include/assert.h:
+
+/usr/include/features.h:
+
+/usr/include/bits/predefs.h:
+
+/usr/include/sys/cdefs.h:
+
+/usr/include/bits/wordsize.h:
+
+/usr/include/gnu/stubs.h:
+
+/usr/include/gnu/stubs-32.h:
+
+/usr/include/c++/4.4/cstddef:
+
+/usr/include/c++/4.4/i486-linux-gnu/bits/c++config.h:
+
+/usr/include/c++/4.4/i486-linux-gnu/bits/os_defines.h:
+
+/usr/include/c++/4.4/i486-linux-gnu/bits/cpu_defines.h:
+
+/usr/lib/gcc/i486-linux-gnu/4.4.3/include/stddef.h:
+
+../include/SILLYOptions.h:
+
+../include/SILLYImageContext.h:
+
+../include/SILLYBase.h:
+
+../include/SILLYImageContext.icpp:
+
+../include/loaders/SILLYTGAImageContext.icpp:
+
+/usr/include/c++/4.4/cstring:
+
+/usr/include/string.h:
+
+/usr/include/xlocale.h:
+
+/usr/include/bits/string3.h:
+
+/usr/include/c++/4.4/cstdio:
+
+/usr/include/stdio.h:
+
+/usr/include/bits/types.h:
+
+/usr/include/bits/typesizes.h:
+
+/usr/include/libio.h:
+
+/usr/include/_G_config.h:
+
+/usr/include/wchar.h:
+
+/usr/lib/gcc/i486-linux-gnu/4.4.3/include/stdarg.h:
+
+/usr/include/bits/stdio_lim.h:
+
+/usr/include/bits/sys_errlist.h:
+
+/usr/include/bits/stdio.h:
+
+/usr/include/bits/stdio2.h:

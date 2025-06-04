@@ -1,0 +1,34 @@
+#!/bin/sh
+RCDLINKS="2,S41 3,S41 6,K41"
+
+#       Commands are:
+#
+#          gameones start                        Starts the gameoneserver
+#
+#### BEGIN INIT INFO
+# Provides:       gameoneserver
+# Required-Start: $network
+# Required-Stop:
+# Default-Start:  2 3 5
+# Default-Stop:   0 1 6
+# Description:    starts gameoneserver
+### END INIT INFO
+# chkconfig: 2345 25 90
+# description: gameoneserver
+#
+usage() {
+    echo "Usage: $0 start"
+    exit 1
+}
+command="$1"
+case "$command" in
+    start)
+	exec sudo -u gameoneserver sh -c "gameoneserver_keep_alive &" 
+	;;
+    stop|restart|status)
+	echo "No status message, no stopping or restarting, do it manually!"
+	;;
+    *)
+	usage
+	;;
+esac

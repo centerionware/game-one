@@ -1,0 +1,47 @@
+class net_module;
+std::vector<net_module *> net_init_list;
+
+struct net_module {
+	boost::shared_ptr<inet_player> mPlayer;
+	CEGUI::Window *Window;
+	CEGUI::WindowManager *WinMan;
+//	boost::shared_ptr<inet_player>* ptrmPlayer;
+	
+	net_module() :mPlayer() { add_to_net_init_list(); }
+	~net_module() { remove_from_net_init_list(); }
+	void internal_init() {
+		mPlayer = CGameManager::ReturnSingleton().current_state->mPlayer;
+		Window = CGameManager::ReturnSingleton().current_state->Window;
+		WinMan = CGameManager::ReturnSingleton().current_state->WinMan;
+		initialize();
+	}
+	virtual void initialize()=0;
+	virtual void deinitialize() { mPlayer.reset();}
+
+	virtual void internal_deinit() {
+		Window = NULL;
+		WinMan = NULL;
+		deinitialize();
+		//mPlayer.reset();
+	}
+	void add_to_net_init_list() {
+		net_init_list.push_back(this);
+	}
+	void remove_from_net_init_list() {
+		for(auto i = net_init_list.begin(), e = net_init_list.end(); i!=e;++i) 
+			if((*i)==this) { net_init_list.erase(i); break; }
+	}
+	
+};
+void initialize_net_modules() { 	
+		for(auto i = net_init_list.begin(), e = net_init_list.end(); i!=e;++i) 
+			(*i)->internal_init();
+}
+void clean_net_modules() {
+		for(auto i = net_init_list.begin(), e = net_init_list.end(); i!=e;++i) 
+			(*i)->internal_deinit();
+}
+#include "PlayerEditor/ClientCallbacks.hpp"
+#include "ItemEditor/ClientCallbacks.hpp"
+#include "modeluploader/ClientCallbacks.hpp"
+

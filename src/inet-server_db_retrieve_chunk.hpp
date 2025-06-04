@@ -1,0 +1,78 @@
+basic_chunk_update& inet_player::db_retrieve_chunk(unsigned int chunkid, unsigned int timestamp) {
+ // heightmap_globals::mut_c.lock();
+	static basic_chunk_update up_chuk;
+	up_chuk = basic_chunk_update();
+	std::stringstream querya, queryb, queryc;
+	querya << "select X,Y,Z from Chunks where id = \"" << chunkid << "\"";
+	// get results
+	database_connection.query(querya.str());
+	if(database_connection.numrows < 0) {
+		return up_chuk;
+	}
+	
+	MYSQL_ROW& mrow = database_connection.row();
+	unsigned long *lengths = mysql_fetch_lengths(database_connection.result());
+	float x = fromstring<float>(mrow[0],lengths[0]);
+	float y = fromstring<float>(mrow[1],lengths[1]);
+	float z = fromstring<float>(mrow[2],lengths[2]);
+	size_t result_rows;
+	queryb << "select voxid, matid, UNIX_TIMESTAMP(lastupdate) from Chunk_Voxels where chunk_id = \""<< chunkid <<"\" and unix_timestamp(lastupdate) > \"" << timestamp << "\"";
+	database_connection.query(queryb.str());
+
+	result_rows = database_connection.numrows;
+	std::cout << "Query b: " << queryb.str() << std::endl;
+	std::cout << "Result rows: " << result_rows << std::endl;
+	up_chuk.chunk.id = chunkid;
+	up_chuk.chunk.x = x;
+	up_chuk.chunk.y = y;
+	up_chuk.chunk.z = z;
+      
+	up_chuk.timestamp = 0;
+	for(size_t i = 0; i < result_rows; i++) {
+		MYSQL_ROW& lmrow = database_connection.row();
+		lengths = mysql_fetch_lengths(database_connection.result());
+		if(fromstring<size_t>(lmrow[2],lengths[2]) > up_chuk.timestamp) up_chuk.timestamp = fromstring<size_t>(lmrow[2],lengths[2]);
+		up_chuk.chunk.voxels.push_back(fromstring<unsigned short>(lmrow[0],lengths[0]));
+		up_chuk.chunk.matids.push_back(fromstring<unsigned short>(lmrow[1],lengths[1]));
+	}
+	queryc << "select  voxid, unix_timestamp(lastupdate) from RemovedVoxels where chunk_id = \""<< chunkid <<"\" and unix_timestamp(lastupdate) > \"" << timestamp << "\"";
+	database_connection.query(queryc.str());
+	if(database_connection.numrows > 0) {
+		result_rows =database_connection.numrows; 
+		for(size_t i = 0; i < result_rows; i++) {
+			MYSQL_ROW& lmrow = database_connection.row();
+			lengths = mysql_fetch_lengths(database_connection.result());
+			if(fromstring<size_t>(lmrow[1],lengths[1]) > up_chuk.timestamp) up_chuk.timestamp = fromstring<size_t>(lmrow[1],lengths[1]);
+			up_chuk.removed_voxels.push_back(fromstring<unsigned short>(lmrow[0],lengths[0]));
+		}
+	}
+	std::cout << "Retrieved " << up_chuk.chunk.voxels.size() << " voxels on chunk id " << up_chuk.chunk.id << " with the most recent update timestamp as "<< up_chuk.timestamp << std::endl;
+    // heightmap_globals::mut_c.unlock();
+	{
+
+		queryc.str("");
+		queryc << "select count(voxid) from Chunk_Voxels where chunk_id = \"" << chunkid<<"\"";
+		database_connection.query(queryc.str());
+		if(database_connection.numrows >0 ) {
+			MYSQL_ROW& lmrow = database_connection.row();
+			lengths = mysql_fetch_lengths(database_connection.result());
+			if(fromstring<size_t>(lmrow[0], lengths[0]) == 0) {
+			//Emergency building gen for empty chunks!!!
+				vec3 ccenterpos;
+				{
+				  ccenterpos = vec3(up_chuk.chunk.x,up_chuk.chunk.y,up_chuk.chunk.z);
+				  ccenterpos.y = ccenterpos.y-30;
+				}
+				std::string throwaway_addpnt = NewHeightmapLoader::get_instance()->editor_addpnt(ccenterpos);
+				if(throwaway_addpnt.size() != 0) {
+				      if(ccenterpos.y==-30) {
+					std::string tchunk = NewHeightmapLoader::get_instance()->editor_building_gen1();
+					clientChunkPush_internal(tchunk, true); 
+				      }
+				} else { std::cout << "Last inserted was null, can't push.\n";}
+			}
+		}
+		
+	}
+	return up_chuk;
+}

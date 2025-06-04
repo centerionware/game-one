@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<GUILayout >
+    <Window Type="DefaultWindow" Name="CreateGame" >
+        <Property Name="UnifiedAreaRect" Value="{{0,0},{0,0},{1,0},{1,0}}" />
+        <Window Type="TaharezLook/FrameWindow" Name="CreateGame/" >
+            <Property Name="TitlebarFont" Value="DejaVuSans-10" />
+            <Property Name="TitlebarEnabled" Value="True" />
+            <Property Name="UnifiedAreaRect" Value="{{0,0},{0,0},{1,0},{1,0}}" />
+            <Window Type="TaharezLook/Checkbox" Name="public_game" >
+                <Property Name="Text" Value="Public Game" />
+                <Property Name="UnifiedAreaRect" Value="{{0.001,0},{0.001,0},{0.25,0},{0.03,0}}" />
+            </Window>
+            <Window Type="TaharezLook/Editbox" Name="game_password" >
+                <Property Name="Tooltip" Value="If no password is used players can join the game by knowing the game name" />
+                <Property Name="MaxTextLength" Value="1073741823" />
+                <Property Name="UnifiedAreaRect" Value="{{0.18,0},{0.14,0},{0.55,0},{0.22,0}}" />
+                <Property Name="TextParsingEnabled" Value="False" />
+            </Window>
+            <Window Type="TaharezLook/Editbox" Name="game_name" >
+                <Property Name="MaxTextLength" Value="1073741823" />
+                <Property Name="UnifiedAreaRect" Value="{{0.18,0},{0.04,0},{0.55,0},{0.12,0}}" />
+                <Property Name="TextParsingEnabled" Value="False" />
+            </Window>
+            <Window Type="TaharezLook/StaticText" Name="gamelbl" >
+                <Property Name="Text" Value="Game Name:" />
+                <Property Name="UnifiedAreaRect" Value="{{0.0001,0},{0.04,0},{0.17,0},{0.118513,0}}" />
+            </Window>
+            <Window Type="TaharezLook/StaticText" Name="passwordlbl" >
+                <Property Name="Text" Value="Game Password:" />
+                <Property Name="UnifiedAreaRect" Value="{{0.0001,0},{0.14,0},{0.17,0},{0.22,0}}" />
+            </Window>
+            <Window Type="TaharezLook/Combobox" Name="game_type" >
+                <Property Name="Text" Value="Select Game Type" />
+                <Property Name="UnifiedAreaRect" Value="{{0.001,0},{0.23,0},{0.55,0},{0.27,0}}" />
+                <Property Name="MaxEditTextLength" Value="1073741823" />
+                <Property Name="ForceVertScrollbar" Value="True" />
+            </Window>
+            <Window Type="TaharezLook/Combobox" Name="game_difficulty" >
+                <Property Name="Text" Value="Select Game Difficulty" />
+                <Property Name="UnifiedAreaRect" Value="{{0.001,0},{0.28,0},{0.55,0},{0.32,0}}" />
+                <Property Name="MaxEditTextLength" Value="1073741823" />
+                <Property Name="ForceVertScrollbar" Value="True" />
+            </Window>
+            <Window Type="TaharezLook/Button" Name="create_game" >
+                <Property Name="Text" Value="Create Game" />
+                <Property Name="UnifiedAreaRect" Value="{{0.555,0},{0.04,0},{0.98,0},{0.32,0}}" />
+            </Window>
+        </Window>
+    </Window>
+</GUILayout>

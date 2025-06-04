@@ -1,0 +1,50 @@
+Naming
+---
+Classes: EachWordCapitalised
+Methods: humpCapitalisation
+Members: humpCapitalisation_ ?
+Constants: FULL_MASYUSCULE_WITH_UNDERSCORED_SPACES!
+
+
+Indentation
+---
+4 space tabulation.
+
+
+Line Length
+---
+??
+
+
+Constructs
+---
+if (condition) 
+{
+}
+else 
+{
+}
+
+for (init; condition; step) 
+{
+}
+
+while (condition) 
+{
+}
+
+
+Functions
+---
+??
+
+
+Classes
+---
+class OgreEngine 
+{
+public:
+private:
+};
+
+

@@ -1,0 +1,51 @@
+void inet_player::getChunk(std::vector<std::string>&i) {
+  /*
+  struct basic_chunk_update {
+      struct basic_chunk {
+	size_t id;
+	float x,y,z;
+	std::vector<unsigned short> voxels;
+	std::vector<char> matids;
+      } chunk;
+  std::vector<unsigned short> removed_voxels;
+  size_t timestamp;
+};
+  */
+  /*
+    Security&|Performance Warning!!! Requesting chunks could create a DDOS type situation with this method.
+    server might track the timestamps for the clients at the cost of non critical bugs later on 
+    but this is easier.
+    
+    
+  */
+    //void setup  ccc.setup();
+   std::cout << "Client requested chunk\n"; 
+      unsigned int chunkid,timestamp;
+    
+   //   float x,y,z;
+  //    size_t timestamp;
+      std::string oarg = i[0];
+      i.pop_back();
+      //char carr[sizeof(GOREAL)];
+      memcpy(&chunkid, i[0].substr(0,sizeof(unsigned int)).c_str(),sizeof(unsigned int));
+      memcpy(&timestamp, i[0].substr(sizeof(unsigned int),sizeof(unsigned int)).c_str(),sizeof(unsigned int));
+//      static chunk_quick_cache ccd;
+	if(!chunk_quick_cache::ptr->exists(chunkid)) {
+		std::cout << "quick ignore..";
+		 return; // quick ignore.
+	}
+	basic_chunk_update& up_chuk = db_retrieve_chunk(chunkid,timestamp);
+    		//if(socket == other_player_socket) return;
+	std::string update;
+	update += to_value(NetCommand);
+	update += to_value(PushChunk);
+	{std::string tmp = up_chuk.serialize();
+	update.append(gzip_compress_string(tmp));
+	}
+	send_text(update, socket);
+
+     std::cout << "Sending chunk update\n"; 
+     // MYSQL_ROW& mrow = database_connection.row();
+      
+      
+}

@@ -1,0 +1,12 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+plugindir=${exec_prefix}/lib/SILLY
+
+Name: SILLY
+Description: Simple Image Loading LibrarY for games and multi-media development.
+Version: 0.1.0
+Libs: -L${libdir} -lSILLY 
+Cflags: -DUSE_SILLYOPTIONS_H -I${includedir}/SILLY
+

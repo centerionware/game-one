@@ -1,0 +1,3 @@
+CState.o: CState.cpp tinyxmlfix.h
+
+tinyxmlfix.h:

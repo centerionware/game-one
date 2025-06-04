@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<GUILayout Version="4" >
+    <Window Type="TaharezLook/FrameWindow" Name="EnterRadiusFrameWindow" >
+      <Property Name="UnifiedAreaRect" Value="{{0,0},{0,0},{1,0},{1,0}}" />
+        <Property Name="Text" Value="Enter a radius to continue" />
+        
+        <Window Type="TaharezLook/Editbox" Name="Radius" >
+            <Property Name="UnifiedAreaRect" Value="{{.05,0},{.05,0},{.8,0},{95,0}}" />
+        </Window>
+        <Window Type="TaharezLook/Button" Name="RadiusEnterButton" >
+            <Property Name="UnifiedAreaRect" Value="{{.805,0},{.05,0},{.95,0},{.95,0}}" />
+            <Property Name="Text" Value="Okay" />
+        </Window>
+    </Window>
+</GUILayout>

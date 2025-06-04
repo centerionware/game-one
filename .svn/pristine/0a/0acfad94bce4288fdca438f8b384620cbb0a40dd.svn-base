@@ -1,0 +1,89 @@
+#version 150
+
+float ATLAS_WIDTH = 1024.0;
+float TEXTURE_WIDTH = 128.0;
+float RATIO =  TEXTURE_WIDTH / ATLAS_WIDTH;
+float TEXTURES_PER_ROW = 8.0;
+float NUM_TEXTURES_IN_ATLAS = 36;
+
+uniform mat4x4 worldMatrix;
+uniform mat4x4 viewProj;
+uniform mat4x4 viewMatrix;
+uniform mat4x4 projMatrix;
+uniform vec4 isGlass;
+
+in vec4 vertex;
+in vec4 colour;
+in vec3 uv0;
+
+struct IOStruct {
+ vec4 textureAtlasOffset;
+ vec3 worldPosition;
+ float glass;
+ float water;
+ float lava;
+ float stained_glass;
+ vec4 vertex;
+ vec4 color;
+ bool inView;
+ bool isGrass;
+ bool isWater;
+ vec3 rendering_stuff;
+};
+out IOStruct vsOutput;
+#define GOREAL float
+#define CVEC3(x,y,z) vec4(x, y, z,0)
+const vec4 cubeVerts[8] = vec4[](
+	CVEC3(-0.5, -0.5, 0.5), CVEC3(-0.5,0.5,0.5), CVEC3(-0.5,-0.5,-0.5), CVEC3(-0.5,0.5,-0.5),
+	CVEC3(0.5, -0.5, 0.5), CVEC3(0.5,0.5,0.5), CVEC3(0.5,-0.5,-0.5), CVEC3(0.5,0.5,-0.5)
+);
+
+void main()
+{
+	vsOutput.glass = (colour.y == 1) ? 1.0 : 0.0;
+	if(vsOutput.glass != isGlass.x) {
+	  vsOutput.inView = false;
+	  return;
+    } 
+
+	bool in_view = false;
+
+	for(int i = 0; i < 8 && !in_view; ++i) {
+		vec4 gposm = viewProj * (vertex+cubeVerts[i]);
+		vec3 gpos = vec3(gposm.xyz)/gposm.w;
+		if(gpos.x <=1 && gpos.x >= -1 && gpos.y <=1 && gpos.y >= -1 && gpos.z <=1 && gpos.z >= -1) {
+			in_view = true;
+		}
+	}
+	if(!in_view) {
+		vsOutput.inView = false;
+		return;
+	}
+
+    int idx;
+    int blocky;
+    int blockx;
+    idx =  int(colour.r * 256);
+    
+    blocky = int(floor((float(idx))/TEXTURES_PER_ROW));
+    blockx = int(floor((float(idx)) - float(blocky)*TEXTURES_PER_ROW));
+
+    vsOutput.water = (blockx == 7 && blocky == 0) ? 1.0 : 0.0;
+    vsOutput.stained_glass = (blockx == 1 && blocky == 3) ? 1.0 : 0.0;
+	vsOutput.lava = (blockx == 7 && blocky == 2) ? 1.0 : 0.0;
+	vsOutput.isGrass = (blockx == 3 && blocky==0) ? true:false;
+	vsOutput.isWater = ( (blockx ==7 && blocky ==0) || (blockx == 7&& blocky ==1)) ? true : false;
+	
+   	vsOutput.inView = true;
+    vec4 tmp = vertex + vec4(0.5,0.5,0.5,0.5);
+    vsOutput.worldPosition = tmp.xyz;
+    vsOutput.textureAtlasOffset = vec4(blockx , blocky, 0.0, 0.0);
+	vsOutput.vertex=vertex;
+	vsOutput.color=colour;
+
+	vsOutput.rendering_stuff = uv0;
+    return;
+    blocky = int(floor((float(idx))/TEXTURES_PER_ROW));
+    blockx = int(floor((float(idx)) - float(blocky)*TEXTURES_PER_ROW));
+	
+} 

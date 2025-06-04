@@ -1,0 +1,56 @@
+float i = 0.01;
+float j = 1.00;
+bool switch_1 = false;
+bool switch_2 = false;
+bool ismiddlemouse = false;
+enum EditMode { Add, Modify, Remove, Select_Point_One, Select_Point_Two, Add_between, Modify_between, Remove_between,Building_Gen_One,Stair_Down_Gen,ClipboardCopy };
+namespace modmap {
+	std::map<EditMode, const char *> tex_mod;
+	// This is just to make it infinitally easier to make the tab key switch between the growing set of edit states...
+	// Maybe this could all be mapped to an image the way textures are, press tab, click mode...
+	struct erpderp {
+	  erpderp() {
+	      tex_mod[Modify] = "Modify";
+	      tex_mod[Remove] = "Remove";
+	      tex_mod[Building_Gen_One] = "Building Gen One";
+	      tex_mod[Stair_Down_Gen] = "Build stairs down";
+	      tex_mod[Select_Point_One] = "Select Point One";
+	      tex_mod[Select_Point_Two] = "Select Point Two";
+	      tex_mod[Add_between] = "Add Between";
+	      tex_mod[Modify_between] = "Modify Between";
+	      tex_mod[Remove_between] = "Remove Between";
+	      tex_mod[Add] = "Add";
+		  tex_mod[ClipboardCopy] = "ClipboardCopy(Windows Only)";
+	      srand(time(NULL));
+	  }
+	};
+	volatile erpderp init_texmod;
+};
+EditMode current_editmode = Add;
+
+std::vector<Ogre::FrameListener*> Removed_Frame_Listeners;
+
+
+bool isrightmouse = false;
+bool isleftmouse = false;
+bool isChatOn = false;
+void head(const char *i) {
+    std::cout << i;
+}
+
+template<class T>
+void examine(T num) {
+    std::cout << "("<<num<<") ";
+}
+
+void nwl() {
+    std::cout << std::endl;
+}
+bool instant_rightmouse_movement_initiate = false;
+
+std::vector<Ogre::FrameListener*> pending_delete_frame_listeners;
+
+EditString headTextEditString;
+
+bool shift_key_down = false;
+extern void add_chatwindow_text(std::string &ptext);

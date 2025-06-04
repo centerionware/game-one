@@ -1,0 +1,231 @@
+#include <mysql/mysql.h>
+#include <string>
+#include <boost/regex.hpp>
+#include <sstream>
+using std::string;
+extern std::string to_string(const std::string &o);// { return o; }
+class MySQL_Helper {
+	bool inited;
+	public:
+	MYSQL *connection;
+	MYSQL mysql;
+	MYSQL_ROW trow;
+	MYSQL_RES *tresult;
+	
+	std::string _host, _user, _password, _database;
+	int numrows;
+	int m_errno;
+	int insertid;
+	MySQL_Helper() {
+		connection = 0x0;
+		inited = false;
+		tresult = 0x0;
+	}
+	
+	struct Query {
+	  
+	    MySQL_Helper *h;
+	    std::ostringstream restqry;
+	    std::ostringstream builtqry;
+	    MYSQL_ROW trow;
+	    MYSQL_RES *tresult;
+	    std::string error;
+	    int numrows,insertid;
+	    int m_errno;
+	    Query(MySQL_Helper &_h) : h(&_h) {tresult=0x0;} 
+	    ~Query() {
+		if(tresult != 0x0) mysql_free_result(tresult);
+	    }
+	    bool _intset() { builtqry << restqry.str(); return true; }
+	    template< typename T, typename... Args>
+	    bool _intset( const T&t, const Args&... args )
+	    {
+	        // find first ? skilling \?'s 
+	        
+	        unsigned int at = 0; bool fnd = false;
+			std::string ltmp = restqry.str();
+			for(;at<ltmp.size();++at) 
+			 if( ltmp[at] == '?') {
+				if(at>1) { 
+				  if(ltmp[at-1] != '\\') {
+				fnd=true;
+				break;
+				  }
+				} else { fnd=true; break;} 
+			 }
+			if(!fnd) {
+			   std::cout << "restqry: " << restqry.str() << std::endl << "To many args, not enough ?'s!" << std::endl;
+			   return false;
+			}
+		
+			std::string firsthalf = ltmp.substr(0,at);
+			std::string secondhalf = ltmp.substr(at+1, (ltmp.size())-(at+1));
+			std::string orig_data = tostring(t);
+			char *all = new char[(orig_data.size()*2)+1];
+			auto size = mysql_real_escape_string(&(h->mysql),all,orig_data.c_str(),orig_data.size());
+			std::string oqry;
+			oqry.append(all, size);
+			delete[] all;
+			builtqry << firsthalf;
+			builtqry << oqry;
+			restqry.str(secondhalf);
+		
+			return _intset(args...);
+	    }
+	    template< typename T, typename... Args>
+	    bool prepare( const T& t, const Args&... args )
+	    {
+			builtqry.str("");
+			restqry.str(t);
+		
+			return _intset( args... );
+	    }
+	    void run() {
+			altQuery(builtqry.str());
+
+	    }
+	    MYSQL_RES *result() { 
+			if(tresult)
+				return tresult;
+			else
+				return mysql_store_result(h->connection); 
+	    }
+	    MYSQL_ROW& row(MYSQL_RES *result) { return trow = mysql_fetch_row(result); }
+	    MYSQL_ROW& row() { return trow = mysql_fetch_row(tresult); }
+	    unsigned long *lengths() { return mysql_fetch_lengths(tresult); }
+	    
+	    int altQuery(string query) { // This is the exact same as mysql_helper::runQuery except that it stores results on the stmt
+		    int state = -1;
+		    try {	
+			    state = mysql_query(h->connection, query.c_str());
+			    if(state != 0) { 
+    //					printf(mysql_error(connection));
+				    m_errno = mysql_errno(h->connection);
+				    if(m_errno == 2006) {
+					    h->setup(h->_host,h->_user,h->_password,h->_database);
+					    return altQuery(query);
+				    } else {
+    #if !(defined DISABLE_DEBUG)
+					    std::cout << "MySQL Error: " << m_errno << " " << mysql_error(h->connection) << std::endl;
+					    std::cout << "Query was: " << query << std::endl;
+    #endif
+				    }
+			    } else {
+			      if(tresult != 0x0) {
+					mysql_free_result(tresult);
+					tresult = 0x0;
+				} 
+				    tresult = result();
+				    insertid = 0;
+				    if(tresult) {
+					    numrows = mysql_num_rows(tresult);
+					    if( mysql_field_count(h->connection) == 0 && mysql_insert_id(h->connection) != 0)
+					    {
+						    insertid = mysql_insert_id(h->connection);
+					    }
+				    }
+				    return state;
+			    }
+			    
+		    } catch(...) {
+			    return -1;
+		    }
+		    return state;//mysql_query(connection, query.c_str()); 	
+	    }
+
+	    
+	};
+	MYSQL& getConn() { return mysql; }
+	MySQL_Helper(string host, string user, string password, string database) {
+		connection = 0x0;
+		inited = false;
+		tresult = 0x0;
+		setup(host,user,password,database);
+	}
+	
+	void setup(string host, string user, string password, string database)
+	{
+	  _host = host;
+	  _user = user;
+	  _password = password;
+	  _database = database;
+		if(!inited) { 
+			inited = true;
+			mysql_init(&mysql);
+		} else destroy();
+		connection = mysql_real_connect(&mysql, host.c_str(), user.c_str(), password.c_str(), database.c_str(), 0, NULL, 0);
+		tresult = 0x0;
+		
+	}
+	
+	~MySQL_Helper() { // Make sure the results are free'd after use!!!!!!!!!!!!!!!
+		destroy();
+	}
+	void destroy() {
+		if(connection != 0x0) {
+			if(tresult != 0x0) {
+				mysql_free_result(tresult);
+			}
+			mysql_close(connection);
+		}
+	}
+	inline int query(string query) { 
+	  return runQuery(query);
+	}
+	int runQuery(string &query) {
+		int state = -1;
+		try {	
+			state = mysql_query(connection, query.c_str());
+			if(state != 0) { 
+//					printf(mysql_error(connection));
+				m_errno = mysql_errno(connection);
+				if(m_errno == 2006) {
+					setup(_host,_user,_password,_database);
+					return runQuery(query);
+				} else {
+#if !(defined DISABLE_DEBUG)
+					std::cout << "MySQL Error: " << m_errno << " " << mysql_error(connection) << std::endl;
+					std::cout << "Query was: " << query << std::endl;
+#endif
+				}
+			} else {
+			  
+				
+				if(tresult != 0x0) {
+					mysql_free_result(tresult);
+					tresult = 0x0;
+				} 
+				tresult = result();
+				insertid = 0;
+				if(tresult) {
+					numrows = mysql_num_rows(tresult);
+					if( mysql_field_count(connection) == 0 && mysql_insert_id(connection) != 0)
+					{
+						insertid = mysql_insert_id(connection);
+					}
+				}
+				return state;
+			}
+			
+		} catch(...) {
+			return -1;
+		}
+		return state;//mysql_query(connection, query.c_str()); 	
+	}
+
+
+	
+	string error() {
+		return mysql_error(connection);
+	}
+	MYSQL_RES *result() { 
+		if(tresult)
+			return tresult;
+		else
+			return mysql_store_result(connection); 
+	}
+	MYSQL_ROW& row(MYSQL_RES *result) { return trow = mysql_fetch_row(result); }
+	MYSQL_ROW& row() { return trow = mysql_fetch_row(tresult); }
+};
+extern MySQL_Helper database_connection;
+

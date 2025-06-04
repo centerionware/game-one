@@ -1,0 +1,111 @@
+<?xml version="1.0" ?>
+<scene export_time="1308343200.683617" exported_by="deadc0de" previous_export_time="1308278358.933744">
+	<nodes>
+		<node name="Armature.001" uuid="dbe0683b351296107466bc51afb3fdde">
+			<position x="-5.032743" y="0.530676" z="0.680294"/>
+			<quaternion w="1.000000" x="-0.000000" y="0.000000" z="0.000000"/>
+			<scale x="0.326684" y="0.326684" z="0.326684"/>
+			<game>
+				<sensors/>
+				<actuators/>
+			</game>
+			<node name="eye_L" uuid="5f448b630dbb92b644245ed28c2d1cc1">
+				<position x="-0.917616" y="8.350200" z="1.140090"/>
+				<quaternion w="0.997775" x="0.066591" y="-0.003298" z="0.000220"/>
+				<scale x="0.604934" y="0.604934" z="0.604933"/>
+				<game>
+					<sensors/>
+					<actuators/>
+				</game>
+				<entity actor="False" anisotropic_friction="False" damping_rot="0.10000000149011612" damping_trans="0.03999999910593033" friction_x="1.0" friction_y="1.0" friction_z="1.0" ghost="False" inertia_tensor="0.4000000059604645" lock_rot_x="False" lock_rot_y="False" lock_rot_z="False" lock_trans_x="False" lock_trans_y="False" lock_trans_z="False" mass="1.0" mass_radius="1.0" meshFile="eye_l.mesh" name="eye_l" physics_type="STATIC" velocity_max="0.0" velocity_min="0.0"/>
+			</node>
+			<node name="eye_R" uuid="cb71ebc2c1dd8c6671ab7cd651ab58a6">
+				<position x="0.979600" y="8.324643" z="1.072444"/>
+				<quaternion w="0.997669" x="0.066866" y="0.013609" z="-0.000912"/>
+				<scale x="0.604934" y="0.604933" z="0.604933"/>
+				<game>
+					<sensors/>
+					<actuators/>
+				</game>
+				<entity actor="False" anisotropic_friction="False" damping_rot="0.10000000149011612" damping_trans="0.03999999910593033" friction_x="1.0" friction_y="1.0" friction_z="1.0" ghost="False" inertia_tensor="0.4000000059604645" lock_rot_x="False" lock_rot_y="False" lock_rot_z="False" lock_trans_x="False" lock_trans_y="False" lock_trans_z="False" mass="1.0" mass_radius="1.0" meshFile="eye_r.mesh" name="eye_r" physics_type="STATIC" velocity_max="0.0" velocity_min="0.0"/>
+			</node>
+		</node>
+		<node name="Camera" uuid="754b99f205c805cbc3ecdf35337d0119">
+			<position x="-2.212649" y="3.994426" z="-2.773306"/>
+			<quaternion w="0.758825" x="-0.564926" y="-0.259970" z="-0.193541"/>
+			<scale x="0.646408" y="0.646408" z="0.646409"/>
+			<game>
+				<sensors/>
+				<actuators/>
+			</game>
+			<camera fov="37.84928883210247" name="Camera" projectionType="perspective">
+			<!--	<clipping farPlaneDist="100.0" nearPlaneDist="0.10000000149011612"/> -->
+			</camera>
+		</node>
+		<node name="Lamp" uuid="63a2d9f0278452d38782c68d1a268f15">
+			<position x="-4.076245" y="5.903862" z="1.005454"/>
+			<quaternion w="0.570947" x="-0.169076" y="0.755880" z="0.272171"/>
+			<scale x="1.000000" y="1.000000" z="1.000000"/>
+			<game>
+				<sensors/>
+				<actuators/>
+			</game>
+			<light name="Spot" shadow="true" type="point">
+				<lightAttenuation constant="1.0" linear="0.03333335240683057" quadratic="0.0" range="5000"/>
+				<colorDiffuse b="1.0" g="1.0" r="1.0"/>
+				<colorSpecular b="1.0" g="1.0" r="1.0"/>
+				<colorShadow b="1.0" g="1.0" r="1.0"/>
+			</light>
+		</node>
+		<node name="zombie1" uuid="8bca84baba03613668639c99e6080c74">
+			<position x="-5.025719" y="-30.621069" z="0.850343"/>
+			<quaternion w="0.707107" x="-0.707107" y="-30.000000" z="0.000000"/>
+			<scale x="0.140000" y="0.140000" z="0.140000"/>
+			<game>
+				<sensors/>
+				<actuators/>
+			</game>
+			<entity actor="False" anisotropic_friction="False" damping_rot="0.10000000149011612" damping_trans="0.03999999910593033" friction_x="1.0" friction_y="1.0" friction_z="1.0" ghost="False" inertia_tensor="0.4000000059604645" lock_rot_x="False" lock_rot_y="False" lock_rot_z="False" lock_trans_x="False" lock_trans_y="False" lock_trans_z="False" mass="1.0" mass_radius="1.0" meshFile="zombie_one.mesh" name="zombie_one" physics_type="STATIC" velocity_max="0.0" velocity_min="0.0"/>
+			<node name="Lamp.001" uuid="ba7126e9fd55f9c55a57224fc0b23ad2">
+				<position x="47.468578" y="97.131195" z="54.412910"/>
+				<quaternion w="0.845210" x="0.331911" y="0.413826" z="-0.064831"/>
+				<scale x="1.000000" y="1.000000" z="1.000000"/>
+				<game>
+					<sensors/>
+					<actuators/>
+				</game>
+				<light name="Lamp" shadow="true" type="spot">
+					<lightAttenuation constant="1.0" linear="0.05" quadratic="0.0" range="5000"/>
+					<colorDiffuse b="1.0" g="1.0" r="1.0"/>
+					<colorSpecular b="1.0" g="1.0" r="1.0"/>
+					<colorShadow b="1.0" g="1.0" r="1.0"/>
+				</light>
+			</node>
+		</node>
+		<node name="Lamp.002" uuid="60566161065ff1a8433080f78a6f2a8c">
+			<position x="-6.198990" y="18.996437" z="-16.394190"/>
+			<quaternion w="0.926176" x="-0.375917" y="0.026589" z="0.013365"/>
+			<scale x="1.000000" y="1.000000" z="1.000000"/>
+			<game>
+				<sensors/>
+				<actuators/>
+			</game>
+			<light name="Lamp.001" shadow="true" type="spot">
+				<lightAttenuation constant="1.0" linear="0.05" quadratic="0.0" range="5000"/>
+				<colorDiffuse b="1.0" g="1.0" r="1.0"/>
+				<colorSpecular b="1.0" g="1.0" r="1.0"/>
+				<colorShadow b="1.0" g="1.0" r="1.0"/>
+			</light>
+		</node>
+	</nodes>
+	<externals>
+		<item type="material">
+			<file name="Scene.material"/>
+		</item>
+	</externals>
+	<environment>
+		<colorDiffuse b="0.4000000059604645" g="0.22081542015075684" r="0.05656290054321289"/>
+		<colorBackground b="0.4000000059604645" g="0.22081542015075684" r="0.05656290054321289"/>
+		<colorAmbient b="0.0" g="0.0" r="0.0"/>
+	</environment>
+</scene>

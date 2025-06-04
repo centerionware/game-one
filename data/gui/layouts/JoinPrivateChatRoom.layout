@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<GUILayout >
+    <Window Type="TaharezLook/FrameWindow" Name="JoinPrivateChatRoomWindow" >
+        <Property Name="TitlebarFont" Value="DejaVuSans-10" />
+        <Property Name="TitlebarEnabled" Value="True" />
+        <Property Name="UnifiedAreaRect" Value="{{0,0},{0,0},{1,0},{1,0}}" />
+        <Window Type="TaharezLook/Editbox" Name="PrivateRoomName" >
+            <Property Name="MaxTextLength" Value="1073741823" />
+            <Property Name="UnifiedAreaRect" Value="{{0.158759,0},{0.0181507,0},{0.408759,0},{0.268151,0}}" />
+            <Property Name="TextParsingEnabled" Value="False" />
+        </Window>
+        <Window Type="TaharezLook/Editbox" Name="PrivateRoomPassword" >
+            <Property Name="MaxTextLength" Value="1073741823" />
+            <Property Name="UnifiedAreaRect" Value="{{0.157658,0},{0.27911,0},{0.407658,0},{0.52911,0}}" />
+            <Property Name="TextParsingEnabled" Value="False" />
+        </Window>
+        <Window Type="TaharezLook/StaticText" Name="lbl_pvtrmname" >
+            <Property Name="Text" Value="Room Name:" />
+            <Property Name="HorzExtent" Value="112" />
+            <Property Name="VertExtent" Value="15.0782" />
+            <Property Name="UnifiedAreaRect" Value="{{0.00480484,0},{0.0184932,0},{0.152703,0},{0.268493,0}}" />
+        </Window>
+        <Window Type="TaharezLook/StaticText" Name="lbl_pvtrmpassword" >
+            <Property Name="Text" Value="Password:" />
+            <Property Name="HorzExtent" Value="87" />
+            <Property Name="VertExtent" Value="15.0782" />
+            <Property Name="UnifiedAreaRect" Value="{{0.00670675,0},{0.276028,0},{0.151602,0},{0.526028,0}}" />
+        </Window>
+        <Window Type="TaharezLook/Button" Name="button_JoinPrivateRoom" >
+            <Property Name="Text" Value="Join Private Room" />
+            <Property Name="UnifiedAreaRect" Value="{{0.448048,0},{0.163699,0},{0.698048,0},{0.413699,0}}" />
+        </Window>
+    </Window>
+</GUILayout>

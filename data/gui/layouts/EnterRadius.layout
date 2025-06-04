@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<GUILayout >
+    <Window Type="TaharezLook/FrameWindow" Name="EnterRadiusFrameWindow" >
+        <Property Name="Text" Value="Enter a radius to continue" />
+        <Property Name="TitlebarFont" Value="DejaVuSans-10" />
+        <Property Name="TitlebarEnabled" Value="True" />
+        <Property Name="UnifiedAreaRect" Value="{{0,0},{0,0},{1,0},{1,0}}" />
+        <Window Type="TaharezLook/Editbox" Name="Radius" >
+            <Property Name="MaxTextLength" Value="1073741823" />
+            <Property Name="UnifiedAreaRect" Value="{{0.188178,0},{0.0462894,0},{0.938178,0},{0.1077,0}}" />
+            <Property Name="TextParsingEnabled" Value="False" />
+        </Window>
+        <Window Type="TaharezLook/Button" Name="RadiusEnterButton" >
+            <Property Name="Text" Value="Okay" />
+            <Property Name="UnifiedAreaRect" Value="{{0.799882,0},{0.799536,0},{0.944882,0},{0.972264,0}}" />
+        </Window>
+        <Window Type="TaharezLook/Editbox" Name="Tower MaxHeight" >
+            <Property Name="MaxTextLength" Value="1073741823" />
+            <Property Name="UnifiedAreaRect" Value="{{0.190788,0},{0.131354,0},{0.937206,0},{0.197681,0}}" />
+            <Property Name="TextParsingEnabled" Value="False" />
+        </Window>
+        <Window Type="TaharezLook/StaticText" Name="RadiusLbl" >
+            <Property Name="Text" Value="Enter Radius:" />
+            <Property Name="HorzExtent" Value="109" />
+            <Property Name="VertExtent" Value="13.9142" />
+            <Property Name="UnifiedAreaRect" Value="{{0.0113614,0},{0.042115,0},{0.141607,0},{0.106586,0}}" />
+        </Window>
+        <Window Type="TaharezLook/StaticText" Name="EnterRadiusFrameWindow/" >
+            <Property Name="Text" Value="MaxHeight(opt)" />
+            <Property Name="HorzExtent" Value="129" />
+            <Property Name="VertExtent" Value="13.9142" />
+            <Property Name="UnifiedAreaRect" Value="{{0.0120779,0},{0.123562,0},{0.162794,0},{0.188034,0}}" />
+        </Window>
+    </Window>
+</GUILayout>

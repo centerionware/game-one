@@ -1,0 +1,111 @@
+This should be placed on a bulletin board for easy discussion.
+
+
+
+The facts (mostly) about the game
+-------------------------------------------------------------------------------------------------------------------------------
+The idea of Game-One is to easily produce a zombie game.
+
+The zombie game will be a top-down isometric viewport.
+
+The game will be multiplayer.
+
+The game will use Ogre3D for graphics rendering.
+
+The game will using paging scene manager for Ogre3D.
+
+The game will use boost asio for networking with a custom protocol.
+
+The game will be fun to play, and people will play it.
+
+Cheaters will happen, and we need to find a way to prevent and punish them.
+
+Facebook games suck balls. Big hairy massive gorilla balls. Donkey balls too, and sheeps balls. They have an animal fetish, and need to grow up.
+
+The core software shouldn't need to be updated a lot. There will be in game updates that don't require a new software version.
+
+
+The questions about the game.
+--------------------------------------------------------------------------------------------------------------------------------
+These may appear to be statements, but are questions. 
+Nothing below is set in stone, question it all. 
+Make judgements, but don't be irrational. 
+Try to see both sides, pick one and make your case. The overall opinion of the majority votes will rule.
+--------------------------------------------------------------------------------------------------------------------------------
+
+The game 'engine' should be ---------------------------------------------------------------------------|
+                            simple and basic and expansion should require more code.                   |
+
+OR                          complex and bulky and contain every known feature known to humans.         |
+
+OR                          a combination of simple and complex, allow room for expansion,             |
+                               and only contain what's required for the current game as we envision it.|
+-------------------------------------------------------------------------------------------------------|
+
+Newton game dynamics should be used. 
+
+Bullet physics engine should be used. I'm a fan of this, because I used ogrenewt before. It worked, but I had issues with extremely large maps such as the grand canyon and portals. And would like to try something new. But, it was a very long time ago I used it. Maybe things changed.
+
+Physx should be used. Something that works mostly only on nvidia? nty. I know it would make things work better more easily, but, nvidia only?
+
+
+
+The game will support very large maps, but that means very large maps will need to be made.
+Tools for creating such maps are not incredably difficult to learn, and include common programs such as blender and wings3d.
+
+The hardest part about writing the game, will be making it easy for the modelers to get their maps, and monsters, and story into the game.
+
+There are different ways to approach this problem. Half the game can be written in the modeler, with the placement of objects, storyline, and interactions
+done in the modeler - or they can be put in game.
+
+Multiplayer, how multiplayer should it be? How big should the maps be? What maps should we use? What era should it be set in?
+
+If it were a modern game, the players would start out with a crowbar or knife, and work their way up to big guns.
+There must be a reason for people to play a game.
+
+Progression of charactor AND story.
+                         OR
+
+--
+I believe any worthwhile multiplayer game in this modern day should be some form of MMO.
+MMO has problems, it's hard to write the networking code to handle such tasks, and will require bandwidth.
+How is this bandwidth payed for? The game should sustain itself. It must be sustainable before it's launched.
+
+MythOS had a massively successful beta test, which I was lucky enough to be a part of. They had the idea of creating a 'crafting' system to make the best equipment. They wanted to add new things to it, but have a second currency that required either a transfer by another player, or actual cash to aquire. There would be items that would drop very late in the game and only rarely, so die-hard play-all the times could play without paying, and those who want to pay a little and have fun and not be underpowered could pay a little bit, then buy craft gear or trade for high level items with this currency.
+This idea is successful in facebook flash based games, which come on, are really crappy games.
+
+The game should be made in-game by the operators and promoted players with an online-creation system(OLC for short. This is not a new idea.).
+But who decides who is promoted and why?
+--
+I believe should be a free game, with limited 8 player multiplayer in limited maps all already created, with some method of easily extending it and creating their own maps (ala warcraft3/starcraft style)
+The game could "generate" maps like diablo.
+Free distributed style game connect networks could be used to connect players.
+--
+
+Randomly drop items? Great to satisfy the gambling addiction in every gamer. Maybe they died with that in their hand.
+
+Some places will have few zombies, obviously, and others should have lots and lots with small mixed in with big.
+
+Classes? How do you find a balance? Why not make one class? Overpowered skills. Balancing.
+That's a pretty big job, which is helped by community involvement but still a big job.
+
+If we catch a cheater, and we charge for the game, revoke their cd key.  Diablo 2 made a lot of money doing this..
+If we catch a cheater, delete all accounts originating from his IP address.
+
+We should try to link accounts, and find out which single player owns what account. If two accounts are used from the same IP, 'flag' them.
+
+We should allow multiple accounts from a single ip, because people will simply resort to proxies if only one login is allowed, and give an unfair advantage and making it harder for us to take action on suspected cheating.
+If one account on an IP is deactivated, all from that IP are or from ip's that are in the history of the linked accounts. This means we have to store every IP that ever came in, and what accounts used them.
+
+MySQL could be used on the server. PostgreSQL could be used on the server. Oracle could be used on the server.
+Cost is a problem. We won't distribute the server.
+
+We could distribute the server if the income isn't there anymore and we had players, as free software, not including mysql.
+
+
+Three simultanious connections per ip should be allowed maximum. One for him, One for her, one for the friend/kid OR Three for one OR whatever. We don't need to care how it's used.
+
+Lan parties? Do people do those anymore? Should we make it lan party capable?
+
+
+

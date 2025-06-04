@@ -1,0 +1,47 @@
+client-map.cpp # Load the map specified by the server
+Game-One.cpp # The main client program - Control threads here for player-client, physics, audio, input, respond to things
+                                     from the server. The server will handle clicks?
+server-main.cpp # The main server loop, create threads for player-server, physics
+player-input-server.cpp # Handle player input from a client on the server, pickup items? wear? 
+database_utilities.cpp # Connect to the item and player databases
+player-items.cpp # Handle items drops, pickups, and inventory
+player-physics.cpp # Handle player and object physics 
+generic_utilities.cpp # Useful? functions to make common tasks easy
+Makefile.am # The file that controls the automake system
+server-map.cpp # Handle all the maps on the server
+inet-client.cpp # Handle networking io for the client
+inet-physics.cpp # Handle which physics should be sent over the network. Will prevent cheating, by running physics on the server and having the client respond.
+player-class.cpp # Create a 'basic class' that can be 'scripted'? to the way the admins want
+weapon-physics.cpp # handle the physics of 'weapons' that can be 'scripted'? the way the admins want
+inet-server.cpp # Create a server, listen for incoming traffic, do stuff
+player-input-client.cpp # Handle player inputy stuff. 
+			 sends to server
+                         immediate physics responses?
+inet_protocol.hpp # outlines the inet protocol in namespaced enumerations?
+			
+Display layout concepts:
+ -----------------------------------------------------------
+|                                             |_____________|
+|                                             | x   x  x    |
+|   Main display                              | |   |  |    |
+|   the clickable portion is divided into     | |\  |  \    |
+|   grids. The first outer grid, and each     | | \/i\  \   |
+|   one of those has an inner grid.           | x  x x  x   |
+|   Both outer and inner grids                | \ /|/\ /\   |
+|   Are 16x16. Allowing accurate enough       |  x xx  x x  |
+|   results with only 2+1bytes of network     |-------------|
+|   traffic. The display is locked above      | st|ag|in|sp | (str, agi, int, special? (what effect?)
+|   main charactor at all times.              |_+__+__+__+__|
+|-----------------------------------------------------------|
+|     menu(altm) | chat(c) | inventory(i) | skills (k)      |
+|-----------------------------------------------------------|
+|short-| 1-10 potion hotkeys?     | uhh?   |   local        |
+|cuts  |--------------------------| big map|   map?         |
+|      | f1|f2|f3|f4|f5|f6|f7|f8  |        |                |
+ -----------------------------------------------------------
+
+So, A 'layout manager' is required to make all the necessary 'windows' that will each have their own flow.
+
+
+
+

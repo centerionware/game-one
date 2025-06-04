@@ -1,0 +1,72 @@
+#version 150
+
+
+
+float ATLAS_WIDTH = 1024.0;
+float TEXTURE_WIDTH = 128.0;
+float RATIO =  TEXTURE_WIDTH / ATLAS_WIDTH;
+float TEXTURES_PER_ROW = 8.0;
+float NUM_TEXTURES_IN_ATLAS = 36;
+
+uniform mat4x4 worldMatrix;
+uniform mat4x4 viewProj;
+uniform vec4 isGlass;
+//uniform vec4 cameraPos;
+
+in vec4 vertex;
+in vec4 colour;
+
+
+struct IOStruct {
+ vec4 textureAtlasOffset;
+ vec3 worldPosition;
+ float glass;
+ float water;
+ float lava;
+ float stained_glass;
+ vec4 vertex;
+ vec4 color;
+};
+out IOStruct vsOutput;
+#define GOREAL float
+/*
+GOREAL _get3d_vecdistref(const t &p, const x&y) {
+		GOREAL c_x = p.x-y.x;
+		GOREAL c_y = p.y-y.y;
+		GOREAL c_z = p.z-y.z;
+		return Ogre::Math::Sqrt( (c_x*c_x)+(c_y*c_y)+(c_z*c_z));
+	}
+*/
+
+void main()
+{
+
+    int idx;
+    int blocky;
+    int blockx;
+    idx =  int(colour.r * 256);
+    
+    blocky = int(floor((float(idx))/TEXTURES_PER_ROW));
+    blockx = int(floor((float(idx)) - float(blocky)*TEXTURES_PER_ROW));
+
+    if(blockx == 7 && blocky == 0) vsOutput.water = 1;
+    else vsOutput.water = 0;
+    if(colour.y == 1) vsOutput.glass = 1.0;
+    else vsOutput.glass = 0;
+    if(blockx == 1 && blocky == 3) vsOutput.stained_glass = 1;
+    else vsOutput.stained_glass = 0;
+    if(blockx == 7&& blocky == 2) vsOutput.lava = 1.0;
+    else vsOutput.lava = 0;
+
+    if(colour.y != isGlass.x) {
+	  gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+	  return;
+    } 
+    vec4 tmp = vertex + vec4(0.5,0.5,0.5,0.5);//worldMatrix * gl_Vertex;
+    vsOutput.worldPosition = tmp.xyz;
+    vsOutput.textureAtlasOffset = vec4(blockx , blocky, 0.0, 0.0);
+	vsOutput.vertex=vertex;
+	vsOutput.color=colour;
+    gl_Position = viewProj* vertex;
+	
+} 

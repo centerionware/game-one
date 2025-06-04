@@ -1,0 +1,84 @@
+namespace heightmap_globals {
+	extern bool volatile alive;
+}
+void NewHeightmapLoader::chunk_update(basic_chunk_update& bcu_n) {
+  /*
+      Use this for _ALL_ chunk updating.
+  */ 
+	basic_chunk &n = bcu_n.chunk;
+//	heightmap_globals::mut_c.lock();
+//	if(!heightmap_globals::alive) {
+//		heightmap_globals::mut_c.unlock();
+//		return;
+//	}
+	
+	vec3 v(n.x,n.y,n.z);
+	Chunk *wo=NULL;
+	//std::cout <<"Chunk update on chunk" << bcu_n.chunk.id << " to timestamp " << bcu_n.timestamp<<std::endl;
+	bool inserted = false;
+	chunk_iterator_locker itlocker;
+	if(chunks._chunks.begin() == chunks._chunks.end()) {
+		wo = new Chunk(v);
+		chunks.insert(wo,zerovec);
+		inserted = true;
+	}
+	auto lf = chunks._chunks.begin(), lef = chunks._chunks.end();//, le = chunks.last;
+	for(;lf!=lef;++lf){ //while(lf!=NULL) {
+		if( (*lf)->position == v) {
+		 inserted = true;
+		 wo = (*lf);//->ele;
+		 break;
+		} 
+	}
+	if(!inserted) {
+		wo = new Chunk(v);
+		chunks.insert(wo,zerovec);
+	}
+	itlocker.unlock();
+	wo->lock();
+	for(size_t count = 0;count != n.voxels.size();++count) {
+		unsigned short j = n.voxels[count];
+		unsigned char m = n.matids[count];
+		if(wo->NewNewVoxels.find(j) == wo->NewNewVoxels.end()) {
+		      wo->NewNewVoxels[j]= voxel_attributes(m);
+		} else wo->NewNewVoxels[j].matid = m;
+	}
+	//std::cout << "Removed voxels size: " << bcu_n.removed_voxels.size() << std::endl;
+	//std::cout << "Added voxels size: " << n.voxels.size() << std::endl;
+	//std::cout << "Modified voxels size: " << n.matids.size() << std::endl;
+	for(size_t count = 0;count != bcu_n.removed_voxels.size();++count) {
+		unsigned short j = bcu_n.removed_voxels[count];
+		if(wo->NewNewVoxels.find(j) != wo->NewNewVoxels.end()) wo->NewNewVoxels.erase(wo->NewNewVoxels.find(j));
+		
+	}
+	wo->id = n.id; // don't leave uninitialized!
+	wo->lastupdate = bcu_n.timestamp;
+	wo->cleanup();
+	wo->unlock();
+	//heightmap_globals::mut_c.unlock();
+}
+bool NewHeightmapLoader::needs_chunk_update(size_t id, size_t timestamp) {
+	updatets = 0;
+	Chunk *wo = NULL;
+	//bool inserted = false;
+	if(chunks._chunks.begin() == chunks._chunks.end()) {
+	  std::cout << "There are no chunks!\n";
+		return true;
+	}
+
+	auto iter = chunks._chunks.begin(), iend = chunks._chunks.end();
+	for(;iter!=iend;++iter) {
+	 if( (*iter)->id == id)  {
+	  wo = (*iter);
+	  break;
+	 }
+	  
+	}
+	if(wo == NULL) return true;
+	if(wo->lastupdate < timestamp) {
+	  updatets = wo->lastupdate;
+	  return true;
+	}
+	updatets = wo->lastupdate;
+	return false;
+}

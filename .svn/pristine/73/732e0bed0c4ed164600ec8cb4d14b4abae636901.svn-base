@@ -1,0 +1,114 @@
+vertex_program VoxelTexture_VP glsl
+{
+    source VoxelTexture.glslv
+    entry_point main
+    profiles arbvp1
+    default_params
+    {
+        param_named_auto worldMatrix world_matrix
+        param_named_auto viewProj viewproj_matrix
+			param_named_auto viewMatrix view_matrix
+		param_named_auto projMatrix projection_matrix
+    }
+}
+geometry_program VoxelTexture_GP glsl
+{
+	source VoxelTexture.glslg
+	uses_adjacency_information false
+	input_operation_type point_list
+	output_operation_type triangle_strip
+	max_output_vertices 1024
+    default_params
+    {
+        param_named_auto worldMatrix world_matrix
+        param_named_auto viewProj viewproj_matrix
+		param_named_auto viewMatrix view_matrix
+		param_named_auto projMatrix projection_matrix
+		param_named_auto worldViewProj worldviewproj_matrix
+		param_named_auto curTime time
+		param_named_auto cameraPos camera_position
+
+    }
+}
+fragment_program VoxelTexture_FP glsl
+{
+    source VoxelTexture.glslf
+    entry_point main
+    profiles arbfp1
+    default_params {
+	    param_named_auto cameraPos camera_position
+    }
+}
+
+
+material VoxelTexture
+{
+   receive_shadows on
+   technique
+   {
+
+      pass
+      {
+	  emissive vertexcolour
+	  cull_hardware clockwise
+	//scene_blend alpha_blend
+	//depth_write off
+         
+	  transparent_sorting force
+
+
+        vertex_program_ref VoxelTexture_VP
+        {
+		param_named isGlass float4 0.0 0 0 0
+        }
+		geometry_program_ref VoxelTexture_GP {
+		param_named isGlass float4 0.0 0 0 0
+		}         
+        fragment_program_ref VoxelTexture_FP
+        {
+		param_named Atlas int 0
+		
+		
+        }
+         
+        texture_unit
+        {
+            texture TextureAtlas.png 2d 
+            filtering point point linear
+            colour_op alpha_blend
+            tex_address_mode clamp
+        }
+
+      
+      }
+      pass
+      {
+		emissive vertexcolour
+		cull_hardware clockwise
+		scene_blend alpha_blend
+		depth_write off
+         
+		transparent_sorting force
+
+        vertex_program_ref VoxelTexture_VP
+        {
+		param_named isGlass float4 1.0  0 0 0
+        }
+        geometry_program_ref VoxelTexture_GP {
+		param_named isGlass float4 1.0  0 0 0
+		}
+        fragment_program_ref VoxelTexture_FP
+        {
+		param_named Atlas int 0
+        }
+         
+        texture_unit
+        {
+			texture TextureAtlas.png 2d 6
+            filtering none
+            colour_op alpha_blend
+            tex_address_mode clamp
+        }
+      }
+   }
+}

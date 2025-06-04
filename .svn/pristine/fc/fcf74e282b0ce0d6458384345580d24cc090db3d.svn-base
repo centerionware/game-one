@@ -1,0 +1,27 @@
+
+# Add executable called "helloDemo" that is built from the source files 
+# "demo.cxx" and "demo_b.cxx". The extensions are automatically found. 
+add_executable (gameoneclient CState_MainMenu.cpp CState_Lobby.cpp CState_Splash.cpp CGameManager.cpp CState.cpp CEventManager.cpp 
+client-map.cpp inet-client.cpp player-input-server.cpp inet-physics.cpp 
+  player-class.cpp player-items.cpp generic_utilities.cpp   player-input-client.cpp 
+ player-physics.cpp weapon-physics.cpp Game-One.cpp BaseApplication.cpp dotscene/dotscene.cpp 
+ server-map.cpp command.cpp CState_Testing.cpp CState_MainMenu_Settings.cpp CState_MainMenu_Login.cpp CHUD.cpp CGUI.cpp inet.cpp items.cpp) 
+#target_link_libraries(gameoneclient "$(LIBS)")
+target_link_libraries(gameoneclient ${CEGUI_LIBRARY} ${OGRE_LIBRARIES} ${OIS_LIBRARIES} ${Boost_LIBRARIES} ${TINYXML_LIBRARIES} ${CEGUI_OgreRenderer_LIBRARY} ${LUA_LIBRARY} )
+
+
+add_executable (gameoneserver player-input-server.cpp server-main.cpp inet-physics.cpp inet-server.cpp server-map.cpp weapon-physics.cpp player-class.cpp player-items.cpp dotscene/dotscene.cpp command.cpp database_utilities.cpp inet.cpp generic_utilities.cpp items.cpp )
+
+add_executable (gameonelobbyserver player-input-server.cpp inet-physics.cpp inet-server.cpp server-map.cpp weapon-physics.cpp player-class.cpp player-items.cpp dotscene/dotscene.cpp command.cpp database_utilities.cpp inet.cpp generic_utilities.cpp items.cpp lobby-server-main.cpp )
+
+
+#target_include_directories(gameoneserver, ${MYSQL_INCLUDE_DIR})
+target_link_libraries(gameoneserver ${CEGUI_LIBRARY} ${OGRE_LIBRARIES} ${OIS_LIBRARIES} ${Boost_LIBRARIES} ${TINYXML_LIBRARIES} ${CEGUI_OgreRenderer_LIBRARY} ${MYSQL_LIBRARIES} ${LUA_LIBRARY})
+
+set_target_properties (gameoneserver PROPERTIES COMPILE_DEFINITIONS "SERVER")
+
+target_link_libraries(gameonelobbyserver ${CEGUI_LIBRARY} ${OGRE_LIBRARIES} ${OIS_LIBRARIES} ${Boost_LIBRARIES} ${TINYXML_LIBRARIES} ${CEGUI_OgreRenderer_LIBRARY} ${MYSQL_LIBRARIES} ${LUA_LIBRARY})
+
+set_target_properties (gameonelobbyserver PROPERTIES COMPILE_DEFINITIONS "SERVER")
+
+#$(DEPS_LIBS) $(OGRE_LIBS) $(OIS_LIBS)  -L/usr/lib  -lboost_thread -L/usr/lib/mysql/ -lmysqlclient -lboost_regex -ltinyxml -lboost_system -lboost_iostreams -lboost_filesystem -DSERVER

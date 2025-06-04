@@ -1,0 +1,46 @@
+AM_CPPFLAGS = $(DEPS_CFLAGS) $(OGRE_CFLAGS) $(OIS_CFLAGS) $(CEGUI_CFLAGS) -I./ -I../include/ -I../include/dotscene/ -I/usr/local/include/OGRE -I/usr/local/include -I/usr/include/ -include tinyxmlfix.h -D SERVER
+
+METASOURCES = AUTO
+gameoneserver_CFLAGS = $(AM_CPPFLAGS) -D SERVER
+bin_PROGRAMS = gameoneclient gameoneserver gameonemapmaker gameonetest gameoneservermapimporter
+
+
+
+
+gameoneclient_LDADD = $(DEPS_LIBS) $(OGRE_LIBS) $(OIS_LIBS) $(CEGUI_LIBS) -L/usr/lib -lboost_thread  -lboost_regex -ltinyxml -lCEGUIOgreRenderer -lboost_iostreams -lboost_system -lboost_filesystem
+gameonetest_LDADD = $(DEPS_LIBS) $(OGRE_LIBS) $(OIS_LIBS) $(CEGUI_LIBS)  -L/usr/lib -lboost_thread  -lboost_regex -ltinyxml -lCEGUIOgreRenderer -lboost_iostreams -lboost_system -lboost_filesystem
+gameonemapmaker_LDADD = $(DEPS_LIBS) $(OGRE_LIBS) $(OIS_LIBS) $(CEGUI_LIBS) -L/usr/lib  -lboost_thread  -lboost_regex -ltinyxml -lCEGUIOgreRenderer -lboost_iostreams -lboost_system -lboost_filesystem
+gameoneserver_LDADD = $(DEPS_LIBS) $(OGRE_LIBS) $(OIS_LIBS)  -L/usr/lib  -lboost_thread -L/usr/lib/mysql/ -lmysqlclient -lboost_regex -ltinyxml -lboost_system -lboost_iostreams -lboost_filesystem
+gameoneservermapimporter_LDADD = $(DEPS_LIBS) $(OGRE_LIBS) $(OIS_LIBS) -L/usr/lib  -lboost_thread -L/usr/lib/mysql/ -lmysqlclient -lboost_regex -ltinyxml -lboost_system -lboost_iostreams -lboost_filesystem
+
+# gameoneclient_LDFLAGS = -Wl,-rpath,./extra_libs:/usr/lib:/usr/local/lib
+
+gameoneclient_SOURCES = CState_MainMenu.cpp CState_Splash.cpp CGameManager.cpp CState.cpp CEventManager.cpp \
+client-map.cpp inet-client.cpp player-input-server.cpp inet-physics.cpp \
+  player-class.cpp player-items.cpp generic_utilities.cpp   player-input-client.cpp \
+ player-physics.cpp weapon-physics.cpp Game-One.cpp BaseApplication.cpp dotscene/dotscene.cpp \
+ server-map.cpp command.cpp CState_Testing.cpp CState_MainMenu_Settings.cpp CState_MainMenu_Login.cpp CHUD.cpp CGUI.cpp inet.cpp items.cpp
+
+gameonetest_SOURCES = client-map.cpp          inet-client.cpp          player-input-server.cpp  \
+inet-physics.cpp  player-class.cpp         player-items.cpp          \
+generic_utilities.cpp   player-input-client.cpp  player-physics.cpp       weapon-physics.cpp \
+GameOneTest.cpp BaseApplication.cpp dotscene/dotscene.cpp server-map.cpp command.cpp \
+CState_MainMenu.cpp CState_Splash.cpp CGameManager.cpp CState.cpp CEventManager.cpp \
+CState_Testing.cpp CState_MainMenu_Settings.cpp CState_MainMenu_Login.cpp CHUD.cpp CGUI.cpp inet.cpp items.cpp
+
+
+gameonemapmaker_SOURCES = client-map.cpp          inet-client.cpp          player-input-server.cpp  \
+inet-physics.cpp  player-class.cpp         player-items.cpp          \
+generic_utilities.cpp   player-input-client.cpp  player-physics.cpp       weapon-physics.cpp \
+Game-One-MapGen.cpp BaseApplication.cpp dotscene/dotscene.cpp server-map.cpp command.cpp \
+CState_MainMenu.cpp CState_Splash.cpp CGameManager.cpp CState.cpp CEventManager.cpp \
+CState_Testing.cpp CState_MainMenu_Settings.cpp CState_MainMenu_Login.cpp CHUD.cpp CGUI.cpp inet.cpp items.cpp
+
+
+
+gameoneserver_SOURCES = player-input-server.cpp server-main.cpp inet-physics.cpp inet-server.cpp server-map.cpp weapon-physics.cpp player-class.cpp player-items.cpp player dotscene/dotscene.cpp command.cpp database_utilities.cpp inet.cpp generic_utilities.cpp items.cpp 
+
+gameoneservermapimporter_SOURCES = generic_utilities.cpp servermapimporter.cpp
+
+EXTRA_DIST = bootstrap
+AUTOMAKE_OPTIONS = foreign

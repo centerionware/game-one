@@ -1,0 +1,216 @@
+#include "inet.h"
+#include <map>
+std::vector<boost::shared_ptr<inet_player> > Players;
+
+
+/* Everything that used to be in this file has been completely depricated by two tiny ass template functions. freaking sweet.
+Which are:
+
+
+template<class T> unsigned char to_value(T c) {
+  unsigned int my_enum_val = static_cast<unsigned int>(c);
+  return my_enum_val;
+}
+template<class T> T to_command(unsigned char c) {
+	T my_enum_val = static_cast<T>(c);
+	return my_enum_val;
+}
+
+... Bwahahaha. Easy as pie.
+Good thing too, I didn't want to keep adding more for each enum, I've been adding a lot in preperation for big cool things.
+
+
+enum inventory_commands { Wear, Remove, Drop };
+enum shop_commands { Buy, Sell, List };
+enum combat_commands { Attack, Cast, ListCommands, HelpCommand / *return the description from the server to be displayed in txt with a box outlining * / };
+enum skill_commands { Learn, UpdateLevel, SetUsed };
+enum command_types { NetCommand, LoginCommand, UnKnownCommandType, LocalEvent, InventoryCommand, ShopCommands, Combat, Skill, Register };
+*//*
+unsigned char to_value(command_types c) {
+	static std::map<command_types, unsigned char> cmap;
+	if(cmap.size() == 0) {
+	      cmap[NetCommand] = 0;
+	      cmap[LoginCommand] = 1;
+	      cmap[LocalEvent] = 2;
+	      cmap[Register] = 3;
+	      cmap[InventoryCommand] = 4;
+	      cmap[ShopCommands] = 5;
+	      cmap[Combat] = 6;
+	      cmap[Skill] = 7;
+	}
+	std::map<command_types, unsigned char>::iterator it = cmap.find(c);
+	if(it == cmap.end()) return 255;
+	return (*it).second;
+}
+unsigned char to_value(net_commands c) {
+  	static std::map<net_commands, unsigned char> cmap;
+	if(cmap.size() == 0) {
+	      cmap[HeadText] = 0;
+	      cmap[Position] = 1;
+	      cmap[AddPlayer] = 2;
+	      cmap[RemPlayer] = 3;
+	      cmap[Teleport] = 4;
+	      cmap[PreAuth] = 5;
+	      cmap[LoginAuth] = 6;
+	      cmap[AdminAuth] = 7;
+	      cmap[GetChunk] = 8;
+	      cmap[PushChunk] = 9;
+	}
+	std::map<net_commands, unsigned char>::iterator it = cmap.find(c);
+	if(it == cmap.end()) return 255;
+	return (*it).second;
+}
+unsigned char to_value(local_events c) {
+    	static std::map<local_events, unsigned char> cmap;
+	if(cmap.size() == 0) {
+	      cmap[Connected] = 0;
+	      cmap[Disconnected] = 1;
+	}
+	std::map<local_events, unsigned char>::iterator it = cmap.find(c);
+	if(it == cmap.end()) return 255;
+	return (*it).second;
+}
+unsigned char to_value(registration_commands c) {
+    	static std::map<registration_commands, unsigned char> cmap;
+	if(cmap.size() == 0) {
+	      cmap[TryRegister] = 0;
+	      cmap[GoodRegister] = 1;
+	      cmap[PasswordToShort] = 2;
+	      cmap[InvalidPassword] = 3;
+	      cmap[InvalidUsername] = 4;
+	      cmap[InvalidEmail] = 5;
+	}
+	std::map<registration_commands, unsigned char>::iterator it = cmap.find(c);
+	if(it == cmap.end()) return 255;
+	return (*it).second;
+}
+unsigned char to_value(login_commands c) {
+    	static std::map<login_commands, unsigned char> cmap;
+	if(cmap.size() == 0) {
+	      cmap[BadLogin] = 0;
+	      cmap[GoodLogin] = 1;
+	      cmap[TryLogin] = 2;
+	      cmap[DoLogin] = 3;
+
+	}
+	std::map<login_commands, unsigned char>::iterator it = cmap.find(c);
+	if(it == cmap.end()) return 255;
+	return (*it).second;
+}*/
+/*
+enum inventory_commands { Wear, Remove, Drop };
+enum shop_commands { Buy, Sell, List };
+enum combat_commands { Attack, Cast, ListCommands, HelpCommand / *return the description from the server to be displayed in txt with a box outlining * / };
+enum skill_commands { Learn, UpdateLevel, SetUsed };
+
+*/
+/*
+unsigned char to_value(inventory_commands c) {
+    	static std::map<login_commands, unsigned char> cmap;
+	if(cmap.size() == 0) {
+	      cmap[BadLogin] = 0;
+	      cmap[GoodLogin] = 1;
+	      cmap[TryLogin] = 2;
+	      cmap[DoLogin] = 3;
+
+	}
+	std::map<login_commands, unsigned char>::iterator it = cmap.find(c);
+	if(it == cmap.end()) return 255;
+	return (*it).second;
+}
+unsigned char to_value(login_commands c) {
+    	static std::map<login_commands, unsigned char> cmap;
+	if(cmap.size() == 0) {
+	      cmap[BadLogin] = 0;
+	      cmap[GoodLogin] = 1;
+	      cmap[TryLogin] = 2;
+	      cmap[DoLogin] = 3;
+
+	}
+	std::map<login_commands, unsigned char>::iterator it = cmap.find(c);
+	if(it == cmap.end()) return 255;
+	return (*it).second;
+}
+unsigned char to_value(login_commands c) {
+    	static std::map<login_commands, unsigned char> cmap;
+	if(cmap.size() == 0) {
+	      cmap[BadLogin] = 0;
+	      cmap[GoodLogin] = 1;
+	      cmap[TryLogin] = 2;
+	      cmap[DoLogin] = 3;
+
+	}
+	std::map<login_commands, unsigned char>::iterator it = cmap.find(c);
+	if(it == cmap.end()) return 255;
+	return (*it).second;
+}
+unsigned char to_value(login_commands c) {
+    	static std::map<login_commands, unsigned char> cmap;
+	if(cmap.size() == 0) {
+	      cmap[BadLogin] = 0;
+	      cmap[GoodLogin] = 1;
+	      cmap[TryLogin] = 2;
+	      cmap[DoLogin] = 3;
+
+	}
+	std::map<login_commands, unsigned char>::iterator it = cmap.find(c);
+	if(it == cmap.end()) return 255;
+	return (*it).second;
+}
+*/
+/******
+
+To be honest, I don't think the following functions are needed at all.
+The usefulnes would be to convert a network message back to an enum, except, this can be done inline if realllly needed, or,
+the uncopied single char can be passed around and the to_value compared..
+
+They have been removed from the header. Pending deletion.
+
+
+*******/
+/*
+net_commands to_command(char c) {
+	if(c == 0) return HeadText;
+	if(c == 1) return Position;
+	if(c == 2) return AddPlayer;
+	if(c == 3) return RemPlayer;
+	if(c == 4) return Teleport;
+	if(c == 5) return PreAuth;
+	if(c == 6) return LoginAuth;
+	if(c == 7) return AdminAuth;
+	if(c == 8) return GetChunk;
+	if(c == 9) return PushChunk;
+	//PreAuth, LoginAuth, AdminAuth
+	return  UnKnownCommand;
+}
+
+command_types to_command_type(char c) {
+	if(c == 0) return NetCommand;
+	if(c == 1) return LoginCommand;
+	if(c == 2) return LocalEvent;
+	if(c == 3) return Register;
+	return UnKnownCommandType;
+}
+local_events to_local_event(char c) {
+	if(c == 0) return Connected;
+	if(c == 1) return Disconnected;
+	return UnknownLocalEvent;
+}
+
+login_commands to_login_command(char c) {
+	if(c == 0) return BadLogin;
+	if(c == 1) return GoodLogin;
+	if(c == 2) return TryLogin;
+	if(c == 3) return DoLogin;
+	return UnknownLoginCommand;
+}
+registration_commands to_register_command(char c) {
+	if(c == 0) return TryRegister;
+	if(c == 1) return GoodRegister;
+	if(c == 2) return PasswordToShort;
+	if(c == 3) return InvalidPassword;
+	if(c == 4) return InvalidUsername;
+	if(c == 5) return InvalidEmail;
+	return UnknownRegistrationResponse;
+}
+*/

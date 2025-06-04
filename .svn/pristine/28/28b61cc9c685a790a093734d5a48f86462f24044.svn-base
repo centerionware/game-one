@@ -1,0 +1,53 @@
+Sat 11 Jun 2011 First commit.
+
+Compiles, nothing is finished.
+Use the ogre pps found on the download section of the ogre website.
+
+Don't expect anything to work, nothing does. Except the client, which renders the ogre head.
+
+Obviously, there's a lot of work to be done.
+
+
+Server:
+Impliment zlib
+Load archives
+Read files from archives
+Load heightmaps from images in archives
+Load building zones from images in archives - and re-use the same every time.
+Load strees from image in archives
+Load start area(s) from image in archives
+Load zombie levels from image in archives
+	We could simply exploit the 0-255 nature of greyscale, black(0) = level 0 zombies (none), white(255) = toughest level 255 zombies
+Load static zombies from greyscale images and a txt file to override the colers.
+
+if we could paint, walls and floors. from greyscale images ?adding extra dimensional information automatically? that would be money. We could use this as a base to generate furniture and doodads.
+
+Methods to add/remove players that load charactor from database
+Login & register functions that log into a database
+
+client:
+load welcome animation
+settings, login, register, quit on first screen.
+
+Esc key always moves back on menus.
+
+
+|----------------------------------|
+|collapseable|                     |
+|skill teir  |                     |
+|menu        |                     |
+|            |                     |
+|-------     |         x           | x marks charactor model and viewport. Near top down view isometric camera.
+|       |    |                     | 
+| mini  |    |                     |
+| map   |    |                     |
+|       |    |                     |
+|_______|____|______________________
+| main menu bar                    |
+|----------------------------------|
+| skills |sk| |o|r| |i|nv|         |
+| char   |---------------|Actions  |
+| menus  |sh|o|r|t|c|u|ts|  Menu   |
+|----------------------------------|
+
+

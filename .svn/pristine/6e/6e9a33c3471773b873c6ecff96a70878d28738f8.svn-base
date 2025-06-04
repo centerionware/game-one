@@ -1,0 +1,430 @@
+/**
+ * GAME-ONE APPLICATION FRAMEWORK
+ * Filename: CState_MainMenu_Login.h
+ * Description: Introductory Game State
+ * Legal stuff ~
+ */
+#include <cstdlib>
+#include <stdlib.h>
+#include <boost/regex.hpp>
+#include "CState_MainMenu_Login.h"
+#include "CEGUI/RendererModules/Ogre/CEGUIOgreRenderer.h"
+#include "CState_Lobby.h"
+CState_MainMenu_Login CState_MainMenu_Login::STATE_MAINMENU_LOGIN;
+
+bool cleanPlayer = false;
+void CState_MainMenu_Login::set_status_message(std::string msg) {
+	std::string color ="[font='monospace-bold-10'][colour='FF6959CC']";
+	std::string out = color;
+	out.append(msg);
+	try {
+	WinMan->getWindow( "MainMenu_Login/lblStatus" )->setText( out.c_str());
+	} catch(...) {}
+}
+void CState_MainMenu_Login::CreateGUI( void )
+{
+	//Initialise CEGUI's Ogre Renderer, and create necessary pointers to CEGUI's subsystems;
+	WinMan = CEGUI::WindowManager::getSingletonPtr();
+	SysMan = CEGUI::System::getSingletonPtr();
+	/* Load the Main Menu from an XML file located in
+	* "data/gui/layouts/" and Set Focus on the Main Menu*/
+	Window 		= CEGUI::WindowManager::getSingleton().loadWindowLayout("../data/gui/layouts/MainMenu_Login.layout" );
+	WindowRegister	= CEGUI::WindowManager::getSingleton().loadWindowLayout("../data/gui/layouts/MainMenu_Register.layout" );
+	SysMan->setGUISheet( Window );
+	SysMan->getGUISheet()->addChildWindow( WindowRegister );
+	/* Handle GUI events ( should be done with lua scripts later,
+	* but we have to include another library to allow LUA and C++
+	* code to interact, so that is for another time ), look into
+	ToLua++ or something like that, can't remember right of the bat*/
+	WinMan->getWindow( "MainMenu_Register/btnBack" )->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CState_MainMenu_Login::OnRegisterBack, this )  );
+	WinMan->getWindow( "MainMenu_Register/btnSubmit" )->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CState_MainMenu_Login::OnRegisterSubmit, this )  );
+	WinMan->getWindow( "MainMenu_Login/btnLogin" )->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CState_MainMenu_Login::OnLogin, this ) );
+	WinMan->getWindow( "MainMenu_Login/btnBack" )->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CState_MainMenu_Login::OnBack, this ) );
+	WinMan->getWindow( "MainMenu_Login/chkNewAccount" )->subscribeEvent( CEGUI::Checkbox::EventMouseClick, CEGUI::Event::Subscriber( &CState_MainMenu_Login::OnNewAccount, this ) );
+	WinMan->getWindow( "MainMenu_Login/lblStatus" )->hide();
+	WindowRegister->hide();
+}
+bool tryingToLogin = false;
+bool CState_MainMenu_Login::OnLogin( const CEGUI::EventArgs &event )
+{
+	if (tryingToLogin) return false;
+	tryingToLogin = true;
+	if (this->mPlayer != boost::shared_ptr<inet_player>()) {
+		auto i = inet_player::Players.begin(), ie = inet_player::Players.end();
+		for(;i!=ie;++i) if((*i) == mPlayer) { inet_player::Players.erase(i); break; }
+		mPlayer.reset();
+	}
+	LoginTimer.reset();
+	this->mPlayer.reset(new inet_player());
+	this->mPlayer->login_menu_conndisconn();
+	this->mPlayer->loginToServer("gameone.dyndns.biz", "6720","","");
+	WinMan->getWindow( "MainMenu_Login/lblStatus" )->show();
+	WinMan->getWindow( "MainMenu_Login/lblStatus" )->setText( "[font='monospace-bold-10'][colour='FF6959CC']Trying to Connect." );
+	return false;
+}
+void CState_MainMenu_Login::ServerFull() {
+	WinMan->getWindow( "MainMenu_Login/lblStatus" )->setText( "[font='monospace-bold-10'][colour='FF6959CC']Server reported full!" );
+	return;
+}
+void CState_MainMenu_Login::ConnectionSuccess() {
+	if(tryingToLogin) { // Login form state
+		CEGUI::String uname = WinMan->getWindow("MainMenu_Login/txtUsername")->getText();
+		CEGUI::String pword = WinMan->getWindow("MainMenu_Login/txtPassword")->getText();
+		char op[4];
+		mUname = uname.c_str();
+		mPword = pword.c_str();
+		size_t t_si = uname.size();
+		memcpy(op, &(t_si), 4);
+		std::string update;
+		update += to_value(LoginCommand);
+		update += to_value(TryLogin);
+		update.append(op,4);
+		t_si = pword.size();
+		memcpy(op, &(t_si), 4);
+		update.append(op,4);
+		update.append(uname.c_str(), uname.size());
+		update.append(pword.c_str(), pword.size());
+		this->mPlayer->send_text(update, this->mPlayer->socket);
+		WinMan->getWindow( "MainMenu_Login/lblStatus" )->setText( "[font='monospace-bold-10'][colour='FF6959CC']Sending PREAUTH!" );
+	} else { // Registration Form State.
+		CEGUI::String email = WinMan->getWindow( "MainMenu_Register/txtEmail" )->getText();
+		CEGUI::String username = WinMan->getWindow( "MainMenu_Register/txtUsername" )->getText();
+		CEGUI::String password = WinMan->getWindow( "MainMenu_Register/txtPassword" )->getText();
+		std::string update;
+		update += to_value(Register);
+		update += to_value(TryRegister);
+		
+		char op[4];
+		size_t t_si;
+		t_si = email.size();
+		memcpy(op, &(t_si), 4);
+		update.append(op, 4);
+		
+		t_si = username.size();
+		memcpy(op, &(t_si), 4);
+		update.append(op, 4);
+		
+		t_si = password.size();
+		memcpy(op, &(t_si), 4);
+		update.append(op, 4);
+		
+		update.append(email.c_str(), email.size());
+		update.append(username.c_str(), username.size());
+		update.append(password.c_str(), password.size());
+		mPlayer->send_text(update, mPlayer->socket);
+		
+	} 
+}
+void CState_MainMenu_Login::goodRegistration(){
+	WinMan->getWindow( "MainMenu_Login/lblStatus" )->show();
+	WinMan->getWindow( "MainMenu_Login/lblStatus" )->setText( "[font='monospace-bold-10'][colour='FFAB0000']Registration Successful." );
+	WinMan->getWindow("MainMenu_Login/txtUsername")->setText( WinMan->getWindow( "MainMenu_Register/txtUsername" )->getText() );
+	WinMan->getWindow( "MainMenu_Register/txtPassword" )->setText( WinMan->getWindow( "MainMenu_Register/txtPassword" )->getText() );
+	ActivateRegisterBack = true;
+	cleanPlayer = true;
+}
+void CState_MainMenu_Login::shortPasswordRegistration(){
+	WinMan->getWindow( "MainMenu_Register/lblTitle" )->setText("[font='monospace-bold-10'][colour='FFAB0000']Password is to short!");
+	cleanPlayer = true;
+}
+void CState_MainMenu_Login::invalidPasswordRegistration(){
+	WinMan->getWindow( "MainMenu_Register/lblTitle" )->setText("[font='monospace-bold-10'][colour='FFAB0000']Password was rejected by server!");
+	cleanPlayer = true;
+}
+void CState_MainMenu_Login::invalidUsernameRegistration(){
+	WinMan->getWindow( "MainMenu_Register/lblTitle" )->setText("[font='monospace-bold-10'][colour='FFAB0000']Username was rejected by server!");
+	cleanPlayer = true;
+}
+void CState_MainMenu_Login::invalidEmailRegistration(){
+	WinMan->getWindow( "MainMenu_Register/lblTitle" )->setText("[font='monospace-bold-10'][colour='FFAB0000']Email address was rejected by server!");
+	cleanPlayer = true;
+}
+void CState_MainMenu_Login::ConnectionClosed() {
+  
+}
+bool CState_MainMenu_Login::OnBack( const CEGUI::EventArgs &event )
+{
+	ActivateBack = true;
+	return false;
+}
+bool CState_MainMenu_Login::OnRegisterBack( const CEGUI::EventArgs &event )
+{
+	ActivateRegisterBack = true;
+	return false;
+}
+bool CState_MainMenu_Login::OnRegisterSubmit(const CEGUI::EventArgs &event) {
+	CEGUI::String email = WinMan->getWindow( "MainMenu_Register/txtEmail" )->getText();
+	CEGUI::String username = WinMan->getWindow( "MainMenu_Register/txtUsername" )->getText();
+	CEGUI::String password = WinMan->getWindow( "MainMenu_Register/txtPassword" )->getText();
+	CEGUI::String passwordConf = WinMan->getWindow( "MainMenu_Register/txtPasswordConfirm" )->getText();
+	bool AgreeTOS = ((CEGUI::Checkbox*)WinMan->getWindow( "MainMenu_Register/chkAgree" ))->isSelected();
+	
+	if(!AgreeTOS) {
+		WinMan->getWindow( "MainMenu_Register/lblTitle" )->setText("[font='monospace-bold-10'][colour='FFAB0000']You must agree to the TOS!");
+		return false;
+	}
+	if(password.compare(passwordConf) != 0) {
+		WinMan->getWindow( "MainMenu_Register/lblTitle" )->setText("[font='monospace-bold-10'][colour='FFAB0000']Passwords do not match!");
+		return false;
+	}
+	boost::regex expression("^([^@]+)@([^.]+).(.+)$");
+	boost::cmatch what;
+	if(!regex_match(email.c_str(), what, expression)) {
+		WinMan->getWindow( "MainMenu_Register/lblTitle" )->setText("[font='monospace-bold-10'][colour='FFAB0000']Invalid Email Address!");
+		return false;
+	}
+	if(email.size() < 5) {
+		WinMan->getWindow( "MainMenu_Register/lblTitle" )->setText("[font='monospace-bold-10'][colour='FFAB0000']Email is to short!");
+		return false;
+	}
+	if(password.size() < 5) {
+		WinMan->getWindow( "MainMenu_Register/lblTitle" )->setText("[font='monospace-bold-10'][colour='FFAB0000']Password is to short!");
+		return false;
+	}
+	if(username.size() < 5) {
+		WinMan->getWindow( "MainMenu_Register/lblTitle" )->setText("[font='monospace-bold-10'][colour='FFAB0000']Username is to short!");
+		return false;
+	}
+	if(email.size() > 30) {
+		WinMan->getWindow( "MainMenu_Register/lblTitle" )->setText("[font='monospace-bold-10'][colour='FFAB0000']Email is to long!");
+		return false;
+	}
+	if(password.size() > 30) {
+		WinMan->getWindow( "MainMenu_Register/lblTitle" )->setText("[font='monospace-bold-10'][colour='FFAB0000']Password is to long!");
+		return false;
+	}
+	if(username.size() > 30) {
+		WinMan->getWindow( "MainMenu_Register/lblTitle" )->setText("[font='monospace-bold-10'][colour='FFAB0000']Username is to long!");
+		return false;
+	}
+	if(username.compare(password) == 0)  {
+		WinMan->getWindow( "MainMenu_Register/lblTitle" )->setText("[font='monospace-bold-10'][colour='FFAB0000']Username and password may not be the same!");
+		return false;
+	}
+	// All is good, establish the connection.
+	this->mPlayer.reset(new inet_player());
+	inet_player::Players.push_back(mPlayer);
+	this->mPlayer->create_commands();
+	this->mPlayer->login_menu_conndisconn();
+	this->mPlayer->loginToServer("gameone.dyndns.biz", "6720","","");
+	return false;
+}
+bool CState_MainMenu_Login::OnNewAccount( const CEGUI::EventArgs &event )
+{
+	ActivateNewAccount = true;
+	return false;
+}
+void CState_MainMenu_Login::Enter()
+{
+	ActivateLogin 		= false;
+	ActivateNewAccount 	= false;
+	ActivateBack		= false;
+	ActivateRegisterBack	= false;
+	LoginStatus		= Normal;
+	RegisterWindowOpen	= false;
+	tryingToLogin = false;
+	cleanPlayer = false;
+
+	mRoot = Ogre::Root::getSingletonPtr();
+	mSceneManager = mRoot->createSceneManager(Ogre::ST_GENERIC);
+
+	CreateGUI();
+
+	IsRunning = true;
+}
+void CState_MainMenu_Login::Exit()
+{
+	CEGUI::WindowManager::getSingleton().destroyWindow( WindowRegister );
+	CEGUI::WindowManager::getSingleton().destroyWindow( Window );
+	CEGUI::WindowManager::getSingleton().destroyAllWindows();
+	if ( mSceneManager != NULL )
+	{
+		mSceneManager->clearScene();
+	}
+	mRoot->getAutoCreatedWindow()->removeAllViewports();
+}
+bool CState_MainMenu_Login::frameStarted( const Ogre::FrameEvent & event )
+{
+	//All events should return to the main menu as they do currently, nothing else.
+	if(cleanPlayer) {
+		
+		auto i = inet_player::Players.begin(), ie = inet_player::Players.end();
+		for(;i!=ie;++i) if((*i) == mPlayer) { inet_player::Players.erase(i); break; }
+		mPlayer.reset();
+		//mPlayer = NULL;
+		cleanPlayer = false;
+	}
+	if( LoginStatus == LoginFailed )
+	{
+		WinMan->getWindow( "MainMenu_Login/lblStatus" )->show();
+		WinMan->getWindow( "MainMenu_Login/lblStatus" )->setText( "[font='monospace-bold-10'][colour='FFAB0000']LOGIN FAILED." );
+		LoginStatus		= Normal;
+	}
+	if( LoginStatus == LoginTimedout )
+	{
+		WinMan->getWindow( "MainMenu_Login/lblStatus" )->show();
+		WinMan->getWindow( "MainMenu_Login/lblStatus" )->setText( "[font='monospace-bold-10'][colour='FFAB0000']Could not connect to server." );
+		LoginStatus		= Normal;
+	}
+	if ( ActivateLogin == true ) {
+	/*	if (this->mPlayer !=boost::shared_ptr<inet_player>()) {
+			//delete this->mPlayer;
+			
+			auto i = inet_player::Players.begin(), ie = inet_player::Players.end();
+			for(;i!=ie;++i) if((*i) == mPlayer) { inet_player::Players.erase(i); break; }
+			this->mPlayer.reset();
+		}*/
+				auto i = inet_player::Players.begin(), ie = inet_player::Players.end();
+				for(;i!=ie;++i) if((*i) == mPlayer) { inet_player::Players.erase(i); break; }
+				mPlayer.reset();
+				tryingToLogin = false;
+				ActivateLogin = false;
+				cleanPlayer = false;
+
+				DoStateChange( CState_Lobby::ReturnInstance() );
+		return true;
+	}
+	if ( ActivateNewAccount	== true )
+	{
+		SysMan->getGUISheet()->getChild( "MainMenu_Register" )->show();
+		SysMan->getGUISheet()->getChild( "MainMenu_Register" )->activate();
+		ActivateNewAccount = false;
+		RegisterWindowOpen = true;
+	}
+	if ( ActivateBack	== true )
+	{
+		DoStateChange( CState_MainMenu::ReturnInstance() );
+	}
+	if ( ActivateRegisterBack	== true )
+	{
+		WindowRegister->hide();
+		SysMan->getGUISheet()->activate();
+		ActivateRegisterBack = false;
+		RegisterWindowOpen = false;
+	}
+	if (!ActivateLogin) {
+		if (this->mPlayer.get() != NULL ) {
+			if(tryingToLogin && LoginTimer.getMilliseconds() > 10000) {
+				LoginStatus = LoginTimedout;
+				
+				auto i = inet_player::Players.begin(), ie = inet_player::Players.end();
+				for(;i!=ie;++i) if((*i) == mPlayer) { inet_player::Players.erase(i); break; }
+				mPlayer.reset();
+				tryingToLogin =		false;
+			} else {
+				this->mPlayer->pump_net_messages();
+			}
+		}
+	}
+	return true;
+}
+bool CState_MainMenu_Login::frameRenderingQueued( const Ogre::FrameEvent &event)
+{
+	return true;
+}
+bool CState_MainMenu_Login::frameEnded( const Ogre::FrameEvent & event )
+{
+	if ( IsRunning == false )
+	{
+		return false;
+	}
+
+	return true;
+}
+void CState_MainMenu_Login::badLogin() {
+	// Print invalid login message. there are no details about what failed (For a little added account security)
+	WinMan->getWindow( "MainMenu_Register/lblTitle" )->setText("[font='monospace-bold-10'][colour='FFAB0000']FFS What the hell went wrong?!?!!");
+	LoginStatus = LoginFailed;
+	tryingToLogin = false;
+}
+void CState_MainMenu_Login::goodLogin() {
+	// Now initiate CState_Testing.
+	WinMan->getWindow( "MainMenu_Register/lblTitle" )->setText("[font='monospace-bold-10'][colour='FFAB0000']Login successful, Switching to CSTATE_TESTING!");
+	std::cout << "login was good"<<std::endl;
+	tryingToLogin = false;
+
+	ActivateLogin = true;
+}
+void CState_MainMenu_Login::keyPressed( const OIS::KeyEvent  & event)
+{
+	SysMan->injectKeyDown( event.key );
+	SysMan->injectChar( event.text );
+}
+void CState_MainMenu_Login::keyReleased( const OIS::KeyEvent  & event)
+{
+	SysMan->injectKeyUp( event.key );
+	SysMan->injectChar( event.text );
+	if(event.key == OIS::KC_ESCAPE && RegisterWindowOpen == true )
+	{
+	    		WindowRegister->hide();
+		SysMan->getGUISheet()->activate();
+		ActivateRegisterBack = false;
+		RegisterWindowOpen = false;
+	}else 
+	if ( event.key == OIS::KC_ESCAPE && RegisterWindowOpen == false )
+	{
+		DoStateChange( CState_MainMenu::ReturnInstance() );
+	}
+}
+void CState_MainMenu_Login::mouseMoved( const OIS::MouseEvent  & event)
+{
+//     CEGUI::System &sys = CEGUI::System::getSingleton();
+	SysMan->injectMouseMove( event.state.X.rel, event.state.Y.rel );
+}
+void CState_MainMenu_Login::mousePressed( const OIS::MouseEvent  & event, OIS::MouseButtonID identifier )
+{
+	switch ( identifier )
+	{
+		case OIS::MB_Left:
+		{
+			SysMan->injectMouseButtonDown( CEGUI::LeftButton );
+
+			break;
+		}
+
+		case OIS::MB_Right:
+		{
+			SysMan->injectMouseButtonDown( CEGUI::RightButton );
+
+			break;
+		}
+
+		case OIS::MB_Middle:
+		{
+			SysMan->injectMouseButtonDown( CEGUI::MiddleButton );
+
+			break;
+		}
+
+		default:
+		{
+			SysMan->injectMouseButtonDown( CEGUI::LeftButton);
+		}
+
+	}
+}
+void CState_MainMenu_Login::mouseReleased( const OIS::MouseEvent  & event, OIS::MouseButtonID identifier )
+{
+	switch ( identifier )
+	{
+		case OIS::MB_Left:
+		{
+			SysMan->injectMouseButtonUp( CEGUI::LeftButton );
+			break;
+		}
+		case OIS::MB_Right:
+		{
+			SysMan->injectMouseButtonUp( CEGUI::RightButton );
+			break;
+		}
+		case OIS::MB_Middle:
+		{
+			SysMan->injectMouseButtonUp( CEGUI::MiddleButton );
+			break;
+		}
+		default:
+		{
+			SysMan->injectMouseButtonUp( CEGUI::LeftButton);
+		}
+	}
+}

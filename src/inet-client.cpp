@@ -1,0 +1,128 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#ifndef WIN32
+#include <unistd.h>
+#endif
+#include <fstream>
+#include "inet.h"
+
+#include "CState_MainMenu_Login.h"
+#define NET_MESSAGE_SIZE 4
+#if WIN32
+std::string cache_filedir = "..\\data\\chunk_cache\\";
+#else
+std::string cache_filedir = "../data/chunk_cache/";
+#endif
+// Inet client and inet server files are virtually the same, but distinct implimentations of the same objects in order to make the seperation clear when expanding
+// upon each end individually.
+#include "inet-client_globals.hpp"
+#include "inet-client_asoi_threaded_chatclient.hpp"
+#include "inet-client_chunk_cacher.hpp"
+#include "inet-client_inet_core.hpp"
+#include "inet-client_network_callbacks.hpp"
+#include "inet-client_create_commands.hpp"
+bool is_server = false;
+void inet_player::isAdmin(std::vector<std::string>&in) {
+	//admin = true;???
+	admin = true;
+	std::string &b = in[0];
+	std::string y = non_safe_string_deserialize(b);
+	admin_level = fromstring<unsigned int>(y);
+}
+
+#include "inet-client_initChunkNet.hpp"
+#include "inet-client_PTeleport.hpp"
+#include "inet-client_changeHeadText.hpp"
+void inet_player::requestChunk(std::vector<std::string>&in) {
+
+}
+#include "inet-client_getName.hpp"
+#include "inet-client_addPlayer.hpp"
+#include "inet-client_remPlayer.hpp"
+#include "inet-client_changePosition.hpp"
+#include "inet-client_followPlayer.hpp"
+extern vec3 from_voxid(unsigned short idx); // is in server_map_globals.hpp
+void Chunk::render_chunk() {
+
+	
+	if(lod >= 5) if(ogre_plugin != NULL) { _in_view = false;}
+	if(lod >= 8) if(myVertexList!=NULL) { cleanup(); if(ogre_plugin != NULL) { delete ogre_plugin; ogre_plugin=NULL;} }
+	if(!changed_from_last_render) return;
+	
+	if(myVertexList!=NULL && _in_view && id!=-1) {
+		//temporal_lock();
+		if(ogre_plugin == NULL) {
+			std::stringstream lout;
+			lout << "hm_chunk("<<id<<")";
+			ogre_plugin = new OgreObjectWrapper(lout.str().c_str(), "General");
+			re_render_needed = true;
+		}
+		if(_in_view && re_render_needed)
+			ogre_plugin->create_ogre_object(myVertexList,vertex_count,this->bbox,pColor,this->mcWeights);
+//		else 
+//			ogre_plugin->create_ogre_object(NULL,0,this->bbox,NULL,NULL);
+		if(!ogre_plugin->entity_loaded) {
+			std::stringstream sm_name;
+			sm_name << "hm_chunk("<<id<< "_ent";
+			try {
+			ogre_plugin->entity = CState_Testing::ReturnInstance()->mSceneManager->createEntity(sm_name.str().c_str(), ogre_plugin->_name, "General");
+			} catch (...) {
+				std::stringstream op; op << id << " "<< ogre_plugin->_name << " crashed!\n";
+				throw op.str().c_str();
+			}
+			ogre_plugin->entity->setMaterialName("VoxelTexture", "General");
+			ogre_plugin->node = CState_Testing::ReturnInstance()->mSceneManager->getRootSceneNode()->createChildSceneNode();
+			ogre_plugin->node->attachObject(ogre_plugin->entity);
+			ogre_plugin->entity_loaded=true;
+			ogre_plugin->scnMgr = CState_Testing::ReturnInstance()->mSceneManager;
+		}
+		ogre_plugin->node->setVisible(true);
+		
+		changed_from_last_render = false;
+		re_render_needed = false;
+		for(auto a = lights.begin(); a!=lights.end(); a=lights.erase(a)) {
+			std::stringstream ls;
+				ls << "light_autogen_"<<(*a)<< id;
+				vec3 temp_v = position+(from_voxid((*a))-vec3(15,30,15)); 
+				try{
+					//CState_Testing::ReturnInstance()->mSceneManager->getLight(ls.str().c_str());
+				/// OH, I forgot, OGRE can't be manipulated cross threads. This needs to be moved out from here.
+					// This is the cause of all the crashing. stupid me!.
+					auto *Light = CState_Testing::ReturnInstance()->mSceneManager->createLight(ls.str().c_str());
+					Light->setPosition(temp_v.toOgre());
+					Light->setType(Ogre::Light::LT_POINT);
+					Light->setVisible(true);
+					Light->setDiffuseColour(1.0, 1.0, 1.0);
+					Light->setSpecularColour(1.0, 1.0, 1.0);
+					Light->setAttenuation(32, 1.0, 0.14, 0.07);
+					/* From http://www.ogre3d.org/tikiwiki/tiki-index.php?page=-Point%20Light%20Attenuation
+						Range Constant Linear Quadratic
+						3250, 1.0, 0.0014, 0.000007
+						600, 1.0, 0.007, 0.0002
+						325, 1.0, 0.014, 0.0007
+						200, 1.0, 0.022, 0.0019
+						160, 1.0, 0.027, 0.0028
+						100, 1.0, 0.045, 0.0075
+						65, 1.0, 0.07, 0.017
+						50, 1.0, 0.09, 0.032
+						32, 1.0, 0.14, 0.07
+						20, 1.0, 0.22, 0.20
+						13, 1.0, 0.35, 0.44
+						7, 1.0, 0.7, 1.8
+					*/
+					madelights.push_back((*a));
+				} catch(...) {}
+		}
+		//temporal_unlock();
+	} else if(ogre_plugin != NULL){
+		//temporal_lock();
+			if(myVertexList == NULL && re_render_needed)
+				ogre_plugin->create_ogre_object(NULL,0,this->bbox,NULL,NULL);
+		ogre_plugin->node->setVisible(false);
+		changed_from_last_render = false;
+		re_render_needed = false;
+		//temporal_unlock();
+	}
+}
+

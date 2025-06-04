@@ -1,0 +1,211 @@
+class TGA_image {
+	int Height;
+	int Width;
+	BYTE *data;
+
+	typedef struct _TgaHeader
+	{
+		BYTE IDLength;        /* 00h  Size of Image ID field */
+		BYTE ColorMapType;    /* 01h  Color map type */
+		BYTE ImageType;       /* 02h  Image type code */
+		WORD CMapStart;       /* 03h  Color map origin */
+		WORD CMapLength;      /* 05h  Color map length */
+		BYTE CMapDepth;       /* 07h  Depth of color map entries */
+		WORD XOffset;         /* 08h  X origin of image */
+		WORD YOffset;         /* 0Ah  Y origin of image */
+		WORD Width;           /* 0Ch  Width of image */
+		WORD Height;          /* 0Eh  Height of image */
+		BYTE PixelDepth;      /* 10h  Image pixel size */
+		BYTE ImageDescriptor; /* 11h  Image descriptor byte */
+	} TGAHEAD;
+
+	typedef struct _TgaFooter
+	{
+		DWORD ExtensionOffset;        /* Extension Area Offse */
+		DWORD DeveloperOffset;        /* Developer Directory Offset */
+		CHAR Signature[18];           /* TGA Signature */
+	} TGAFOOT;
+
+	typedef struct _TgaTag
+	{
+		WORD  TagNumber;      /* ID Number of the tag */
+		DWORD DataOffset;     /* Offset location of the tag data */
+		DWORD DataSize;       /* Size of the tag data in bytes */
+	} TGATAG;
+	typedef struct _TgaExtension
+	{
+	  WORD  Size;                   /* Extension Size */
+	  CHAR  AuthorName[41];         /* Author Name */
+	  CHAR  AuthorComment[324];     /* Author Comment */
+	  WORD  StampMonth;             /* Date/Time Stamp: Month */
+	  WORD  StampDay;               /* Date/Time Stamp: Day */
+	  WORD  StampYear;              /* Date/Time Stamp: Year */
+	  WORD  StampHour;              /* Date/Time Stamp: Hour */
+	  WORD  StampMinute;            /* Date/Time Stamp: Minute */
+	  WORD  StampSecond;            /* Date/Time Stamp: Second */
+	  CHAR  JobName[41];            /* Job Name/ID */
+	  WORD  JobHour;                /* Job Time: Hours */
+	  WORD  JobMinute;              /* Job Time: Minutes */
+	  WORD  JobSecond;              /* Job Time: Seconds */
+	  CHAR  SoftwareId[41];         /* Software ID */
+	  WORD  VersionNumber;          /* Software Version Number */
+	  BYTE  VersionLetter;          /* Software Version Letter */
+	  DWORD KeyColor;               /* Key Color */
+	  WORD  PixelNumerator;         /* Pixel Aspect Ratio */
+	  WORD  PixelDenominator;       /* Pixel Aspect Ratio */
+	  WORD  GammaNumerator;         /* Gamma Value */
+	  WORD  GammaDenominator;       /* Gamma Value */
+	  DWORD ColorOffset;            /* Color Correction Offset */
+	  DWORD StampOffset;            /* Postage Stamp Offset */
+	  DWORD ScanOffset;             /* Scan-Line Table Offset */
+	  BYTE  AttributesType;         /* Attributes Types */
+	} TGAEXTEN;
+
+	typedef struct _TGAColorCorrectionTable
+	{
+	  SHORT Alpha;
+	  SHORT Red;
+	  SHORT Green;
+	  SHORT Blue;
+	} TGACCT[256];
+}class TGA_image {
+	int Height;
+	int Width;
+	BYTE *data;
+
+	typedef struct _TgaHeader
+	{
+		BYTE IDLength;        /* 00h  Size of Image ID field */
+		BYTE ColorMapType;    /* 01h  Color map type */
+		BYTE ImageType;       /* 02h  Image type code */
+		WORD CMapStart;       /* 03h  Color map origin */
+		WORD CMapLength;      /* 05h  Color map length */
+		BYTE CMapDepth;       /* 07h  Depth of color map entries */
+		WORD XOffset;         /* 08h  X origin of image */
+		WORD YOffset;         /* 0Ah  Y origin of image */
+		WORD Width;           /* 0Ch  Width of image */
+		WORD Height;          /* 0Eh  Height of image */
+		BYTE PixelDepth;      /* 10h  Image pixel size */
+		BYTE ImageDescriptor; /* 11h  Image descriptor byte */
+	} TGAHEAD;
+
+	typedef struct _TgaFooter
+	{
+		DWORD ExtensionOffset;        /* Extension Area Offse */
+		DWORD DeveloperOffset;        /* Developer Directory Offset */
+		CHAR Signature[18];           /* TGA Signature */
+	} TGAFOOT;
+
+	typedef struct _TgaTag
+	{
+		WORD  TagNumber;      /* ID Number of the tag */
+		DWORD DataOffset;     /* Offset location of the tag data */
+		DWORD DataSize;       /* Size of the tag data in bytes */
+	} TGATAG;
+	typedef struct _TgaExtension
+	{
+	  WORD  Size;                   /* Extension Size */
+	  CHAR  AuthorName[41];         /* Author Name */
+	  CHAR  AuthorComment[324];     /* Author Comment */
+	  WORD  StampMonth;             /* Date/Time Stamp: Month */
+	  WORD  StampDay;               /* Date/Time Stamp: Day */
+	  WORD  StampYear;              /* Date/Time Stamp: Year */
+	  WORD  StampHour;              /* Date/Time Stamp: Hour */
+	  WORD  StampMinute;            /* Date/Time Stamp: Minute */
+	  WORD  StampSecond;            /* Date/Time Stamp: Second */
+	  CHAR  JobName[41];            /* Job Name/ID */
+	  WORD  JobHour;                /* Job Time: Hours */
+	  WORD  JobMinute;              /* Job Time: Minutes */
+	  WORD  JobSecond;              /* Job Time: Seconds */
+	  CHAR  SoftwareId[41];         /* Software ID */
+	  WORD  VersionNumber;          /* Software Version Number */
+	  BYTE  VersionLetter;          /* Software Version Letter */
+	  DWORD KeyColor;               /* Key Color */
+	  WORD  PixelNumerator;         /* Pixel Aspect Ratio */
+	  WORD  PixelDenominator;       /* Pixel Aspect Ratio */
+	  WORD  GammaNumerator;         /* Gamma Value */
+	  WORD  GammaDenominator;       /* Gamma Value */
+	  DWORD ColorOffset;            /* Color Correction Offset */
+	  DWORD StampOffset;            /* Postage Stamp Offset */
+	  DWORD ScanOffset;             /* Scan-Line Table Offset */
+	  BYTE  AttributesType;         /* Attributes Types */
+	} TGAEXTEN;
+
+	typedef struct _TGAColorCorrectionTable
+	{
+	  SHORT Alpha;
+	  SHORT Red;
+	  SHORT Green;
+	  SHORT Blue;
+	} TGACCT[256];
+}class TGA_image {
+	int Height;
+	int Width;
+	BYTE *data;
+
+	typedef struct _TgaHeader
+	{
+		BYTE IDLength;        /* 00h  Size of Image ID field */
+		BYTE ColorMapType;    /* 01h  Color map type */
+		BYTE ImageType;       /* 02h  Image type code */
+		WORD CMapStart;       /* 03h  Color map origin */
+		WORD CMapLength;      /* 05h  Color map length */
+		BYTE CMapDepth;       /* 07h  Depth of color map entries */
+		WORD XOffset;         /* 08h  X origin of image */
+		WORD YOffset;         /* 0Ah  Y origin of image */
+		WORD Width;           /* 0Ch  Width of image */
+		WORD Height;          /* 0Eh  Height of image */
+		BYTE PixelDepth;      /* 10h  Image pixel size */
+		BYTE ImageDescriptor; /* 11h  Image descriptor byte */
+	} TGAHEAD;
+
+	typedef struct _TgaFooter
+	{
+		DWORD ExtensionOffset;        /* Extension Area Offse */
+		DWORD DeveloperOffset;        /* Developer Directory Offset */
+		CHAR Signature[18];           /* TGA Signature */
+	} TGAFOOT;
+
+	typedef struct _TgaTag
+	{
+		WORD  TagNumber;      /* ID Number of the tag */
+		DWORD DataOffset;     /* Offset location of the tag data */
+		DWORD DataSize;       /* Size of the tag data in bytes */
+	} TGATAG;
+	typedef struct _TgaExtension
+	{
+	  WORD  Size;                   /* Extension Size */
+	  CHAR  AuthorName[41];         /* Author Name */
+	  CHAR  AuthorComment[324];     /* Author Comment */
+	  WORD  StampMonth;             /* Date/Time Stamp: Month */
+	  WORD  StampDay;               /* Date/Time Stamp: Day */
+	  WORD  StampYear;              /* Date/Time Stamp: Year */
+	  WORD  StampHour;              /* Date/Time Stamp: Hour */
+	  WORD  StampMinute;            /* Date/Time Stamp: Minute */
+	  WORD  StampSecond;            /* Date/Time Stamp: Second */
+	  CHAR  JobName[41];            /* Job Name/ID */
+	  WORD  JobHour;                /* Job Time: Hours */
+	  WORD  JobMinute;              /* Job Time: Minutes */
+	  WORD  JobSecond;              /* Job Time: Seconds */
+	  CHAR  SoftwareId[41];         /* Software ID */
+	  WORD  VersionNumber;          /* Software Version Number */
+	  BYTE  VersionLetter;          /* Software Version Letter */
+	  DWORD KeyColor;               /* Key Color */
+	  WORD  PixelNumerator;         /* Pixel Aspect Ratio */
+	  WORD  PixelDenominator;       /* Pixel Aspect Ratio */
+	  WORD  GammaNumerator;         /* Gamma Value */
+	  WORD  GammaDenominator;       /* Gamma Value */
+	  DWORD ColorOffset;            /* Color Correction Offset */
+	  DWORD StampOffset;            /* Postage Stamp Offset */
+	  DWORD ScanOffset;             /* Scan-Line Table Offset */
+	  BYTE  AttributesType;         /* Attributes Types */
+	} TGAEXTEN;
+
+	typedef struct _TGAColorCorrectionTable
+	{
+	  SHORT Alpha;
+	  SHORT Red;
+	  SHORT Green;
+	  SHORT Blue;
+	} TGACCT[256];
+}

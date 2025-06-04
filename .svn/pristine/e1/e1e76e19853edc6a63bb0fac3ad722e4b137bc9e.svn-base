@@ -1,0 +1,62 @@
+#define ATLAS_WIDTH 4096.0
+#define TEXTURE_WIDTH 256.0
+// hopefully the compiler will optimize these..
+#define RATIO TEXTURE_WIDTH / ATLAS_WIDTH
+#define NUM_TEXTURES_IN_ATLAS (ATLAS_WIDTH / TEXTURE_WIDTH)
+struct C2E1v_Output {
+  float4 color    : COLOR;
+
+};
+void voxeltexture_vp(
+   float4 position         : POSITION,
+   float4 tile              : COLOR,
+
+   out float4 clipPosition      : POSITION,
+   out float4 worldPosition   : TEXCOORD0,
+   out float4 textureAtlasOffset   : TEXCOORD1,
+
+   uniform float4x4 world,
+   uniform float4x4 viewProj)
+{    
+    worldPosition = position + float4(0.5f, 0.5f, 0.5f, 0.5f);//mul(world, position);    
+    clipPosition = mul(viewProj, mul(world,position));
+    float idx = ((tile.r)) * NUM_TEXTURES_IN_ATLAS;//TEXTURE_WIDTH - 1;
+    float blocky = floor(idx / NUM_TEXTURES_IN_ATLAS);
+    float blockx = (idx - blocky * NUM_TEXTURES_IN_ATLAS);
+   //float tileX = ((tile.r != 0.0) ? (1.0 / tile.r) : 0.0);
+   textureAtlasOffset = float4(blockx +0.25f, blocky + 0.25f, 0.0, 0.0) * RATIO;
+}
+
+
+C2E1v_Output voxeltexture_fp(
+   float4 position         : POSITION,
+   float4 worldPosition      : TEXCOORD0,
+   float4 textureAtlasOffset   : TEXCOORD1,
+
+   uniform sampler2D texture   : TEXUNIT0)
+
+//   out float4 result      : COLOR)
+{  
+   float3 worldNormal = cross(dFdy(worldPosition.xyz),dFdx(worldPosition.xyz));
+   worldNormal = normalize(worldNormal);
+ //  worldPosition -= 0.5;
+   float2 uv = float2(1.0, 1.0);
+   if(worldNormal.x > 0.5)
+      uv = frac(float2(-worldPosition.z, -worldPosition.y));
+   if(worldNormal.x < -0.5)
+      uv = frac(float2(-worldPosition.z, worldPosition.y));
+   if(worldNormal.y > 0.5)
+      uv = frac(worldPosition.xz);
+   if(worldNormal.y < -0.5)
+      uv = frac(float2(-worldPosition.x, worldPosition.z));
+   if(worldNormal.z > 0.5)
+      uv = frac(float2(worldPosition.x, -worldPosition.y));
+   if(worldNormal.z < -0.5)
+      uv = frac(float2(-worldPosition.x,-worldPosition.y));
+   textureAtlasOffset += float4(uv * 0.5, 0.0, 0.0) * RATIO;
+    C2E1v_Output OUT;
+    
+   OUT.color = tex2D(texture, textureAtlasOffset.xy);
+  return OUT;
+   //return result;
+}

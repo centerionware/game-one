@@ -1,0 +1,96 @@
+void inet_player::send_updates(net_commands &arg, unsigned int &other_player_socket) {
+	static int size_tsize = sizeof(unsigned int);
+	if(arg == HeadText) {
+		// change head text
+		if(socket == other_player_socket) return;
+		char sArr[size_tsize];
+		memcpy(sArr, &socket, size_tsize);
+		std::string update;
+		update += to_value(NetCommand);
+		update += to_value(arg);
+		update.append(sArr,size_tsize);
+		update.append(headtext);
+		send_text(update, other_player_socket);
+	} else if(arg == Position) {
+		// change position
+		if(socket == other_player_socket) return;
+		std::string update;
+		update += to_value(NetCommand);
+		update += to_value(arg);
+		static int float_size = sizeof(float);
+		char sArr[size_tsize];
+		memcpy(sArr, &socket, size_tsize);
+		update.append(sArr,size_tsize);
+		char oneArr[float_size];
+		memcpy(oneArr, &actual_target_position.x, float_size);
+		update.append(oneArr,float_size);
+		memcpy(oneArr, &actual_target_position.y, float_size);
+		update.append(oneArr,float_size);
+		memcpy(oneArr, &actual_target_position.z, float_size);
+		update.append(oneArr,float_size);
+		send_text(update, other_player_socket);
+	} else if(arg == Teleport) {
+		std::cout << "Sending a Teleport!!\n";
+		//if(socket == other_player_socket) return;
+		std::string update;
+		update += to_value(NetCommand);
+		update += to_value(arg);
+		static int float_size = sizeof(float);
+		char sArr[size_tsize];
+		int skit = socket == other_player_socket ? 0 : socket;
+		memcpy(sArr, &skit, size_tsize);
+		update.append(sArr,size_tsize);
+		char oneArr[float_size];
+		memcpy(oneArr, &position.x, float_size);
+		update.append(oneArr,float_size);
+		memcpy(oneArr, &position.y, float_size);
+		update.append(oneArr,float_size);
+		memcpy(oneArr, &position.z, float_size);
+		update.append(oneArr,float_size);
+		update.append(headtext);
+		send_text(update, other_player_socket);
+	} else if(arg == AddPlayer || arg==RemPlayer) {
+		if(socket == other_player_socket) return;
+		char sArr[size_tsize];
+		memcpy(sArr, &socket, size_tsize);
+		std::string update;
+		update += to_value(NetCommand);
+		update += to_value(arg);
+
+		update.append(sArr,size_tsize);
+		if(arg == AddPlayer) {
+			unsigned int playermodelid = 0;
+			char miid[size_tsize];
+			memcpy(miid, &playermodelid, size_tsize);
+			update.append(miid, size_tsize);
+		}
+		send_text(update, other_player_socket);
+		
+	} else if(arg == FollowPlayer) {
+//		if(socket == other_player_socket) return;
+		
+		std::string update;
+		update += to_value(NetCommand);
+
+
+		
+		char sArr[size_tsize];
+		
+		memcpy(sArr, &socket, size_tsize);
+		update.append(sArr,size_tsize);
+		unsigned int vi;
+		if(following_player == NULL) {
+			vi = 0;
+			update+= to_value(UnFollowPlayer);
+		} else {
+			vi = following_player->socket;
+			update += to_value(arg);
+		}
+		if(following_player != NULL && other_player_socket == following_player->socket) vi = 0;
+		memcpy(sArr, &vi, size_tsize);
+		update.append(sArr, size_tsize);
+		
+		send_text(update, other_player_socket);
+	} 
+	
+}

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<GUILayout >
+    <Window Type="DefaultWindow" Name="MainMenu_Login" >
+        <Property Name="UnifiedAreaRect" Value="{{-0.000976562,0},{0,0},{0.999023,0},{1,0}}" />
+        <Window Type="GameOneLook/StaticImage" Name="MainMenu_Login/Background" >
+            <Property Name="BackgroundImage" Value="set:MainMenu image:MainMenu" />
+            <Property Name="UnifiedAreaRect" Value="{{0,0},{0,0},{1,0},{1,0}}" />
+        </Window>
+        <Window Type="TaharezLook/StaticText" Name="MainMenu_Login/lblTitle" >
+            <Property Name="Text" Value="Login" />
+            <Property Name="Alpha" Value="0.5" />
+            <Property Name="FrameEnabled" Value="False" />
+            <Property Name="HorzFormatting" Value="HorzCentred" />
+            <Property Name="UnifiedAreaRect" Value="{{0.333,0},{0.24,0},{0.66,0},{0.3153,0}}" />
+            <Property Name="BackgroundEnabled" Value="False" />
+        </Window>
+        <Window Type="TaharezLook/StaticText" Name="MainMenu_Login/lblStatus" >
+            <Property Name="Text" Value="nothing" />
+            <Property Name="TextColours" Value="tl:FFABABAB tr:FFABABAB bl:FFABABAB br:FFABABAB" />
+            <Property Name="FrameEnabled" Value="False" />
+            <Property Name="HorzFormatting" Value="HorzCentred" />
+            <Property Name="UnifiedAreaRect" Value="{{0.333,0},{0.341309,0},{0.66,0},{0.401309,0}}" />
+            <Property Name="BackgroundEnabled" Value="False" />
+        </Window>
+        <Window Type="TaharezLook/StaticText" Name="MainMenu_Login/lblUsername" >
+            <Property Name="Text" Value="Username" />
+            <Property Name="Alpha" Value="0.8" />
+            <Property Name="HorzFormatting" Value="HorzCentred" />
+            <Property Name="UnifiedAreaRect" Value="{{0.3,0},{0.5,0},{0.45,0},{0.54,0}}" />
+        </Window>
+        <Window Type="TaharezLook/StaticText" Name="MainMenu_Login/lblPassword" >
+            <Property Name="Text" Value="Password" />
+            <Property Name="Alpha" Value="0.8" />
+            <Property Name="HorzFormatting" Value="HorzCentred" />
+            <Property Name="UnifiedAreaRect" Value="{{0.3,0},{0.6,0},{0.45,0},{0.64,0}}" />
+        </Window>
+        <Window Type="TaharezLook/Editbox" Name="MainMenu_Login/txtUsername" >
+            <Property Name="Alpha" Value="0.8" />
+            <Property Name="MaxTextLength" Value="1073741823" />
+            <Property Name="UnifiedAreaRect" Value="{{0.5,0},{0.5,0},{0.7,0},{0.54,0}}" />
+            <Property Name="TextParsingEnabled" Value="False" />
+        </Window>
+        <Window Type="TaharezLook/Editbox" Name="MainMenu_Login/txtPassword" >
+            <Property Name="Alpha" Value="0.8" />
+            <Property Name="MaskText" Value="True" />
+            <Property Name="MaxTextLength" Value="1073741823" />
+            <Property Name="UnifiedAreaRect" Value="{{0.5,0},{0.6,0},{0.7,0},{0.64,0}}" />
+            <Property Name="TextParsingEnabled" Value="False" />
+        </Window>
+        <Window Type="TaharezLook/Button" Name="MainMenu_Login/btnLogin" >
+            <Property Name="Text" Value="Login" />
+            <Property Name="Alpha" Value="0.8" />
+            <Property Name="UnifiedAreaRect" Value="{{0.5,0},{0.7,0},{0.7,0},{0.74,0}}" />
+        </Window>
+        <Window Type="TaharezLook/Button" Name="MainMenu_Login/btnBack" >
+            <Property Name="Text" Value="Back" />
+            <Property Name="Alpha" Value="0.8" />
+            <Property Name="UnifiedAreaRect" Value="{{0.3,0},{0.7,0},{0.45,0},{0.74,0}}" />
+        </Window>
+        <Window Type="TaharezLook/Checkbox" Name="MainMenu_Login/chkNewAccount" >
+            <Property Name="Text" Value="New account" />
+            <Property Name="Alpha" Value="0.8" />
+            <Property Name="UnifiedAreaRect" Value="{{0.54,0},{0.4,0},{0.69,0},{0.5,0}}" />
+        </Window>
+    </Window>
+</GUILayout>

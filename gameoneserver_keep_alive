@@ -1,0 +1,8 @@
+#!/bin/bash
+while ( : ) do 
+	ulimit -c unlimited
+	#valgrind --tool=memcheck -v -v --leak-check=full --show-reachable=yes gameoneserver 1> log 2>&1
+	#valgrind --tool=memcheck  -v -v --leak-check=full --leak-resolution=high --smc-check=all --trace-children=yes gameoneserver 1> log 2>&1
+	gameoneserver > debug_output 
+#	sleep 3
+done

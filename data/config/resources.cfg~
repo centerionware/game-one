@@ -1,0 +1,54 @@
+# Resources required by the sample browser and most samples.
+[Essential]
+Zip=/usr/share/OGRE/media/edia/packs/SdkTrays.zip
+Zip=/usr/share/OGRE/media/edia/packs/profiler.zip
+FileSystem=/usr/share/OGRE/media/edia/thumbnails
+
+# Common sample resources needed by many of the samples.
+# Rarely used resources should be separately loaded by the
+# samples which require them.
+[Popular]
+FileSystem=/usr/share/OGRE/media/edia/fonts
+FileSystem=/usr/share/OGRE/media/edia/materials/programs
+FileSystem=/usr/share/OGRE/media/edia/materials/scripts
+FileSystem=/usr/share/OGRE/media/edia/materials/textures
+FileSystem=/usr/share/OGRE/media/edia/materials/textures/nvidia
+FileSystem=/usr/share/OGRE/media/edia/models
+FileSystem=/usr/share/OGRE/media/edia/particle
+FileSystem=/usr/share/OGRE/media/edia/DeferredShadingMedia
+FileSystem=/usr/share/OGRE/media/edia/PCZAppMedia
+FileSystem=/usr/share/OGRE/media/edia/RTShaderLib
+FileSystem=/usr/share/OGRE/media/edia/RTShaderLib/materials
+FileSystem=/usr/share/OGRE/media/edia/materials/scripts/SSAO
+FileSystem=/usr/share/OGRE/media/edia/materials/textures/SSAO
+Zip=/usr/share/OGRE/media/edia/packs/cubemap.zip
+Zip=/usr/share/OGRE/media/edia/packs/cubemapsJS.zip
+Zip=/usr/share/OGRE/media/edia/packs/dragon.zip
+Zip=/usr/share/OGRE/media/edia/packs/fresneldemo.zip
+Zip=/usr/share/OGRE/media/edia/packs/ogretestmap.zip
+Zip=/usr/share/OGRE/media/edia/packs/ogredance.zip
+Zip=/usr/share/OGRE/media/edia/packs/Sinbad.zip
+Zip=/usr/share/OGRE/media/edia/packs/skybox.zip
+
+[General]
+FileSystem=/usr/share/OGRE/media/edia
+FileSystem=../dotscene
+FileSystem=../data/
+FileSystem=../data/materials/
+FileSystem=../data/models/
+[Imagesets] 
+FileSystem=../data/gui/imagesets
+[Fonts] 
+FileSystem=../data/gui/fonts
+[Schemes] 
+FileSystem=../data/gui/schemes
+[LookNFeel] 
+FileSystem=../data/gui/looknfeel 
+[Layouts] 
+FileSystem=../data/gui/layouts
+[XmlSchemas]
+FileSystem=../data/gui/xml_schemas
+
+# Materials for visual tests
+[Tests]
+FileSystem=/usr/share/OGRE/media/edia/../../Tests/Media

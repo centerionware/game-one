@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<GUILayout >
+    <Window Type="DefaultWindow" Name="AdminWindow" >
+        <Property Name="UnifiedAreaRect" Value="{{0,0},{0,0},{1,0},{1,0}}" />
+        <Window Type="Vanilla/FrameWindow" Name="Admin/" >
+            <Property Name="TitlebarFont" Value="DejaVuSans-10" />
+            <Property Name="TitlebarEnabled" Value="True" />
+            <Property Name="UnifiedAreaRect" Value="{{0,0},{0,0},{1,0},{1,0}}" />
+            <Window Type="OgreTray/TabControl" Name="Admin//" >
+                <Property Name="TabHeight" Value="{0,25.7338}" />
+                <Property Name="TabPanePosition" Value="Top" />
+                <Property Name="UnifiedAreaRect" Value="{{0,0},{0,0},{1,0},{1,0}}" />
+                <Window Type="DefaultWindow" Name="Instance Controls" >
+                    <Property Name="Text" Value="Instance Controls" />
+                    <Property Name="Visible" Value="False" />
+                    <Property Name="UnifiedAreaRect" Value="{{0,0},{0,0},{1,0},{1,0}}" />
+                    <Window Type="Vanilla/Button" Name="KillAllInstances" >
+                        <Property Name="Text" Value="Terminate All Instances" />
+                        <Property Name="Tooltip" Value="Use for upgrading all instances. Will not reboot lobby server." />
+                        <Property Name="UnifiedAreaRect" Value="{{0.744321,0},{0.926822,0},{0.994321,0},{0.975656,0}}" />
+                    </Window>
+                </Window>
+                <Window Type="DefaultWindow" Name="User Admin" >
+                    <Property Name="Text" Value="User Admin" />
+                    <Property Name="Visible" Value="False" />
+                    <Property Name="UnifiedAreaRect" Value="{{0,0},{0,0},{1,0},{1,0}}" />
+                    <Window Type="Vanilla/Listbox" Name="user_list" >
+                        <Property Name="UnifiedAreaRect" Value="{{0.01,0},{0.068,0},{0.35,0},{0.99,0}}" />
+                    </Window>
+                    <Window Type="Vanilla/Editbox" Name="user_search" >
+                        <Property Name="MaxTextLength" Value="1073741823" />
+                        <Property Name="UnifiedAreaRect" Value="{{0.01,0},{0.01,0},{0.35,0},{0.06,0}}" />
+                        <Property Name="TextParsingEnabled" Value="False" />
+                    </Window>
+                    <Window Type="Vanilla/Editbox" Name="user_name" >
+                        <Property Name="MaxTextLength" Value="1073741823" />
+                        <Property Name="UnifiedAreaRect" Value="{{0.7,0},{0.02,0},{0.98,0},{0.07,0}}" />
+                        <Property Name="TextParsingEnabled" Value="False" />
+                    </Window>
+                    <Window Type="Vanilla/Editbox" Name="user_password" >
+                        <Property Name="MaxTextLength" Value="1073741823" />
+                        <Property Name="UnifiedAreaRect" Value="{{0.7,0},{0.08,0},{0.98,0},{0.13,0}}" />
+                        <Property Name="TextParsingEnabled" Value="False" />
+                    </Window>
+                    <Window Type="TaharezLook/Checkbox" Name="is_admin" >
+                        <Property Name="Text" Value="Admin" />
+                        <Property Name="UnifiedAreaRect" Value="{{0.703341,0},{0.141691,0},{0.953341,0},{0.175948,0}}" />
+                    </Window>
+                    <Window Type="OgreTray/TabControl" Name="inventory_and_stash" >
+                        <Property Name="TabHeight" Value="{0,25.7338}" />
+                        <Property Name="TabPanePosition" Value="Top" />
+                        <Property Name="UnifiedAreaRect" Value="{{0.36,0},{0.4,0},{0.99,0},{0.99,0}}" />
+                        <Window Type="DefaultWindow" Name="player_inventory" >
+                            <Property Name="Text" Value="Player Inventory" />
+                            <Property Name="UnifiedAreaRect" Value="{{0,0},{0,0},{1,0},{1,0}}" />
+                        </Window>
+                    </Window>
+                </Window>
+                <Window Type="DefaultWindow" Name="unique_item_admin" >
+                    <Property Name="Text" Value="Unique Item Admin" />
+                    <Property Name="UnifiedAreaRect" Value="{{0,0},{0,0},{1,0},{1,0}}" />
+                    <Window Type="Vanilla/Listbox" Name="item_list" >
+                        <Property Name="UnifiedAreaRect" Value="{{0.01,0},{0.068,0},{0.35,0},{0.99,0}}" />
+                    </Window>
+                    <Window Type="Vanilla/Editbox" Name="item_search" >
+                        <Property Name="MaxTextLength" Value="1073741823" />
+                        <Property Name="UnifiedAreaRect" Value="{{0.01,0},{0.01,0},{0.35,0},{0.06,0}}" />
+                        <Property Name="TextParsingEnabled" Value="False" />
+                    </Window>
+                    <Window Type="OgreTray/Editbox" Name="name" >
+                        <Property Name="MaxTextLength" Value="1073741823" />
+                        <Property Name="UnifiedAreaRect" Value="{{0.77,0},{0.01,0},{0.99,0},{0.06,0}}" />
+                        <Property Name="TextParsingEnabled" Value="False" />
+                    </Window>
+                    <Window Type="Vanilla/StaticText" Name="lbl_item_name" >
+                        <Property Name="Text" Value="Item Name" />
+                        <Property Name="UnifiedAreaRect" Value="{{0.51,0},{0.01,0},{0.765,0},{0.06,0}}" />
+                    </Window>
+                    <Window Type="Vanilla/Button" Name="Add" >
+                        <Property Name="Text" Value="Add New" />
+                        <Property Name="UnifiedAreaRect" Value="{{0.82,0},{0.94,0},{0.99,0},{0.99,0}}" />
+                    </Window>
+                    <Window Type="Vanilla/Button" Name="Modify" >
+                        <Property Name="Text" Value="Modify" />
+                        <Property Name="UnifiedAreaRect" Value="{{0.645,0},{0.94,0},{0.81,0},{0.99,0}}" />
+                    </Window>
+                    <Window Type="Vanilla/Button" Name="Delete" >
+                        <Property Name="Text" Value="Delete" />
+                        <Property Name="UnifiedAreaRect" Value="{{0.47,0},{0.94,0},{0.64,0},{0.99,0}}" />
+                    </Window>
+                    <Window Type="WindowsLook/Editbox" Name="item_description" >
+                        <Property Name="MaxTextLength" Value="1073741823" />
+                        <Property Name="UnifiedAreaRect" Value="{{0.355234,0},{0.844023,0},{0.991649,0},{0.923469,0}}" />
+                        <Property Name="TextParsingEnabled" Value="False" />
+                    </Window>
+                    <Window Type="Vanilla/StaticText" Name="lbl_item_type" >
+                        <Property Name="Text" Value="Item Type" />
+                        <Property Name="UnifiedAreaRect" Value="{{0.51,0},{0.07,0},{0.765,0},{0.12,0}}" />
+                    </Window>
+                    <Window Type="Vanilla/Combobox" Name="item_type" >
+                        <Property Name="UnifiedAreaRect" Value="{{0.77,0},{0.07,0},{0.99,0},{0.13,0}}" />
+                        <Property Name="MaxEditTextLength" Value="1073741823" />
+                        <Property Name="ForceVertScrollbar" Value="True" />
+                    </Window>
+                    <Window Type="Vanilla/StaticText" Name="lbl_affix_1" >
+                        <Property Name="Text" Value="Affix 1" />
+                        <Property Name="UnifiedAreaRect" Value="{{0.36,0},{0.13,0},{0.46,0},{0.18,0}}" />
+                    </Window>
+                    <Window Type="Vanilla/Combobox" Name="affix_1" >
+                        <Property Name="UnifiedAreaRect" Value="{{0.465,0},{0.13,0},{0.79,0},{0.18,0}}" />
+                        <Property Name="MaxEditTextLength" Value="1073741823" />
+                        <Property Name="ForceVertScrollbar" Value="True" />
+                    </Window>
+                    <Window Type="Vanilla/Editbox" Name="affix_1_range_begin" >
+                        <Property Name="MaxTextLength" Value="1073741823" />
+                        <Property Name="UnifiedAreaRect" Value="{{0.795,0},{0.13,0},{0.87,0},{0.18,0}}" />
+                        <Property Name="TextParsingEnabled" Value="False" />
+                    </Window>
+                    <Window Type="Vanilla/Editbox" Name="affix_1_range_end" >
+                        <Property Name="MaxTextLength" Value="1073741823" />
+                        <Property Name="UnifiedAreaRect" Value="{{0.875,0},{0.13,0},{0.95,0},{0.18,0}}" />
+                        <Property Name="TextParsingEnabled" Value="False" />
+                    </Window>
+                </Window>
+                <Window Type="DefaultWindow" Name="Model Admin" >
+                    <Property Name="Text" Value="Model Admin" />
+                    <Property Name="Visible" Value="False" />
+                    <Property Name="UnifiedAreaRect" Value="{{0,0},{0,0},{1,0},{1,0}}" />
+                </Window>
+                <Window Type="OgreTray/TabContentPane" Name="affix_management" >
+                    <Property Name="Text" >Item PrefixAffix management
+</Property>
+                    <Property Name="Visible" Value="False" />
+                    <Property Name="UnifiedAreaRect" Value="{{0,0},{0,0},{1,0},{1,0}}" />
+                </Window>
+            </Window>
+        </Window>
+    </Window>
+</GUILayout>

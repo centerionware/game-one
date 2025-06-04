@@ -1,0 +1,112 @@
+/**
+ * GAME-ONE APPLICATION FRAMEWORK
+ * Filename: CState_MainMenu.h
+ * Description: Introductory Game State
+ * Legal stuff ~
+ */
+
+
+#ifndef CSTATE_LOBBY_H
+#define CSTATE_LOBBY_H
+
+#include <Ogre.h>
+#include <OgreViewport.h>
+
+#include <OIS.h>
+
+#include <CEGUI.h>
+#include <CEGUI/RendererModules/Ogre/CEGUIOgreRenderer.h>
+
+#include <SdkCameraMan.h>
+
+#include "dotscene/dotscene.h"
+
+#include "CState.h"
+#include "CState_Splash.h"
+#include "CState_Testing.h"
+#include "CState_MainMenu_Login.h"
+#include "CState_MainMenu_Settings.h"
+#include "server-map.h"
+
+
+class CState_Lobby : public CState
+{
+public:
+    void Enter();
+    
+    void Exit();
+    
+    
+    void Pause();
+    
+    void Resume();
+    
+    
+    bool frameStarted( const Ogre::FrameEvent & event );
+    
+    bool frameRenderingQueued( const Ogre::FrameEvent &event);
+    
+    bool frameEnded( const Ogre::FrameEvent & event );
+    
+    
+    void keyPressed( const OIS::KeyEvent & event );
+    
+    void keyReleased( const OIS::KeyEvent & event );
+    
+    
+    void mouseMoved( const OIS::MouseEvent & event );
+    
+    void mousePressed( const OIS::MouseEvent & event, OIS::MouseButtonID identifier );
+    
+    void mouseReleased( const OIS::MouseEvent & event, OIS::MouseButtonID identifier );
+    
+    static CState_Lobby * ReturnInstance() { return & STATE_LOBBY; }
+    
+    float Alpha;
+    
+    void FadeIn();
+    
+    void FadeOut();
+    
+    bool ActivateFadeOut;
+    bool IsConnected;
+	std::string server;
+	std::string port;
+	bool instance_joined;
+		void ConnectionSuccess();
+	void ConnectionClosed();
+	void InstanceJoined(std::vector<std::string>&);
+	bool isLoggedIn;
+	void goodLogin();// { isLoggedIn = true; }
+	void badLogin();// { isLoggedIn = false; }
+protected:
+	
+    CState_Lobby() {};
+    
+    void CreateGUI( void );
+    
+	bool OnBack( const CEGUI::EventArgs &event );
+    bool OnLocalChat(const CEGUI::EventArgs &Event);
+	bool OnJoinMainServer(const CEGUI::EventArgs &Event);
+
+    bool ActivateLogin;
+    
+    bool ActivateSettings;
+	
+    bool IsRunning;
+    
+
+	//Each of these needs a layout file.
+    CEGUI::Window		*GameSearch;
+	CEGUI::Window		*GameCreate;
+	CEGUI::Window		*ChannelPublicSearch; // chat rooms
+	CEGUI::Window		*ChannelCreate;
+	CEGUI::Window		*ChannelPrivateJoin;
+
+	std::string username; // given by the mainmenu_login. needed for cstate_testing.
+	std::string password;
+private:
+    static CState_Lobby STATE_LOBBY;
+};
+
+#endif // CSTATE_LOBBY_H

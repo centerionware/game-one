@@ -1,0 +1,71 @@
+namespace heightmap_globals {
+extern boost::mutex mut_c;
+}
+struct mut_c_locker {
+  bool locked;
+  mut_c_locker() { heightmap_globals::mut_c.lock(); locked = true; }
+  ~mut_c_locker() { if(locked) heightmap_globals::mut_c.unlock(); }
+  void unlock() { heightmap_globals::mut_c.unlock(); locked = false;}
+  void lock() { if(!locked) heightmap_globals::mut_c.lock(); locked = true; }
+};
+std::map<inet_player*,int> user_ids;
+Item *find_item(unsigned int iid) {
+	auto it = all_items.begin(), end = all_items.end();
+	for(unsigned int idx = 0;it!=end;++it,++idx) {
+		if(idx == iid) return &(*it);
+	}
+	return NULL;
+}
+
+inet_player *find_player(unsigned int socket) {
+	auto iter = Players.begin(), end = Players.end();
+	for(;iter!=end;iter++) 
+		  if( (*iter)->socket == socket)  return (*iter).get();
+	return NULL;
+}
+void remove_following(unsigned int socket);
+void remove_player(unsigned int socket) {
+  
+  
+	auto iter = Players.begin(), end = Players.end();
+	remove_following(socket);
+	for(;iter!=end;iter++) 
+		  if( (*iter)->socket == socket) { 
+			unsigned int player_id = user_ids[(*iter).get()];
+			std::ostringstream query;
+
+			if( (*iter)->logged_in) {
+				vec3 update_pos((*iter)->position);
+			update_pos.floor();
+			query << "update users set LastPosX=\"" << update_pos.x << "\", LastPosY=\"" << 
+			(int)update_pos.y << "\", LastPosZ=\"" << update_pos.z << "\" where id=\"" << player_id << "\""; 
+			std::cout << update_pos.print("Update Pos") << std::endl;
+			std::string oqr = query.str();
+			database_connection.runQuery(oqr);
+		    }
+			if(chunk_quick_cache::ptr)
+			chunk_quick_cache::ptr->remove_player((*iter).get());
+			 Players.erase(iter); return; 
+			}
+			
+			
+}
+
+
+struct movement_teleporter_helperthingy {
+	Ogre::Timer timer;
+	bool has_teleported;
+};
+std::map<inet_player*, movement_teleporter_helperthingy> standing_still_timer;
+Ogre::Timer queue_timer;
+
+struct queue_obj{ 
+	queue_obj(int fd):socket(fd),login_time(queue_timer.getMicroseconds()) {}
+	int socket;
+	unsigned long login_time;
+};
+
+std::vector<queue_obj> login_queue;
+fd_set *mset;
+
+#define sOfT sizeof(size_t)

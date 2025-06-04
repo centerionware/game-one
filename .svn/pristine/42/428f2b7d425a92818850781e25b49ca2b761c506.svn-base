@@ -1,0 +1,202 @@
+/**
+ * GAME-ONE APPLICATION FRAMEWORK
+ * Filename: CState_Lobby.h
+ * Description: Introductory Game State
+ * Legal stuff ~
+ */
+
+#include "CState_Lobby.h"
+#include "CEGUI/RendererModules/Ogre/CEGUIOgreRenderer.h"
+
+CState_Lobby CState_Lobby::STATE_LOBBY;
+
+void CState_Lobby::CreateGUI( void )
+{
+    //Initialise CEGUI's Ogre Renderer, and create necessary pointers to CEGUI's subsystems;
+//     MainMenuGUIRenderer = &CEGUI::OgreRenderer::bootstrapSystem();
+    WinMan = CEGUI::WindowManager::getSingletonPtr();
+    SysMan = CEGUI::System::getSingletonPtr();
+
+    /* Load the Main Menu from an XML file located in
+     * "data/gui/layouts/" and Set Focus on the Main Menu*/
+	try {
+		Window = CEGUI::WindowManager::getSingleton().loadWindowLayout("../data/gui/layouts/ChatLobby.layout");
+	}catch(CEGUI::Exception e) {
+		std::ostringstream i;
+		i << e.getName() << " " << e.getMessage() << " " << e.getFileName() << " " << e.getLine() << " ";
+		
+		 DoStateChange( CState_MainMenu_Login::ReturnInstance() );
+		// CState_MainMenu_Login::ReturnInstance()->set_status_message(i.str());
+		 return;
+	}
+	catch(...) {
+		
+		 DoStateChange( CState_MainMenu_Login::ReturnInstance() );
+		// CState_MainMenu_Login::ReturnInstance()->set_status_message("CEGUI Exception!");
+		 return;
+		// unknown exception.
+	}
+    SysMan->setGUISheet( Window );
+
+    /* Handle GUI events ( should be done with lua scripts later,
+     * but we have to include another library to allow LUA and C++
+     * code to interact, so that is for another time ), look into
+     ToLua++ or something like that, can't remember right of the bat*/
+    //WinMan->getWindow( "Lobby/btnBack" )->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CState_Lobby::OnBack, this ) );
+}
+
+bool CState_Lobby::OnBack( const CEGUI::EventArgs &event )
+{
+    DoStateChange( CState_MainMenu::ReturnInstance() );
+    return false;
+}
+
+void CState_Lobby::Enter()
+{
+    mRoot = Ogre::Root::getSingletonPtr();
+
+    if ( mSceneManager == NULL )
+    {
+        mSceneManager = mRoot->createSceneManager(Ogre::ST_GENERIC);
+    }
+    else
+    {
+        mSceneManager->clearScene();
+        mSceneManager = NULL;
+        mSceneManager = mRoot->createSceneManager(Ogre::ST_GENERIC);
+    }
+
+    CreateGUI();
+
+    IsRunning = true;
+}
+
+void CState_Lobby::Exit()
+{
+    CEGUI::WindowManager::getSingleton().destroyWindow( Window );
+
+    if ( IsRunning == false )
+    {
+        CEGUI::OgreRenderer::destroySystem();
+    }
+
+    if ( mSceneManager != NULL )
+    {
+        mSceneManager->destroyAllCameras();
+        mSceneManager->destroyAllEntities();
+        mSceneManager->getRootSceneNode()->removeAndDestroyAllChildren();
+        mSceneManager->destroyAllLights();
+        mSceneManager->clearScene();
+    }
+
+    mRoot->getAutoCreatedWindow()->removeAllViewports();
+}
+
+bool CState_Lobby::frameStarted( const Ogre::FrameEvent & event )
+{
+    return true;
+}
+
+bool CState_Lobby::frameRenderingQueued( const Ogre::FrameEvent &event)
+{
+    //This is not needed in this state, in fact I have no idea what it does, but I think you had it here ...
+    //create_heightmap_each_frame(mCamera);
+    return true;
+}
+
+bool CState_Lobby::frameEnded( const Ogre::FrameEvent & event )
+{
+    if ( IsRunning == false )
+    {
+        return false;
+    }
+
+    return true;
+}
+
+void CState_Lobby::keyPressed( const OIS::KeyEvent  & event)
+{
+    SysMan->injectKeyDown( event.key );
+    SysMan->injectChar( event.text );
+}
+
+void CState_Lobby::keyReleased( const OIS::KeyEvent  & event)
+{
+    SysMan->injectKeyDown( event.key );
+    SysMan->injectChar( event.text );
+
+    if( event.key == OIS::KC_ESCAPE )
+    {
+	DoStateChange( CState_MainMenu::ReturnInstance() );
+    }
+}
+
+void CState_Lobby::mouseMoved( const OIS::MouseEvent  & event)
+{
+    SysMan->injectMouseMove( event.state.X.rel, event.state.Y.rel );
+}
+
+void CState_Lobby::mousePressed( const OIS::MouseEvent  & event, OIS::MouseButtonID identifier )
+{
+    switch ( identifier )
+    {
+    case OIS::MB_Left:
+    {
+        SysMan->injectMouseButtonDown( CEGUI::LeftButton );
+
+        break;
+    }
+
+    case OIS::MB_Right:
+    {
+        SysMan->injectMouseButtonDown( CEGUI::RightButton );
+
+        break;
+    }
+
+    case OIS::MB_Middle:
+    {
+        SysMan->injectMouseButtonDown( CEGUI::MiddleButton );
+
+        break;
+    }
+
+    default:
+    {
+        SysMan->injectMouseButtonDown( CEGUI::LeftButton);
+    }
+
+    }
+}
+
+void CState_Lobby::mouseReleased( const OIS::MouseEvent  & event, OIS::MouseButtonID identifier )
+{
+    switch ( identifier )
+    {
+    case OIS::MB_Left:
+    {
+        SysMan->injectMouseButtonUp( CEGUI::LeftButton );
+
+        break;
+    }
+
+    case OIS::MB_Right:
+    {
+        SysMan->injectMouseButtonUp( CEGUI::RightButton );
+
+        break;
+    }
+
+    case OIS::MB_Middle:
+    {
+        SysMan->injectMouseButtonUp( CEGUI::MiddleButton );
+
+        break;
+    }
+
+    default:
+    {
+        SysMan->injectMouseButtonUp( CEGUI::LeftButton);
+    }
+    }
+}

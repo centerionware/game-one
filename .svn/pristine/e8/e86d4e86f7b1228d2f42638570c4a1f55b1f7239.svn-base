@@ -1,0 +1,183 @@
+struct chunk_quick_cache {
+	struct aChunk { 
+		vec3 position;
+		size_t timestamp;
+		size_t id;
+		aChunk() : position(0,0,0),timestamp(0),id(-1){}
+	};
+//	static bool issetup;
+	std::vector<aChunk> chnks;
+	std::vector<aChunk> genned_chunks;
+	struct clientChunkRemember {
+		aChunk c;
+		inet_player *p;
+		clientChunkRemember() : c(), p(NULL){}
+	};
+	std::vector<clientChunkRemember> sent_out;
+	bool erased(inet_player*in) {
+		std::vector<clientChunkRemember>::iterator i = sent_out.begin(), ie = sent_out.end();
+		for(;i!=ie;i++) 
+			if(in == (*i).p) { sent_out.erase(i); return true; }
+		return false;
+		
+	}	
+	void remove_player(inet_player* in) { 
+		while(erased(in));
+	}
+	
+	std::vector<clientChunkRemember> nearby(inet_player *in) {
+		//mut_c_locker locktex;
+		std::vector<clientChunkRemember> r;
+		std::vector<aChunk>::iterator iter = chnks.begin(), end = chnks.end();
+//		int ctr = 0;
+		for(;iter!=end;++iter) {
+			if(get_distance( (*iter).position, in->position) < 75 && (*iter).position.y-in->position.y <75) {
+			      clientChunkRemember rr;
+			      rr.c = (*iter);
+			      rr.p = in;
+			      r.push_back(rr);
+			    //  locktex.unlock();
+			      if(NewHeightmapLoader::get_instance()->needs_chunk_update( rr.c.id,rr.c.timestamp )) {
+				
+				    basic_chunk_update& ld = in->db_retrieve_chunk( rr.c.id,NewHeightmapLoader::get_instance()->updatets) ;
+				    if(ld.chunk.voxels.size() != 0) {
+					    
+					    NewHeightmapLoader::get_instance()->chunk_update(ld);
+					   // locktex.lock();
+					    std::cout << "Loaded local terrain from timestamp("<<NewHeightmapLoader::get_instance()->updatets<<") to timestamp("<<rr.c.timestamp<<") with("<<ld.timestamp<<")\n";
+					    (*iter).timestamp = ld.timestamp;
+				    } else
+				    (*iter).timestamp =NewHeightmapLoader::get_instance()->updatets;
+			      }
+		    
+//				ctr++;
+			}
+		}
+		clientChunkRemember &closest = (*(r.begin()));
+		auto ie = r.begin(), ei = r.end();
+		for(;ie!=ei;++ie) {
+		      if( (*ie).c.id != closest.c.id ) 
+			if( get_distance( (*ie).c.position, in->position) <get_distance( closest.c.position, in->position)) {
+			      closest = (*ie);
+			      ie = r.begin();
+		      }
+		}
+		
+		
+		/*vec3 pi_map[9] ={
+					vec3(0,0,0),
+					vec3(1,0,0),
+					vec3(-1,0,0),
+					vec3(0,0,1),
+					vec3(0,0,-1),
+					vec3(1,0,1),
+					vec3(1,0,-1),
+					vec3(-1,0,1),
+					vec3(-1,0,-1)
+				};*/
+		vec3 pi_map[9];
+		{
+		  int c = 0;
+		for(int x = -1, z = -1; x<=1; ++x,z=-1)for(;z<=1;++z,++c)pi_map[c] = vec3(x,0,z);
+		//std::cout << "C is " << c << std::endl;
+		}
+		int genning = 0;
+		vec3 positioning;
+		      if(r.begin()==r.end()) {
+			positioning = vec3(0,0,0);
+		      } else {
+			positioning = closest.c.position;
+		      }
+			
+		for(int x = 0; x < 9; ++x) {
+		      
+		      vec3 mval = (pi_map[x]*31)+positioning;
+		      if(!exists( mval )) {
+			//  locktex.unlock();
+			    std::string throwaway_addpnt = NewHeightmapLoader::get_instance()->editor_addpnt(mval);
+			    std::string tchunk = NewHeightmapLoader::get_instance()->editor_building_gen1();
+			    in->clientChunkPush_internal(tchunk, true);
+			    genned_chunks.push_back(chunk_quick_cache::ptr->chnks.back());
+			    ++genning;
+			    
+		      }
+		}
+		if(genning != 0) return nearby(in);
+		return r;
+	}
+	size_t get_timestamp(size_t chunkid) {
+		std::vector<aChunk>::iterator i = chnks.begin(), e = chnks.end();
+		for(;i!=e;++i) {
+			if( (*i).id == chunkid) return (*i).timestamp;
+		}
+		return 0;
+	}
+	bool has_sent(inet_player *in, vec3 p) {
+		std::vector<clientChunkRemember>::iterator i = sent_out.begin(), ie = sent_out.end();
+		for(;i!=ie;++i) {
+			if((*i).p == in && (*i).c.position == p ) {
+				if((*i).c.timestamp == get_timestamp((*i).c.id)) return true;
+				sent_out.erase(i);
+				return false;
+			}
+			
+		}
+		
+		return false;
+	}
+	void sent_chunk_player(inet_player *in,vec3 cp) {
+	      clientChunkRemember cli;
+	      cli.c = find(cp);
+	      cli.p = in;
+	      sent_out.push_back(cli);
+	}
+	chunk_quick_cache() { 
+//		if(chunk_quick_cache::issetup) return;
+		reset();
+//		chunk_quick_cache::issetup = true;
+	}
+	void reset() {
+		std::stringstream query;
+		query << "select X,Y,Z,id, UNIX_TIMESTAMP((select max(lastupdate) from Chunk_Voxels where chunk_id = C.id)), UNIX_TIMESTAMP((select max(lastupdate) from RemovedVoxels where chunk_id = C.id)) from Chunks as C";
+		while(chnks.size() > 0) chnks.pop_back();
+		while(sent_out.size() > 0) sent_out.pop_back();
+		//"select X,Y,Z,id from Chunks, (max(timestamp) from Chunk_Voxels where chunkid = Chunks.id)";
+		database_connection.query(query.str());
+		if(database_connection.numrows < 0) return;
+		size_t result_rows = database_connection.numrows;
+		std::cout <<"Filling in "<< result_rows << " into the chunk cache.\n";
+		for(size_t i = 0; i < result_rows; i++) {
+			MYSQL_ROW& mrow = database_connection.row();
+			unsigned long *lengths = mysql_fetch_lengths(database_connection.result());
+			aChunk c;
+			c.position.x = fromstring<float>(mrow[0],lengths[0]);
+			c.position.y = fromstring<float>(mrow[1],lengths[1]);
+			c.position.z = fromstring<float>(mrow[2],lengths[2]);
+			c.id = fromstring<size_t>(mrow[3],lengths[3]);
+			c.timestamp = mrow[4] ? fromstring<size_t>(mrow[4],lengths[4]) : 0;
+			c.timestamp = mrow[5] ? (fromstring<size_t>(mrow[5] ) > c.timestamp ? fromstring<size_t>(mrow[5]) : c.timestamp) : c.timestamp;
+			chnks.push_back(c);
+		}
+		chunk_quick_cache::ptr = this; 
+	}
+	bool exists(vec3 rc) {
+	 // mut_c_locker locktex();
+	  std::vector<aChunk>::iterator i = chnks.begin(), ie = chnks.end();
+	  for(;i!=ie;++i) if((*i).position==rc) return true;
+	  return false;
+	}
+	bool exists(size_t id) {
+	  std::vector<aChunk>::iterator i = chnks.begin(), ie = chnks.end();
+	  for(;i!=ie;++i) if((*i).id==id) return true;
+	  return false;
+	}
+	aChunk find(vec3 rc) {
+	  std::vector<aChunk>::iterator i = chnks.begin(), ie = chnks.end();
+	  for(;i!=ie;++i) if((*i).position==rc) return (*i);
+	  aChunk fake;
+	  return fake;
+	}
+	static chunk_quick_cache *ptr;
+};
+//bool chunk_quick_cache::issetup = false;
+chunk_quick_cache *chunk_quick_cache::ptr = NULL;

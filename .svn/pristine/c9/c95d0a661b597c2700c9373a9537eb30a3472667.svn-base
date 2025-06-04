@@ -1,0 +1,138 @@
+void inet_player::clientChunkPush(std::vector<std::string>&in) {
+//	std::cout << "Initialize chunk push - deserialize\n";
+	clientChunkPush_internal(in[0]);
+}
+
+void inet_player::clientChunkPush_internal(std::string& in, bool temporary_override) {
+	//heightmap_globals::mut_c.lock();
+	std::cout << "Client chunk push\n";
+	if(!admin && !temporary_override) {
+		//heightmap_globals::mut_c.unlock();
+		return;
+	}
+	std::cout << "Admin, pushing chunk...\n";
+	if(in.size() == 0) {
+		std::cout << "Received empty chunk push..\n";
+		return;
+	}
+	size_t id = 0;
+	
+	bool is_new_chunk = false;
+	basic_chunk_update bcu_n = basic_chunk_update::deserialize(in);
+	basic_chunk &n = bcu_n.chunk;
+
+	vec3 v(n.x,n.y,n.z);
+	std::cout << v.print("Chunk position: ") << " with " << n.voxels.size() << " voxels." << std::endl;
+	
+	
+	MySQL_Helper::Query query;
+	query.start_transaction();
+	query.prepare("select id from Chunks where X='?' and Y='?' and Z='?'", n.x,n.y,n.z);
+	query.run();
+	
+	if(query.numrows == 0) { 
+		// insert chunk, ? after verifying it's a valid position, ? 
+		query.prepare("insert into Chunks (X,Y,Z) values (?,?,?)", n.x,n.y,n.z);
+		query.run();
+		id = query.insertid;
+		is_new_chunk = true;
+	} else {
+	    if(query.numrows != 1) {
+	      std::cout << "Multiple copies of the same table found! WTF\n";
+	      return;
+	    }
+	    
+	    MYSQL_ROW& lmrow = query.row();
+	    unsigned long *lengths = query.lengths();
+	    id = fromstring<size_t>(lmrow[0],lengths[0]);
+	    
+	}
+	
+	if(id == 0) {
+	// heightmap_globals::mut_c.unlock();
+	  return; // error with the id!
+	}
+	query.commit();
+	std::cout << "Pushing to chunk " << id << std::endl;
+	if(!is_new_chunk){
+		is_new_chunk = true;
+		std::vector<chunk_quick_cache::aChunk>::iterator im = chunk_quick_cache::ptr->chnks.begin(), eii = chunk_quick_cache::ptr->chnks.end();
+		for(;im!=eii&&is_new_chunk;++im) {
+			if( (*im).id == id) is_new_chunk = false;
+		}
+	}
+	
+	MySQL_Helper::MultiQuery insert_query("replace into Chunk_Voxels (voxid,matid,chunk_id) values ", "(?,?,?)", ",", 1024);
+	
+	for(size_t count = 0;count != n.voxels.size();++count) {
+		unsigned short j = n.voxels[count];
+		unsigned short m = n.matids[count];
+		insert_query.prepare(j,m,id);
+		
+	}
+	std::cout << "Prepared " << n.voxels.size() << "Replace into queries..\n";
+	insert_query.run();
+	std::cout << "Last id: " << insert_query.insertid << "\n";
+	query.start_transaction();
+	for(size_t count = 0;count != bcu_n.removed_voxels.size();++count) {
+		unsigned short j = bcu_n.removed_voxels[count];
+		query.prepare("delete from Chunk_Voxels where voxid=? and chunk_id=?", j,id);
+		query.run();
+	}
+	
+	query.commit();
+//	query.altQuery("replace into Chunk_Voxels select * from Chunk_Voxels_Update");
+	
+{
+		
+		query.prepare("select unix_timestamp(max(lastupdate)) from Chunk_Voxels where chunk_id =?",id);
+		query.run();
+		if(query.numrows != 1) return;
+		MYSQL_ROW& lmrow = query.row();
+		unsigned long *lengths = query.lengths();
+		size_t timestamp = fromstring<int>(lmrow[0],lengths[0]);
+		auto i = chunk_quick_cache::ptr->chnks.begin(), ie = chunk_quick_cache::ptr->chnks.end();
+		for(;i!=ie;++i) if((*i).id==id)  if(timestamp > (*i).timestamp){
+		      (*i).timestamp = timestamp ;
+		      break;
+		 }
+	}
+	{
+		
+		query.prepare("select unix_timestamp(max(lastupdate)) from RemovedVoxels where chunk_id='?'",id);
+		query.run();
+		if(query.numrows != 1) return;
+		MYSQL_ROW& lmrow = query.row();
+		unsigned long *lengths = query.lengths();
+		size_t timestamp = fromstring<int>(lmrow[0],lengths[0]);
+		auto i = chunk_quick_cache::ptr->chnks.begin(), ie = chunk_quick_cache::ptr->chnks.end();
+		for(;i!=ie;++i) if((*i).id==id) if(timestamp > (*i).timestamp) {
+			(*i).timestamp = timestamp;
+			break;
+		}
+	}
+	  if(is_new_chunk) {
+		query.prepare("select X,Y,Z,id, (select  UNIX_TIMESTAMP(max(lastupdate)) from Chunk_Voxels where chunk_id = C.id) from Chunks as C where C.id=?",id);
+		query.run();
+		if(query.numrows < 0) return;
+		MYSQL_ROW& mrow = query.row();
+		unsigned long *lengths = query.lengths();
+		chunk_quick_cache::aChunk c;
+		c.position.x = fromstring<float>(mrow[0],lengths[0]);
+		c.position.y = fromstring<float>(mrow[1],lengths[1]);
+		c.position.z = fromstring<float>(mrow[2],lengths[2]);
+		c.id = fromstring<size_t>(mrow[3],lengths[3]);
+		c.timestamp = fromstring<size_t>(mrow[4],lengths[4]);
+		chunk_quick_cache::ptr->chnks.push_back(c);
+		std::cout << "New chunk " << c.position.print("Position: ") << " id: " << c.id << " timestamp: " << c.timestamp << std::endl;
+		if(temporary_override) {
+		    query.prepare("insert into TemporaryChunks (chunk_id) values(?)",id);
+		    query.run();
+		}
+	  }
+	  if(!temporary_override) {
+		  query.prepare("delete from TemporaryChunks where chunk_id=?",id);
+		  query.run();
+	  }
+	   NewHeightmapLoader::get_instance()->chunk_update(bcu_n);
+}

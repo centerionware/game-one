@@ -1,0 +1,101 @@
+namespace heightmap_globals {
+	extern bool volatile alive;
+	extern boost::mutex synchingchunk;
+}
+extern std::map<vec3, Chunk *> Chunk_Position_Map;
+void NewHeightmapLoader::chunk_update(basic_chunk_update& bcu_n) {
+	
+	if(heightmap_globals::alive == false) return; // There may still be a race in here, but this should help.
+
+  static boost::mutex ncumut;
+  generic_single_function_locker chunknorris(ncumut);
+  
+  /*
+      Use this for _ALL_ chunk updating.
+  */ 
+	basic_chunk &n = bcu_n.chunk;
+
+	vec3 v(n.x,n.y,n.z);
+	Chunk *wo=NULL;
+
+	bool inserted = false;
+	chunk_iterator_locker itlocker;
+	if(chunks._chunks.begin() == chunks._chunks.end()) {
+		wo = new Chunk(v);
+		wo->id = n.id;
+		itlocker.unlock();
+		chunks.insert(wo,zerovec);
+		itlocker.lock();
+		inserted = true;
+	}
+	auto lf = Chunk_Position_Map.find(v);
+	if(lf!=Chunk_Position_Map.end() ) {
+		 inserted = true;
+		 wo = (*lf).second;//->ele; 
+	}
+	itlocker.unlock();
+	if(!inserted) {
+		wo = new Chunk(v);
+		wo->id = n.id;
+		chunks.insert(wo,zerovec);
+	}
+	{
+	chunk_lock locker(wo);
+	for(size_t count = 0;count != n.voxels.size();++count) {
+		unsigned short j = n.voxels[count];
+		unsigned char m = n.matids[count];
+		if(wo->NewNewVoxels.find(j) == wo->NewNewVoxels.end()) {
+		      wo->NewNewVoxels[j]= voxel_attributes(m);
+		} else wo->NewNewVoxels[j].matid = m;
+	}
+	for(size_t count = 0;count != bcu_n.removed_voxels.size();++count) {
+		unsigned short j = bcu_n.removed_voxels[count];
+		if(wo->NewNewVoxels.find(j) != wo->NewNewVoxels.end()) wo->NewNewVoxels.erase(wo->NewNewVoxels.find(j));
+	}
+	wo->id = n.id; // don't leave uninitialized!
+	wo->lastupdate = bcu_n.timestamp;
+	updatets = wo->lastupdate;
+	wo->cleanup();
+	}
+	for(int x = -1, count = 0; x<2;x++,count++)for(int y=-1;y<2;y++,count++)for(int z=-1;z<2;z++,count++) {
+		if(x!=0||y!=0||z!=0) {
+			vec3 pos = vec3(x,y,z)*vec3(31,61,31);
+			pos = v+pos;
+			auto lpfoo = Chunk_Position_Map.find(pos);
+			if(lpfoo!= Chunk_Position_Map.end()) {
+				Chunk *foof = (*lpfoo).second;
+					chunk_lock foobar(foof);
+					foof->cleanup();
+			}
+		}
+	}
+	heightmap_globals::network_changed = true;
+	
+}
+bool NewHeightmapLoader::needs_chunk_update(size_t id, size_t timestamp) {
+  
+  static boost::mutex ncumut;
+  generic_single_function_locker chunknorris(ncumut);
+	updatets = 0;
+	Chunk *wo = NULL;
+	//bool inserted = false;
+	chunk_iterator_locker itlocker;
+	if(chunks._chunks.begin() == chunks._chunks.end()) {
+	  std::cout << "There are no chunks!\n";
+	  return true;
+	}
+	auto lt = chunks.find_closest_above_exact_byid(id);
+	
+	if(lt != chunks.id_sorted.end()) wo = (*lt);
+	else  return true;
+	if(wo->id != id) return true;
+	
+	itlocker.unlock();
+	if(wo == NULL) return true;
+	chunk_lock locker(wo);//wo->temporal_lock();
+	updatets = wo->lastupdate;
+	//wo->temporal_unlock();
+
+	if(updatets < timestamp) return true;
+	return false;
+}

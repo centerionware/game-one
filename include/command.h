@@ -1,0 +1,191 @@
+/********************************************************************************
+NAMC - MMorpg Game System
+Copyright (C) 2007 Matthew Adams
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+********************************************************************************/
+#ifdef COMMAND_H
+#else
+#define COMMAND_H 1
+
+#include "tools.h"
+#include "functors.h"
+
+#include <boost/bind.hpp>
+
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/asio.hpp>
+class inet_player;
+namespace Commands 
+{
+	class aCom
+	{
+		public:
+			aCom() : ida(0),idb(0) {}
+			aCom(char _a, char _b, TFunctor *_com) : ida(_a),idb(_b),com(_com) {}
+			aCom(const aCom &o) : ida(o.ida), idb(o.idb), com(o.com) {}
+			char ida;
+			char idb;
+			TFunctor* com;
+	};
+	struct sCom
+	{
+		sCom() : ida(""){}
+		sCom(std::string _a, TFunctor *_com) : ida(_a),com(_com){ }
+		sCom(const sCom &o) : ida(o.ida), com(o.com) {}
+		std::string ida;
+		TFunctor* com;
+	};
+	template<class T>
+	struct tCom
+	{
+		tCom() : ida(""){}
+		tCom(T _a, TEFunctor<T> *_com) : ida(_a),com(_com){ }
+		tCom(const sCom &o) : ida(o.ida), com(o.com) {}
+		T ida;
+		TEFunctor<T>* com;
+	};
+	class Proc 
+	{
+		
+		static Proc* tis;
+		std::vector<aCom> commands;
+		std::vector<sCom> str_commands; // Why not std::map? With std::vector commands can be 'overridden'.
+//			static std::vector<TFunctor*> all_commands;
+		aCom* get(char, char);
+		sCom* get(std::string&);
+	public:
+		static void InitProc() { if(!tis) tis = new Proc(); }
+		static void DestroyProc() { if(!tis) return; delete tis; tis = NULL; }
+		static Proc* getProc() { if(!tis) Commands::Proc::InitProc(); return tis; }
+		~Proc();
+		Proc();
+		void Call(char com, char comB, std::string arguments, bool isDown, volatile boost::shared_ptr<inet_player>);
+		void Call(char com, char comB, bool isDown,volatile boost::shared_ptr<inet_player>);
+		void Call(std::string &input, bool isDown,volatile boost::shared_ptr<inet_player>);
+		void Add(aCom in) {  commands.push_back(in); }
+		void Add(sCom in) { str_commands.push_back(in); }
+		void Add(TFunctor*, char Id, char Idb = 0);
+		void Add(std::string command, TFunctor *functor); 
+		void pop_last(std::string &command);
+	};
+	template<class T>
+	struct tProc : public Proc
+	{
+		void Call(const T& ida, bool isDown,boost::shared_ptr<inet_player>shptr){
+			tCom<T>* tp = get(ida);
+			if(tp != NULL) {
+			  //    std::vector<T> args;
+			    //  args.push_back(ida);
+				int s = 0;
+				
+				tp->com->Call((T&)ida, s, &isDown,shptr);
+			} 
+		}
+		void Add(TEFunctor<T>*f, T ida){template_commands.push_back(tCom<T>(ida,f));};
+		void ReMap(TEFunctor<T>*com, T ida){ // unmap the old ida and TFunctor* that match this, and then call Add(TFunctor*,T)
+			UnMap(com);
+			UnMap(ida);
+			Add(com,ida);
+		}
+		void UnMap(T &ida){
+		 auto iter = template_commands.begin(), end = template_commands.end();
+			for(;iter!=end;iter++) if( (*iter).ida == ida ) {
+				delete (*iter).com;
+				template_commands.erase(iter);
+				return;
+			} 
+		}
+		void UnMap(TEFunctor<T>*id){
+		 auto iter = template_commands.begin(), end = template_commands.end();
+			for(;iter!=end;iter++) if( (*iter).com == id ) {
+				delete (*iter).com;
+				template_commands.erase(iter);
+				return;
+			} 
+		}
+		~tProc(){
+		  	auto iter = template_commands.begin(), end = template_commands.end();
+			for(;iter!=end;iter++){
+				delete (*iter).com;
+			}
+		}
+		tProc(){}
+	  private:
+		tCom<T>* get(const T& ida){ 
+			auto iter = template_commands.begin(), end = template_commands.end();
+			for(;iter!=end;iter++) if( (*iter).ida == ida ) return &(*iter);
+			return NULL; 
+		}
+		std::vector<tCom<T> > template_commands;
+	};
+	/*
+	template<class T>
+		void tProc<T>::Call(const T &ida, bool isDown) {
+			 tCom<T>* tp = get(ida);
+			 if(tp != NULL) {
+			  //    std::vector<T> args;
+			    //  args.push_back(ida);
+			      int s = 0;
+			      tp->com->Call(ida, 0, isDown);
+			 }
+		}
+		template<class T>
+		void tProc<T>::Add(TEFunctor<T>*f, T ida) {
+			template_commands.push_back(obj(ida,f));
+		}
+		template<class T>
+		void tProc<T>::ReMap(TEFunctor<T>*com, T ida) {
+			  UnMap(com);
+			  UnMap(ida);
+			  Add(com,ida);
+		}
+		template<class T>
+		tCom<T>* tProc<T>::get(T& ida) {
+		 
+			auto iter = template_commands.begin(), end = template_commands.end();
+			for(;iter!=end;iter++) if( (*iter).ida == ida ) return &(*iter);
+			return NULL;
+		}
+		template<class T>
+		void tProc<T>::UnMap(T &ida) {
+			auto iter = template_commands.begin(), end = template_commands.end();
+			for(;iter!=end;iter++) if( (*iter).ida == ida ) {
+				delete (*iter).com;
+				template_commands.erase(iter);
+				return;
+			}
+		}
+		template<class T>
+		void tProc<T>::UnMap(TEFunctor<T> *id) {
+		  	auto iter = template_commands.begin(), end = template_commands.end();
+			for(;iter!=end;iter++) if( (*iter).com == id ) {
+				delete (*iter).com;
+				template_commands.erase(iter);
+				return;
+			}
+		}
+		template<class T>
+		tProc<T>::~tProc() {
+			auto iter = template_commands.begin(), end = template_commands.end();
+			for(;iter!=end;iter++){
+				delete (*iter).com;
+			}
+		}
+		*/
+}
+
+#endif
+

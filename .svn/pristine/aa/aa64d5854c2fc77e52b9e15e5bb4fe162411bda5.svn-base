@@ -1,0 +1,105 @@
+<scene previous_export_time="1364683754.9733255" formatVersion="1.0.1" export_time="1364684873.6801584" exported_by="shepherd" >
+  <nodes >
+    <node name="Armature" >
+      <position z="0.045210" x="0.000331" y="0.802240" />
+      <rotation qz="-0.000000" qx="0.000000" qy="0.000000" qw="1.000000" />
+      <scale z="0.312160" x="0.312160" y="0.312160" />
+      <game >
+        <sensors />
+        <actuators />
+      </game>
+      <node name="Cube.003" >
+        <position z="-0.011783" x="0.000501" y="0.723416" />
+        <rotation qz="-0.000000" qx="0.000000" qy="1.000000" qw="0.000000" />
+        <scale z="0.273389" x="0.273389" y="0.273389" />
+        <game >
+          <sensors />
+          <actuators />
+        </game>
+        <entity damping_trans="0.03999999910593033" damping_rot="0.10000000149011612" lock_rot_z="False" lock_trans_x="False" lock_trans_y="False" lock_trans_z="False" velocity_min="0.0" friction_z="1.0" friction_x="1.0" friction_y="1.0" actor="False" name="Cube.003" physics_type="STATIC" lock_rot_y="False" lock_rot_x="False" velocity_max="0.0" ghost="False" anisotropic_friction="False" mass_radius="1.0" meshFile="Cube.003.mesh" mass="1.0" inertia_tensor="0.4000000059604645" />
+      </node>
+    </node>
+    <node name="Lamp.003" >
+      <position z="11.678637" x="13.360207" y="8.123346" />
+      <rotation qz="-0.272171" qx="0.169076" qy="0.755880" qw="0.570947" />
+      <scale z="1.000000" x="1.000000" y="1.000000" />
+      <game >
+        <sensors />
+        <actuators />
+      </game>
+      <light shadow="true" powerScale="1.0" type="point" name="Lamp.003" >
+        <position z="11.678637" x="13.360207" y="8.123346" />
+        <lightAttenuation range="5000" quadratic="0.0" linear="0.03333335240683057" constant="1.0" />
+        <colourDiffuse r="1.0" b="1.0" g="1.0" />
+        <colourSpecular r="1.0" b="1.0" g="1.0" />
+        <colourShadow r="1.0" b="1.0" g="1.0" />
+      </light>
+    </node>
+    <node name="Lamp.002" >
+      <position z="9.315701" x="-12.618852" y="1.586693" />
+      <rotation qz="-0.272171" qx="0.169076" qy="0.755880" qw="0.570947" />
+      <scale z="1.000000" x="1.000000" y="1.000000" />
+      <game >
+        <sensors />
+        <actuators />
+      </game>
+      <light shadow="true" powerScale="1.0" type="point" name="Lamp.002" >
+        <position z="9.315701" x="-12.618852" y="1.586693" />
+        <lightAttenuation range="5000" quadratic="0.0" linear="0.03333335240683057" constant="1.0" />
+        <colourDiffuse r="1.0" b="1.0" g="1.0" />
+        <colourSpecular r="1.0" b="1.0" g="1.0" />
+        <colourShadow r="1.0" b="1.0" g="1.0" />
+      </light>
+    </node>
+    <node name="Lamp.001" >
+      <position z="-12.701164" x="3.537227" y="0.988290" />
+      <rotation qz="-0.272171" qx="0.169076" qy="0.755880" qw="0.570947" />
+      <scale z="1.000000" x="1.000000" y="1.000000" />
+      <game >
+        <sensors />
+        <actuators />
+      </game>
+      <light shadow="true" powerScale="1.0" type="point" name="Lamp.001" >
+        <position z="-12.701164" x="3.537227" y="0.988290" />
+        <lightAttenuation range="5000" quadratic="0.0" linear="0.03333335240683057" constant="1.0" />
+        <colourDiffuse r="1.0" b="1.0" g="1.0" />
+        <colourSpecular r="1.0" b="1.0" g="1.0" />
+        <colourShadow r="1.0" b="1.0" g="1.0" />
+      </light>
+    </node>
+    <node name="Lamp" >
+      <position z="-1.881051" x="3.805534" y="0.230544" />
+      <rotation qz="-0.272171" qx="0.169076" qy="0.755880" qw="0.570947" />
+      <scale z="1.000000" x="1.000000" y="1.000000" />
+      <game >
+        <sensors />
+        <actuators />
+      </game>
+      <light shadow="true" powerScale="1.0" type="point" name="Lamp" >
+        <position z="-1.881051" x="3.805534" y="0.230544" />
+        <lightAttenuation range="5000" quadratic="0.0" linear="0.03333335240683057" constant="1.0" />
+        <colourDiffuse r="1.0" b="1.0" g="1.0" />
+        <colourSpecular r="1.0" b="1.0" g="1.0" />
+        <colourShadow r="1.0" b="1.0" g="1.0" />
+      </light>
+    </node>
+    <node name="Camera" >
+      <position z="30.433565" x="19.323639" y="14.533551" />
+      <rotation qz="-0.166843" qx="0.518651" qy="0.221939" qw="0.808645" />
+      <scale z="1.000000" x="1.000000" y="1.000000" />
+      <game >
+        <sensors />
+        <actuators />
+      </game>
+      <camera projectionType="perspective" fov="0.5033799435163735" name="Camera" >
+        <clipping farPlaneDist="100.0" near="0.10000000149011612" nearPlaneDist="0.10000000149011612" far="100.0" />
+      </camera>
+    </node>
+  </nodes>
+  <externals />
+  <environment >
+    <colourDiffuse r="0.05087608844041824" b="0.05087608844041824" g="0.05087608844041824" />
+    <colourAmbient r="0.0" b="0.0" g="0.0" />
+    <colourBackground r="0.05087608844041824" b="0.05087608844041824" g="0.05087608844041824" />
+  </environment>
+</scene>

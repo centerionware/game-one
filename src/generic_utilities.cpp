@@ -1,0 +1,34 @@
+#include "generic_utilities.h"
+Configuration Global_Configuration;
+vec9x3 voxel_neighbors;
+const vec9x3 vec9x3::operator+(const vec9x3& in) const{
+		vec9x3 r;
+		for(int x = 0; x < 9; ++x) for(int y = 0; y < 3; ++y) r._int[x][y] = _int[x][y] + in._int[x][y];
+		return r;
+	}
+	
+std::string string_serialize(const std::string &i) {
+      std::string output;
+      char *arrs = new char[sizeof(unsigned int)];
+      unsigned int lm = i.size();
+      memcpy(arrs, &lm,sizeof(unsigned int));
+      output.append(arrs,sizeof(unsigned int));
+      output.append(i);
+      return output;
+}
+std::string non_safe_string_deserialize(std::string &i) {
+  unsigned int lm;
+  std::string res = "";
+  if(i.size() < sizeof(unsigned int)) return res;
+  memcpy(&lm,i.c_str(),sizeof(unsigned int));
+  if(i.size() < sizeof(unsigned int)+lm) return res;
+  res = i.substr(sizeof(unsigned int), lm);
+  i = i.substr(lm+sizeof(unsigned int), i.size()-(lm+sizeof(unsigned int)));
+  return res;
+}
+/* Safe because it doesn't modify arguments */
+/* Via copying the argument incoming so that non-safe doesn't change the one called with */
+std::string safe_string_deserialize(std::string i) {
+  return non_safe_string_deserialize(i);
+}
+configfile autosaver::configfilemgmt;

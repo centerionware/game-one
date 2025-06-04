@@ -1,0 +1,95 @@
+#define IS_A_SERVER
+//http://www.tenouk.com/Module41.html
+
+/*******select.c*********/
+/*******Using select() for I/O multiplexing */
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include "inet.h"
+
+#include "command.h"
+#include "database_utilities.h"
+#include "server-map.h"
+/* port we're listening on */
+struct ServerControl {
+      void on_accept(int fd) {
+	player_login_queue(fd);
+      }
+      void on_recv(int fd, std::string&data, fd_set &master){ 
+	try {
+		inet_player *lplayer = find_player(fd);
+		if(lplayer){
+			lplayer->recv_text(data);
+			if(lplayer->deleteMe) {
+				std::cout << "Remove player bit set\n";
+				remove_player(fd);
+				//close(i);
+			}
+		}else {
+		      // login queue
+			std::cout << "Login Queue Recieve\n";
+		      login_queue_receive(fd,data,master);
+		}
+	} catch(const char *e) {
+	  std::cout << "Exception: " << e << std::endl;
+	} catch(...) {
+	  std::cout << "An unknown internal server error occurred!\n"; 
+	}
+      }
+      void on_close(int fd) {
+	inet_player *ld = find_player(fd);
+	if(ld && ld->logged_in) {
+	  
+	  find_player(fd)->broadcastNearby(RemPlayer); // sends a global broadcast.
+	  remove_player(fd);
+	} else if(ld) remove_player(fd);
+      }
+      void on_full(int newfd_i) {
+	std::string output;
+	unsigned int newfd = newfd_i;//static_cast<unsigned int>(newfd_i);
+	//std::string output_a;
+	output += to_value(LoginCommand);
+	output += to_value(ServerFull);
+	//inet_player *lplayer = find_player(newfd);
+	static inet_player full_player_dummy_player;
+	full_player_dummy_player.send_text(output, newfd);
+	std::cout << "Sending server full message!";
+	//send(newfd, "Full\0",5,MSG_NOSIGNAL);
+      }
+};
+namespace heightmap_globals {
+extern bool alive;  
+}
+std::vector<Ogre::FrameListener*> Removed_Frame_Listeners; //unused in this binary. required for linking.
+extern int spawn_server_and_pass_control(int MAX_PLAYERS, int PORT, server_functor_base &on_accept, server_functor_base &on_close, server_functor_base &on_recv,server_functor_base &on_full);
+int main(int argc, char *argv[])
+{
+  heightmap_globals::alive = true;
+  	if(argc<2) {std::cout << "Not enough arguments! Must provide port number!"<<std::endl;return 1;}
+	std::stringstream io;
+	io << argv[1];
+	int PORT = 6720;
+	io >> PORT;
+	int MAX_PLAYERS=2048; // Arbitrarily picked. If we ever actually reach this many players, try raising it. Though current hardware would be strained anyway/
+	if(argc==3) {
+	    io.str("");
+	    io << argv[2];
+	    io >> MAX_PLAYERS;
+	}
+	  ServerControl pl;
+	  ServerFunctor<ServerControl> onaccept(&pl, &ServerControl::on_accept);
+	  ServerFunctor<ServerControl> onclose(&pl, &ServerControl::on_close);
+	  ServerFunctor<ServerControl> onrecv(&pl, &ServerControl::on_recv);
+	  ServerFunctor<ServerControl> onfull(&pl, &ServerControl::on_full);
+	  try {
+	  spawn_server_and_pass_control(MAX_PLAYERS,PORT, onaccept,onclose,onrecv,onfull);
+	  } catch (const char *e) {
+	    std::cout << "Aborting with error: " << e << std::endl;
+	  }
+}

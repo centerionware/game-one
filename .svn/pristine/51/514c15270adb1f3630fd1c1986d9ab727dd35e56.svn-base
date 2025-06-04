@@ -1,0 +1,55 @@
+#include <stddef.h>
+#include "CEGUI.h"
+#include "Game-One.h"
+#include "dotscene/dotscene.h"
+#include "server-map.h"
+
+#include <Ogre.h>
+#include <OIS/OIS.h>
+#include <CEGUI/CEGUI.h>
+#include <CEGUI/RendererModules/Ogre/CEGUIOgreRenderer.h>
+
+#include "CGameManager.h"
+#include "CState_Splash.h"
+#include "CState_MainMenu_Login.h"
+
+using namespace Ogre;
+
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+#define WIN32_LEAN_AND_MEAN
+#include "windows.h"
+
+INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR strCmdLine, INT)
+#else
+int main(int argc, char **argv)
+#endif
+{
+	CGameManager* game = new CGameManager();
+
+	try
+	{
+		// initialize the game and switch to the first state
+		game->start( CState_Splash::ReturnInstance() );
+		
+	}
+	catch(CEGUI::Exception &e)
+{
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+		MessageBox(NULL,  e.getMessage().c_str(), "A CEGUI exception has occurred!", MB_OK | MB_ICONERROR | MB_TASKMODAL);
+#else
+		std::cerr << "An exception has occured: " << e.getMessage().c_str();
+#endif
+}
+	catch (Ogre::Exception& e)
+	{
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+		MessageBox(NULL, e.getFullDescription().c_str(), "An OGRE exception has occurred!", MB_OK | MB_ICONERROR | MB_TASKMODAL);
+#else
+		std::cerr << "An exception has occured: " << e.getFullDescription();
+#endif
+	}
+	stop_heightmap_background_thread();
+	delete game;
+	
+	return 0;
+}

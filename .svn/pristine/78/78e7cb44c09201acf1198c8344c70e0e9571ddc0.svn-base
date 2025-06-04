@@ -1,0 +1,206 @@
+/**
+ * GAME-ONE APPLICATION FRAMEWORK
+ * Filename: CState_MainMenu_Settings.h
+ * Description: Introductory Game State
+ * Legal stuff ~
+ */
+
+#include "CState_MainMenu_Settings.h"
+#include "CEGUI/RendererModules/Ogre/CEGUIOgreRenderer.h"
+
+CState_MainMenu_Settings CState_MainMenu_Settings::STATE_MAINMENU_SETTINGS;
+
+void CState_MainMenu_Settings::CreateGUI( void )
+{
+    //Create necessary pointers to CEGUI's subsystems;
+    WinMan	= CEGUI::WindowManager::getSingletonPtr();
+    SysMan	= CEGUI::System::getSingletonPtr();
+
+    /* Load the Main Menu from an XML file located in
+     * "data/gui/layouts/" and Set Focus on the Main Menu*/
+    Window = CEGUI::WindowManager::getSingleton().loadWindowLayout("../data/gui/layouts/MainMenu_Settings.layout");
+    SysMan->setGUISheet( Window );
+
+    /* Handle GUI events ( should be done with lua scripts later,
+     * but we have to include another library to allow LUA and C++
+     * code to interact, so that is for another time ), look into
+     ToLua++ or something like that, can't remember right of the bat*/
+    WinMan->getWindow( "MainMenu_Settings/btnNetwork" )->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CState_MainMenu_Settings::OnNetwork, this ) );
+    WinMan->getWindow( "MainMenu_Settings/btnAudio" )->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CState_MainMenu_Settings::OnAudio, this ) );
+    WinMan->getWindow( "MainMenu_Settings/btnGraphics" )->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CState_MainMenu_Settings::OnGraphics, this ) );
+    WinMan->getWindow( "MainMenu_Settings/btnControls" )->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CState_MainMenu_Settings::OnControls, this ) );
+    WinMan->getWindow( "MainMenu_Settings/btnBack" )->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CState_MainMenu_Settings::OnBack, this ) );
+}
+bool CState_MainMenu_Settings::OnNetwork( const CEGUI::EventArgs &event )
+{
+    ActivateNetwork = true;
+
+    return false;
+}
+
+bool CState_MainMenu_Settings::OnAudio( const CEGUI::EventArgs &event )
+{
+    ActivateAudio = true;
+
+    return false;
+}
+
+bool CState_MainMenu_Settings::OnGraphics( const CEGUI::EventArgs &event )
+{
+    ActivateGraphics = true;
+
+    return false;
+}
+
+bool CState_MainMenu_Settings::OnControls( const CEGUI::EventArgs &event )
+{
+    ActivateControls = true;
+
+    return false;
+}
+
+bool CState_MainMenu_Settings::OnBack( const CEGUI::EventArgs &event )
+{
+    ActivateBack = true;
+
+    return false;
+}
+void CState_MainMenu_Settings::Enter()
+{
+    ActivateAudio 	= false;
+    ActivateControls 	= false;
+    ActivateBack	= false;
+    ActivateNetwork	= false;
+    ActivateGraphics	= false;
+
+    mRoot = Ogre::Root::getSingletonPtr();
+    mSceneManager = mRoot->createSceneManager(Ogre::ST_GENERIC);
+
+    CreateGUI();
+
+    IsRunning = true;
+}
+
+void CState_MainMenu_Settings::Exit()
+{
+    CEGUI::WindowManager::getSingleton().destroyWindow( Window );
+
+    if ( mSceneManager != NULL )
+    {
+        mSceneManager->clearScene();
+    }
+
+    mRoot->getAutoCreatedWindow()->removeAllViewports();
+}
+
+bool CState_MainMenu_Settings::frameStarted( const Ogre::FrameEvent & event )
+{
+    //All events should return to the main menu as they do currently, nothing else.
+    if ( ActivateNetwork	== true )	DoStateChange( CState_MainMenu::ReturnInstance() );
+    if ( ActivateAudio		== true )	DoStateChange( CState_MainMenu::ReturnInstance() );
+    if ( ActivateBack		== true )	DoStateChange( CState_MainMenu::ReturnInstance() );
+    if ( ActivateControls	== true )	DoStateChange( CState_MainMenu::ReturnInstance() );
+    if ( ActivateGraphics	== true )	DoStateChange( CState_MainMenu::ReturnInstance() );
+    
+    return true;
+}
+
+bool CState_MainMenu_Settings::frameRenderingQueued( const Ogre::FrameEvent &event)
+{
+    //This is not needed in this state, in fact I have no idea what it does, but I think you had it here ...
+    //create_heightmap_each_frame(mCamera);
+    return true;
+}
+
+bool CState_MainMenu_Settings::frameEnded( const Ogre::FrameEvent & event )
+{
+    if ( IsRunning == false )	return false;
+    return true;
+}
+
+void CState_MainMenu_Settings::keyPressed( const OIS::KeyEvent  & event)
+{
+    SysMan->injectKeyDown( event.key );
+    SysMan->injectChar( event.text );
+}
+
+void CState_MainMenu_Settings::keyReleased( const OIS::KeyEvent  & event)
+{
+    SysMan->injectKeyDown( event.key );
+    SysMan->injectChar( event.text );
+
+    if ( event.key == OIS::KC_ESCAPE )
+    {
+        DoStateChange( CState_MainMenu::ReturnInstance() );
+    }
+}
+
+void CState_MainMenu_Settings::mouseMoved( const OIS::MouseEvent  & event)
+{
+    SysMan->injectMouseMove( event.state.X.rel, event.state.Y.rel );
+}
+
+void CState_MainMenu_Settings::mousePressed( const OIS::MouseEvent  & event, OIS::MouseButtonID identifier )
+{
+    switch ( identifier )
+    {
+    case OIS::MB_Left:
+    {
+        SysMan->injectMouseButtonDown( CEGUI::LeftButton );
+
+        break;
+    }
+
+    case OIS::MB_Right:
+    {
+        SysMan->injectMouseButtonDown( CEGUI::RightButton );
+
+        break;
+    }
+
+    case OIS::MB_Middle:
+    {
+        SysMan->injectMouseButtonDown( CEGUI::MiddleButton );
+
+        break;
+    }
+
+    default:
+    {
+        SysMan->injectMouseButtonDown( CEGUI::LeftButton);
+    }
+
+    }
+}
+
+void CState_MainMenu_Settings::mouseReleased( const OIS::MouseEvent  & event, OIS::MouseButtonID identifier )
+{
+    switch ( identifier )
+    {
+    case OIS::MB_Left:
+    {
+        SysMan->injectMouseButtonUp( CEGUI::LeftButton );
+
+        break;
+    }
+
+    case OIS::MB_Right:
+    {
+        SysMan->injectMouseButtonUp( CEGUI::RightButton );
+
+        break;
+    }
+
+    case OIS::MB_Middle:
+    {
+        SysMan->injectMouseButtonUp( CEGUI::MiddleButton );
+
+        break;
+    }
+
+    default:
+    {
+        SysMan->injectMouseButtonUp( CEGUI::LeftButton);
+    }
+    }
+}

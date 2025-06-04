@@ -1,0 +1,40 @@
+void CState_Testing::Exit()
+{
+    CEGUI::WindowManager::getSingleton().destroyWindow(m_minimap_window ); 
+    CEGUI::WindowManager::getSingleton().destroyWindow(m_texture_atlas ); 
+    
+    CEGUI::WindowManager::getSingleton().destroyWindow( Window );
+    
+    
+  //  stop_heightmap_background_thread();
+    NewHeightmapLoader::clean_instance();
+    {
+    auto i = Players.begin(), ie = Players.end();
+    for(;i!=ie;++i) if( (*i).get() == mPlayer.get()) { Players.erase(i); break; }
+    }
+   // if ( mPlayer) delete mPlayer;
+    
+    FreelookEditMode = false;
+    FreelookEditModeFPS = false;
+	
+    erase_all_players(); // in inet_client.cpp. Use for cleanup..
+    //mRoot->removeFrameListener(this);
+	mPlayer.reset();
+    if ( mTrayMan ) 	delete mTrayMan;
+    if ( mCameraMan ) 	delete mCameraMan;
+    if ( mSceneManager != NULL )
+    {
+        mSceneManager->destroyAllCameras();
+        mSceneManager->destroyAllEntities();
+        mSceneManager->getRootSceneNode()->removeAndDestroyAllChildren();
+        mSceneManager->destroyAllLights();
+        mSceneManager->clearScene();
+//	textureImageSet->undefineAllImages();///( "minimap_img");
+	//textureImageSet->unload();
+//	CEGUI::ImagesetManager::getSingleton().destroy(*textureImageSet);
+	//delete textureImageSet;
+    }
+    mRoot->getAutoCreatedWindow()->removeAllViewports();
+    // Unload the external cg programs 
+    
+} 

@@ -1,0 +1,297 @@
+#include <iostream>
+
+#include <algorithm>
+#include <iterator>
+#include <string>
+#include <sstream>
+
+#include <boost/signals2/mutex.hpp>
+#include <boost/thread.hpp>
+#include <boost/interprocess/sync/interprocess_semaphore.hpp>
+#include <OGRE/OgreRay.h>
+#include "server-map.h"
+#include <fstream>
+
+#include <boost/iostreams/filtering_streambuf.hpp>
+#include <boost/iostreams/copy.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include "map_sorters.hpp"
+#include <map>
+
+GOREAL theactual_cube_size = .5; // from center, each vertex is .5 away. eg: 1,1,-1 ; -1,1,1
+#define LOADER_WIDTH_HEIGHT 1024
+#define MAX_RENDER_CHUNKS Global_Configuration.get_value("MAX_RENDER_CHUNKS").e
+#define tinrange(Z, X,Y) (Z >= X && Z <= Y) 
+
+
+#include "server_map_multipoint.hpp"
+#include "server_map_globals.hpp"
+
+/*
+    This comment was no longer accurate. At this particular moment, work is being done on geometry reduction in the scene
+    to make 2-pass rendering a viable option on even my slower laptop.
+
+*/
+
+
+/*
+ * 
+ C = (*iter)       
+    
+             Cube vertice order             Octree neighbor ordering
+                  definition                       +Y
+                                                    |
+                  6_______7_                        4 +Z
+                 /|       /| |                      | /
+                / |      / | | +                    |2
+               /  |        | | Y          -X---0----/----5---+X
+             2/  _| _3_/   | | -                   3|  				32*32*64=65536, unsigned short can represent exactly that many.
+              |  4|____|__5| |                    / |				Meaning, an array of unsigned shorts
+              |   /    |   / /                  -Z  1
+              |  /        / / +                     |
+              | /      | / / Z                     -Y
+              |/_______|/ / -
+              0--------1-/           opposite neighbor index  = 5-current neighbor index
+                - X +
+ * 
+ * 
+ * each sub-texture is 256x256. 
+ * 
+ * It's done in the vertex shader alone. There is no texturing happening here, at all. 
+ * 
+ * 
+ *         
+ * 
+ * 
+
+  
+For reference, the order the verts are drawn in on the Ogre3D Tutorial example at
+www.ogre3d.org/tikiwiki/Generating+A+Mesh&structure=Cookbook
+are defined in:
+                  4_______5_
+                  /|       /| |
+                 / |      / | | +
+                /  |        | | Y
+              0/  _| _1_/   | | -
+               |  7|____|__6| |
+               |   /    |   / / 
+               |  /        / / +
+               | /      | / / Z
+               |/_______|/ / -
+               3--------2-/  
+                 - X +
+                 
+                 
+                 and the faces are defined:
+                 0,2,3	0,1,2	1,6,2	1,5,6	4,6,5	4,7,6	0,7,4	0,3,7	0,5,1	0,4,5	2,7,3	2,6,7	  
+                 
+                 
+                 
+                 
+                 
+ * 
+ * 
+ Assume the current 'cube' is "C". the numbered cubes around it are the neighbors, and that neighbors number.
+ 
+ The cube drawing on the left details the order in which the vertices are drawn.
+ Given this, the number of the neighbors to each vertice in the neighbors array is as follows:
+ 
+
+the 'weight' is currently a hardcoded value, perhaps it should default to 8, but be stored on each voxel, so each voxel can be sized.
+but that would increase the memory footprint of each voxel, which is bad mmkay.
+
+?The paging system will have to keep most of the world on the hard drive in a page file, it may be much to large to store in memory at once.?
+With the current model, the entire thing can be relatively small. Each page can contain millions of voxels in about 1 million voxels per 2mb.
+
+
+##*
+It should be possible to store a sufficiently large world in a file format of:
+voxel_count@
+FLOATFLOATFLOAT
+ X  Y  Z
+##*
+## That method was very ineffecient. It took longer to load, compress, store, and could hold far less information.
+## The new method is
+
+each_chunk {
+float3 position // The center position of each_chunk.
+size_t chunk_voxel_count // amount of voxels that are not 'air' in this chunk.
+unsigned short voxel_id[chunk_voxel_count] // extracted by for loop using chunk_voxel_count . each 'encoded' voxel.
+}
+size_t chunk_count (varies on 32bit and 64-bit builds.) // Uses this for the for loop that extracts each_voxel this many times.
+-
+*/
+
+#include "server_map_vertex_gen.hpp"
+#include "server_map_chunk.hpp"
+#include "server_map_editor2pnt.hpp"
+#include "server_map_fileloading_extras.hpp"
+#include "server_map_voxel_drawer.hpp"
+//#include "server_map_ogreobject.hpp"
+
+#include "server_map_depricated.hpp"
+#include "server_map_playermovement.hpp"
+#include "server_map_editor.hpp"
+#include "server_map_netchunkupdate.hpp"
+#include "server_map_chunk_serialization.hpp"
+
+
+
+void NewHeightmapLoader::_internal_threading_func() {
+  // All the complex stuff goes into the loop..
+  // 
+  // Really, when the main program dies for any reason the main thread should join into this one and allow it to die
+  // before cleaning up all the ogre objects (the camera specifically).. it does now.
+	std::cout <<" Starting a heightmap thread\n";
+	heightmap_globals::alive = true;
+	heightmap_globals::thread_running_mtex.lock();
+	try{
+		while(heightmap_globals::alive) {
+			heightmap_globals::wait_tlock();
+			if(heightmap_globals::kill_thread) {
+				heightmap_globals::toggle_thread_running();	
+				heightmap_globals::alive = false;
+				heightmap_globals::thread_running_mtex.unlock();
+				break;
+			}
+			if(0){
+				RunVoxelSelection();
+			}
+			if(localPlayer != NULL) transparent_roofs(localPlayer);
+			voxel_drawer*drawer = voxel_drawer::get_drawer();
+			drawer->create_faces(CameraPosition,cameras);
+			heightmap_globals::toggle_thread_running();
+		}
+	} catch(const char *c) {
+			std::cout << c << std::endl;
+			heightmap_globals::thread_running_mtex.unlock();
+			heightmap_globals::toggle_thread_running();
+	} 
+
+	std::cout <<" Exiting a heightmap thread\n";
+}
+
+void NewHeightmapLoader::AddCamera(const Ogre::Camera *_mCam){ 
+	if(!vcontains<Ogre::Camera*>(cameras,(Ogre::Camera*) _mCam)) cameras.push_back((Ogre::Camera*)_mCam);
+}
+void NewHeightmapLoader::clearCameras() {
+	while(cameras.size() != 0) cameras.pop_back();
+}
+#include <CEGUI.h>
+extern bool is_server;
+void NewHeightmapLoader::create_scene(const Ogre::Camera *_mCam) {
+	
+	if(!heightmap_globals::is_thread_running() && !heightmap_globals::thread_ready()) {
+		if(mCam != _mCam) mCam = _mCam;
+		heightmap_globals::toggle_thread_running(); // ensure no races.
+		Ogre::Vector3 po = mCam->getRealPosition();
+		CameraPosition.set(po.x,po.y,po.z);
+		player_position = localPlayer->position;
+		heightmap_globals::post_tlock();
+		// it can take an awfully long time to render, so everything is done in the background.
+		return;
+	}
+	if(heightmap_globals::is_thread_running()) return; 
+	if(!heightmap_globals::changed) return;
+	
+	heightmap_globals::changed = false;
+	
+	{
+	auto a = heightmap_globals::rendered_chunks.begin(), e = heightmap_globals::rendered_chunks.end();
+
+	for(;a!=e;++a) (*a)->render_chunk();
+	heightmap_globals::rendered_chunks.clear();
+	}
+
+	
+}
+NewHeightmapLoader::NewHeightmapLoader(std::string &dataFilename, bool image) {
+	// open dataFilename, read contents, populate voxels array from it.
+	selectedChunk = NULL;
+	mCam = NULL;
+	selcur = NULL;
+//	if(image)
+	//	this->load(dataFilename);
+//	else
+//		this->loadDatafile(dataFilename);
+		static	Ogre::AxisAlignedBox _BBOX(
+		    (GOREAL)(-1)*(GOREAL)(1024.0*CUBE_SIZE*2),
+		     (GOREAL)(-1)*(GOREAL)(1024.0*CUBE_SIZE*2),
+		    -((3*ROOF*3)*4),
+		     1024.0*CUBE_SIZE*2,
+		     1024.0*CUBE_SIZE*2,
+		     ((3*ROOF*3)*4)
+      );
+//	OgreObjectWrapper::get_instance("heightmap","General").create_ogre_object(NULL,NULL,0,0,_BBOX);;
+	heightmap_globals::m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&NewHeightmapLoader::_internal_threading_func, this)));
+	localPlayer = NULL;
+}
+
+/*
+
+Compression is required here...
+
+*/
+
+
+void NewHeightmapLoader::full_chunk_update(basic_chunk&n) {
+
+}
+
+
+Chunk *NewHeightmapLoader::contains(vec3 &pnt) {
+  Ogre::Vector3 humbug = pnt.toOgre();
+return qgetChunk(humbug);
+
+}
+
+
+
+
+
+void NewHeightmapLoader::changePage(std::string dataFilename,int x,int y) {
+	
+}
+void NewHeightmapLoader::create_selection_cursor(Ogre::SceneManager *e) {
+	selcur = new Selection_cursor(e);
+}
+NewHeightmapLoader::~NewHeightmapLoader() {
+if(selcur != NULL) delete selcur;
+}
+std::map<Chunk*,std::unique_ptr<boost::mutex> > chunk_lock::chunk_locks;
+void NewHeightmapLoader::clean_instance() {
+	if( NewHeightmapLoader::hm_instance  != NULL) {
+	  /*
+		  Fully clean up everything that can't be re-used.
+		  Reset to clean usable state.
+	  */
+		stop_heightmap_background_thread();
+		if(NewHeightmapLoader::hm_instance != NULL) delete NewHeightmapLoader::hm_instance;
+		NewHeightmapLoader::hm_instance = NULL;
+		voxel_drawer::get_drawer()->clear();
+		chunks.clear();
+		chunk_count  = 0;
+//		heightmap_globals::vert_count = 0;
+//		heightmap_globals::face_count = 0;
+		heightmap_globals::changed = false;
+		heightmap_globals::rthread = false;
+
+		transparented.pnts.clear();
+		chunk_lock::chunk_locks.clear();
+	}
+}
+NewHeightmapLoader* NewHeightmapLoader::get_instance(string filename, bool image) { 
+      if( NewHeightmapLoader::hm_instance  == NULL) {
+	      NewHeightmapLoader::hm_instance = new NewHeightmapLoader(filename, image);
+      }else // Don't forget the else!!!!!!!
+      if(filename != "") { // allow for loading of different heightmap images.
+		NewHeightmapLoader::clean_instance();
+		//delete NewHeightmapLoader::hm_instance;
+		NewHeightmapLoader::hm_instance = new NewHeightmapLoader(filename, image);
+      }
+      return NewHeightmapLoader::hm_instance ;
+}
+
+
+// Ensure this isn't optimized out via the volatile keyword
+

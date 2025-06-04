@@ -1,0 +1,7 @@
+﻿  tinyxmlparser.cpp
+  tinyxmlerror.cpp
+  tinyxml.cpp
+  tinystr.cpp
+  Generating Code...
+tinystr.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/OPT:ICF' specification
+  tinyxml_lib.vcxproj -> C:\cygwin\home\deadc0de\Game-One-netmap\external_includes\tinyxml\Debugtinyxml\tinyxml.dll

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+ <!-- NOTE: SIZE DIMENSIONS ARE X, Y, W, H -->
+
+<GUILayout >
+    <Window Type="DefaultWindow" Name="MainMenu_Register" >
+	<Window Type="TaharezLook/FrameWindow" Name="MainMenu_Register/RegisterWindow" >
+            <Property Name="Text" Value="Account Regstration" />
+            <Property Name="UnifiedMaxSize" Value="{{1,0},{1,0}}" />
+            <Property Name="TitlebarEnabled" Value="True" />
+            <Property Name="UnifiedAreaRect" Value="{{0.1,0},{0.1,0},{0.9,0},{0.9,0}}" /> 
+	    <Property Name="Alpha" Value="0.95" />
+	    
+	    <Window Type="TaharezLook/StaticText" Name="MainMenu_Register/lblTitle" >
+		<Property Name="HorzFormatting" Value="HorzCentred" />
+		<Property Name="Text" Value="Account Registration" />
+		<Property Name="Alpha" Value="0.5" />
+		<Property Name="FrameEnabled" Value="False" />
+		<Property Name="HorzFormatting" Value="HorzCentred" />
+		<Property Name="BackgroundEnabled" Value="False" />
+		<Property Name="UnifiedAreaRect" Value="{{0.333,0},{0.240,0},{0.660,0},{0.3153,0}}" />
+	    </Window>
+	    
+	    
+	    <Window Type="TaharezLook/StaticText" Name="MainMenu_Register/lblEmail" >
+		<Property Name="Text" Value="E-Mail" />
+		<Property Name="Alpha" Value="0.8" />
+		<Property Name="HorzFormatting" Value="HorzCentred" />
+		<Property Name="UnifiedAreaRect" Value="{{0.3,0},{0.4,0},{0.45,0},{0.45,0}}" />
+	    </Window>
+	    <Window Type="TaharezLook/Editbox" Name="MainMenu_Register/txtEmail" >
+		<Property Name="Text" Value="" />
+		<Property Name="Alpha" Value="0.8" />
+		<Property Name="UnifiedAreaRect" Value="{{0.5,0},{0.4,0},{0.7,0},{0.45,0}}" />
+		<Property Name="Tooltip" Value="Use a valid e-mail address. We will send a confirmation to the address you provide." />
+	    </Window>
+	    
+	    
+	    <Window Type="TaharezLook/StaticText" Name="MainMenu_Register/lblUsername" >
+		<Property Name="Text" Value="Username" />
+		<Property Name="Alpha" Value="0.8" />
+		<Property Name="HorzFormatting" Value="HorzCentred" />
+		<Property Name="UnifiedAreaRect" Value="{{0.3,0},{0.5,0},{0.45,0},{0.55,0}}" />
+	    </Window>
+	    <Window Type="TaharezLook/Editbox" Name="MainMenu_Register/txtUsername" >
+		<Property Name="Text" Value="" />
+		<Property Name="Alpha" Value="0.8" />
+		<Property Name="UnifiedAreaRect" Value="{{0.5,0},{0.5,0},{0.7,0},{0.55,0}}" />
+	    </Window>
+	    
+	    
+	    <Window Type="TaharezLook/StaticText" Name="MainMenu_Register/lblPassword" >
+		<Property Name="Text" Value="Password" />
+		<Property Name="Alpha" Value="0.8" />
+		<Property Name="HorzFormatting" Value="HorzCentred" />
+		<Property Name="UnifiedAreaRect" Value="{{0.3,0},{0.6,0},{0.45,0},{0.65,0}}" />
+	    </Window>
+	    <Window Type="TaharezLook/Editbox" Name="MainMenu_Register/txtPassword" >
+		<Property Name="Text" Value="" />
+		<Property Name="MaskText" Value="True" />
+		<Property Name="Alpha" Value="0.8" />
+		<Property Name="UnifiedAreaRect" Value="{{0.5,0},{0.6,0},{0.7,0},{0.65,0}}" />
+	    </Window>
+	    
+	    
+	    <Window Type="TaharezLook/StaticText" Name="MainMenu_Register/lblPasswordConfirm" >
+		<Property Name="Text" Value="Verify Password" />
+<!-- 		<Property Name="MaxTextLength" Value="25" /> -->
+		<Property Name="Alpha" Value="0.8" />
+		<Property Name="HorzFormatting" Value="HorzCentred" />
+		<Property Name="UnifiedAreaRect" Value="{{0.3,0},{0.7,0},{0.45,0},{0.75,0}}" />
+	    </Window>
+	      <Window Type="TaharezLook/Editbox" Name="MainMenu_Register/txtPasswordConfirm" >
+		<Property Name="Text" Value="" />
+		<Property Name="MaskText" Value="True" />
+		<Property Name="Alpha" Value="0.8" />
+		<Property Name="UnifiedAreaRect" Value="{{0.5,0},{0.7,0},{0.7,0},{0.75,0}}" />
+	    </Window>
+	    
+	    
+	    <Window Type="TaharezLook/Checkbox" Name="MainMenu_Register/chkAgree" >
+		<Property Name="Text" Value="I agree to the TOC and all that stuff" />
+		<Property Name="Alpha" Value="0.8" />
+		<Property Name="Disabled" Value="false" />
+		<Property Name="UnifiedAreaRect" Value="{{0.3,0},{0.8,0},{0.69,0},{0.85,0}}" />
+	    </Window>
+	    
+	    
+	    <Window Type="TaharezLook/Button" Name="MainMenu_Register/btnSubmit" >
+		<Property Name="Text" Value="Submit" />
+		<Property Name="Alpha" Value="0.8" />
+		<Property Name="UnifiedAreaRect" Value="{{0.5,0},{0.9,0},{0.7,0},{0.95,0}}" />
+	    </Window>
+	    <Window Type="TaharezLook/Button" Name="MainMenu_Register/btnBack" >
+		<Property Name="Text" Value="Back" />
+		<Property Name="Alpha" Value="0.8" />
+		<Property Name="UnifiedAreaRect" Value="{{0.3,0},{0.9,0},{0.45,0},{0.95,0}}" />
+	    </Window>
+	</Window>
+    </Window>
+</GUILayout>

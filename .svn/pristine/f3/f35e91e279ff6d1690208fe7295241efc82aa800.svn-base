@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<GUILayout >
+    <Window Type="DefaultWindow" Name="Lobby" >
+        <Property Name="UnifiedAreaRect" Value="{{0,0},{0,0},{1,0},{1,0}}" />
+        <Window Type="TaharezLook/FrameWindow" Name="Lobby/btnGame_search" >
+            <Property Name="TitlebarFont" Value="DejaVuSans-10" />
+            <Property Name="TitlebarEnabled" Value="True" />
+            <Property Name="UnifiedAreaRect" Value="{{0,0},{0,0},{1,0},{1,0}}" />
+	        <Window Type="TaharezLook/Listbox" Name="Lobby/cmbGame_list" >
+	            <Property Name="Tooltip" Value="The type of game to find" />
+	            <Property Name="UnifiedAreaRect" Value="{{-0.001114,0},{0.009,0},{0.75,0},{0.99,0}}" />
+	        </Window>
+	        <Window Type="TaharezLook/Combobox" Name="Lobby/cmbGame_type" >
+	            <Property Name="Text" Value="Game Type" />
+	            <Property Name="UnifiedAreaRect" Value="{{0.76,0},{0.009,0},{0.985,0},{0.06,0}}" />
+	            <Property Name="MaxEditTextLength" Value="1073741823" />
+	            <Property Name="ForceVertScrollbar" Value="True" />
+	        </Window>
+	        <Window Type="TaharezLook/Combobox" Name="Lobby/game_level" >
+	            <Property Name="Text" Value="Game Level" />
+	            <Property Name="UnifiedAreaRect" Value="{{0.76,0},{0.06,0},{0.985,0},{0.11,0}}" />
+	            <Property Name="MaxEditTextLength" Value="1073741823" />
+	            <Property Name="ForceVertScrollbar" Value="True" />
+	        </Window>
+	        <Window Type="TaharezLook/Button" Name="Lobby/search" >
+	            <Property Name="Text" Value="Search" />
+	            <Property Name="UnifiedAreaRect" Value="{{0.76,0},{0.115,0},{0.985,0},{0.18,0}}" />
+	        </Window>
+		<Window Type="TaharezLook/Button" Name="Lobby/btnBack" >
+	            <Property Name="Text" Value="Back" />
+	            <Property Name="UnifiedAreaRect" Value="{{0.76,0},{0.95,0},{0.985,0},{0.99,0}}" />
+	        </Window>
+        </Window>
+    </Window>
+</GUILayout>

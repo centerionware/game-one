@@ -1,0 +1,75 @@
+#include "generic_utilities.h"
+#include "server-map.h"
+#include "items.h"
+#include <string>
+/*
+    The server has a list of items on the floor. 
+    The items may contain other items (ex: corpses), and all decay over variable time
+    The server will drop a corpse item on monster_death - do not allow clients to trigger monster_death.    
+*/
+Item::Item(std::string& _name, unsigned int _id, wear_locations _wearable, wield_locations _weildable, std::string& _Desc, unsigned int _model_number, unsigned int _texture_number) : Name(_name), id(_id), wear(_wearable), wield(_weildable), Description(_Desc), model_number(_model_number), texture_number(_texture_number) {
+	  
+}
+	
+Item::Item(const Item &c) :
+	Name(c.Name), id(c.id), wear(c.wear), wield(c.wield), Description(c.Description), 
+	model_number(c.model_number), texture_number(c.texture_number) {
+	  
+}
+std::vector<Item> all_items;
+std::vector<item_on_floor> all_items_on_floor;
+
+struct player_pickup_item_memory {
+	inet_player *p;
+	unsigned int ind;
+	player_pickup_item_memory() : p(NULL){}
+	player_pickup_item_memory(inet_player *_p, unsigned int _ind) : p(_p), ind(_ind){}
+	player_pickup_item_memory(const player_pickup_item_memory &o) : p(o.p), ind(o.ind) {}
+};
+std::vector<player_pickup_item_memory> imem;
+void item_pickup_test(inet_player *p, vec3 &pos) {
+	std::vector<item_on_floor>::iterator i = all_items_on_floor.begin(), e = all_items_on_floor.end();
+	for(unsigned int ind = 0;i!=e;++i,++ind) if( (*i).position == pos) {
+		std::vector<player_pickup_item_memory>::iterator im = imem.begin(), ie = imem.end();
+		for(;im!=ie;++im) if( (*im).ind == ind && (*im).p != p) continue;
+		imem.push_back(player_pickup_item_memory(p, ind));
+	}
+}
+
+bool remove_from_imem(std::vector<player_pickup_item_memory>::iterator &in) {
+	std::vector<player_pickup_item_memory>::iterator  i = imem.begin(), e = imem.end();
+	for(;i!=e;++i) if( (*i).ind == (*in).ind && (*i).p != (*in).p) {
+	  imem.erase(i);
+	  return true;
+	}
+	return false;
+}
+bool remove_from_items(std::vector<player_pickup_item_memory>::iterator &in) {
+	std::vector<item_on_floor>::iterator  i = all_items_on_floor.begin(), e = all_items_on_floor.end();
+	for(unsigned int ind = 0;i!=e;++ind,++i) if( ind == (*in).ind) {
+	  all_items_on_floor.erase(i);
+	  return true;
+	}
+	return false;
+}
+void item_pickup(inet_player *p) {
+	std::vector<player_pickup_item_memory>::iterator  i = imem.begin(), e = imem.end();
+	bool found = false;
+	item_on_floor floor_item;
+	for(;i!=e;i++) 
+		if(p == (*i).p && _get3d_vecdistref( p->position, all_items_on_floor[(*i).ind].position) < 2 ) {
+			floor_item = all_items_on_floor[(*i).ind];
+			found = true;
+			
+			
+			break;
+		}
+	if(found) {
+		std::vector<Item>::iterator me = all_items.begin(), mee = all_items.end();
+		for(unsigned int x = 0; x != all_items_on_floor[(*i).ind].all_items_index && me!=mee; ++x, ++me);
+		if(me!=mee) p->inventory.push_back((*me));
+		while(remove_from_imem(i));
+		remove_from_items(i);
+		imem.erase(i);
+	}
+}

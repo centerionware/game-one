@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<GUIScheme Name="GameOneLook">
+	<Imageset Name="Splash" Filename="Splash.imageset"/>
+	<Imageset Name="SplashAlpha" Filename="SplashAlpha.imageset"/>
+	<Imageset Name="MainMenu" Filename="MainMenu.imageset"/>
+	<Imageset Name="HUD" Filename="HUD.imageset"/>
+	<Imageset Name="MainMenu_Settings" Filename="MainMenu_Settings.imageset"/>
+	<Imageset Name="TextureAtlas" Filename="TextureAtlas.imageset"/>
+	<Imageset Name="WaitSpinner" Filename="WaitSpinner.imageset"/>
+	<Font Filename="DejaVuSans-10.font" />
+	<Font Filename="monospace-bold-10.font" />
+	<FalagardMapping WindowType="GameOneLook/ImageButton" TargetType="CEGUI/PushButton" Renderer="Falagard/Button" LookNFeel="GameOneLook/ImageButton"/>
+	<FalagardMapping WindowType="GameOneLook/StaticImage" TargetType="DefaultWindow" Renderer="Falagard/StaticImage" LookNFeel="GameOneLook/StaticImage"/>
+	<FalagardMapping WindowType="GameOneLook/StaticText"  TargetType="DefaultWindow" Renderer="Falagard/Default"  LookNFeel="GameOneLook/StaticText"/>
+	<LookNFeel Filename="GameOneLook.looknfeel"/>
+	<WindowRendererSet Filename="CEGUIFalagardWRBase"/>
+</GUIScheme>

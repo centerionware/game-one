@@ -1,0 +1,62 @@
+#include "CState_Lobby.h"
+void CState_Testing::Enter()
+{
+    mRoot = Ogre::Root::getSingletonPtr();
+    IsConnected	= true;
+    EscPressed	= false;
+    showing_minimap = false;
+    if ( mSceneManager == NULL )
+    {
+        mSceneManager = mRoot->createSceneManager(Ogre::ST_GENERIC);
+    }
+    else
+    {
+     //   mSceneManager->clearScene();
+     //   mSceneManager = NULL;
+     //   mSceneManager = mRoot->createSceneManager(Ogre::ST_GENERIC);
+    }
+
+    CreateCamera();
+    CreateViewport();
+    CreateScene();
+
+ 
+    mPlayer = boost::shared_ptr<inet_player>(new inet_player(mSceneManager,"soldier.mesh","TestPlayer", mCamera,0));
+    inet_player::Players.push_back(mPlayer);
+    mPlayer->create_commands();
+    mPlayer->testing_state_conndisconn();
+    mPlayer->loginToServer(CState_Lobby::ReturnInstance()->server, CState_Lobby::ReturnInstance()->port,"",""); 
+	CreateGUI();
+
+	
+    mPlayer->targetposition = mPlayer->position;
+    mTrayMan = new OgreBites::SdkTrayManager( "InterfaceName", mRoot->getAutoCreatedWindow(), CEventManager::ReturnSingletonPointer()->ReturnMouse() );
+    mTrayMan->showFrameStats( OgreBites::TL_BOTTOMLEFT );
+    mTrayMan->showLogo(OgreBites::TL_BOTTOMRIGHT);
+    mTrayMan->hideCursor();
+     
+    Ogre::StringVector items;
+    items.push_back("cam.pX");
+    items.push_back("cam.pY");
+    items.push_back("cam.pZ");
+    items.push_back("");
+    items.push_back("cam.oW");
+    items.push_back("cam.oX");
+    items.push_back("cam.oY");
+    items.push_back("cam.oZ");
+    items.push_back("");
+    items.push_back("Filtering");
+    items.push_back("Poly Mode");
+    mDetailsPanel = mTrayMan->createParamsPanel(OgreBites::TL_NONE, "DetailsPanel", 200, items);
+    mDetailsPanel->setParamValue(9, "Bilinear");
+    mDetailsPanel->setParamValue(10, "Solid");
+    mDetailsPanel->hide();;
+    Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);
+    //mSceneManager->setAmbientLight(Ogre::ColourValue(0.5, 0.5, 0.5));
+    mSceneManager->setSkyDome(true, "Examples/CloudSky",10,8,400,false);
+    IsRunning = true;
+    NewHeightmapLoader::get_instance()->AddCamera(mCamera);
+    //NewHeightmapLoader::get_instance()->AddCamera(m_minimap_camera);
+    NewHeightmapLoader::get_instance()->localPlayer = mPlayer.get();
+ 
+}

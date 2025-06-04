@@ -1,0 +1,91 @@
+/**
+ * GAME-ONE APPLICATION FRAMEWORK
+ * Filename: CGameManager.cpp
+ * Description: This source will manage the components required to start various game states.
+ * Legal stuff ~
+ */
+
+#ifndef _CGAMEMANAGER_H_
+#define _CGAMEMANAGER_H_
+
+#include <vector>
+
+#include <Ogre.h>
+#include <OgreSingleton.h>
+#include <OgreCamera.h>
+#include <OgreEntity.h>
+#include <OgreLogManager.h>
+#include <OgreRoot.h>
+#include <OgreViewport.h>
+#include <OgreSceneManager.h>
+#include <OgreRenderWindow.h>
+#include <OgreConfigFile.h>
+
+#include <OIS/OISEvents.h>
+#include <OISInputManager.h>
+#include <OISKeyboard.h>
+#include <OISMouse.h>
+
+#include <CEGUI/CEGUI.h>
+#include <CEGUI/RendererModules/Ogre/CEGUIOgreRenderer.h>
+
+#include <SdkCameraMan.h>
+#include <SdkTrays.h>
+
+#include "CGUI.h"
+#include "CEventManager.h"
+
+class CState;
+
+//MainMenu Enumeration
+
+
+class CGameManager : public Ogre::Singleton<CGameManager>, public Ogre::FrameListener, public Ogre::WindowEventListener, public OIS::KeyListener, public OIS::MouseListener, OgreBites::SdkTrayListener
+{
+public:
+    CGameManager();
+    ~CGameManager();
+
+    void start( CState * state );
+    void DoStateChange( CState * state );
+
+    static CGameManager & ReturnSingleton( void );
+    static CGameManager * ReturnSingletonPointer( void );
+
+    Ogre::RenderWindow * GetRenderWindow();
+    
+    typedef std::map< std::string, int > InterCom;
+    InterCom StateInterCom;
+    
+    void InsertInterCom( std::string Title, int Arg );
+    int GetInterCom( std::string Title );
+
+protected:
+    Ogre::Root		* mRoot;
+    Ogre::RenderWindow	* mRenderWindow;
+    Ogre::Log		* mLog;
+    CGUI		 *GUI;
+
+    void SetupResources( void );
+    bool Configure( void );
+
+    bool frameRenderingQueued( const Ogre::FrameEvent &event );
+    bool frameStarted( const Ogre::FrameEvent & event );
+    bool frameEnded( const Ogre::FrameEvent & event );
+
+private:
+    bool keyPressed( const OIS::KeyEvent & event );
+    bool keyReleased( const OIS::KeyEvent & event );
+
+    bool mouseMoved( const OIS::MouseEvent & event );
+    bool mousePressed( const OIS::MouseEvent & event, OIS::MouseButtonID identifier );
+    bool mouseReleased( const OIS::MouseEvent & event, OIS::MouseButtonID identifier );
+    void windowResized(Ogre::RenderWindow*);
+    Ogre::String	mPluginsCfg;
+    Ogre::String	mOgreCfg;
+
+    CEventManager* EventManager;
+    std::vector<CState*> States;
+};
+
+#endif // _CGAMEMANAGER_H_

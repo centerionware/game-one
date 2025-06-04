@@ -1,0 +1,36 @@
+void initialize_net_modules();
+void inet_player::create_commands() {
+	INET_PLAYER_COMMAND(changeHeadText, NetCommand, HeadText);
+	INET_PLAYER_COMMAND(changePosition, NetCommand, Position);
+	INET_PLAYER_COMMAND(preAuthenticate, LoginCommand, TryLogin);
+	INET_PLAYER_COMMAND(loginAuthenticate, LoginCommand, DoLogin);
+	INET_PLAYER_COMMAND(TryRegistration, Register, TryRegister);
+	INET_PLAYER_COMMAND(getChunk, NetCommand, GetChunk);
+	INET_PLAYER_COMMAND(clientChunkPush, NetCommand, PushChunk);
+	INET_PLAYER_COMMAND(getName, NetCommand, GetName);
+	INET_PLAYER_COMMAND(followPlayer, NetCommand, FollowPlayer);
+	/* begin Player OLC */
+
+		
+		/*
+	myCommandProcessor.Add(new VecFunctor<inet_player>(this, &inet_player::changeHeadText), to_value(NetCommand), to_value(HeadText));
+	myCommandProcessor.Add(new VecFunctor<inet_player>(this, &inet_player::changePosition), to_value(NetCommand), to_value(Position));
+	myCommandProcessor.Add(new VecFunctor<inet_player>(this, &inet_player::preAuthenticate), to_value(LoginCommand), to_value(TryLogin));
+	myCommandProcessor.Add(new VecFunctor<inet_player>(this, &inet_player::loginAuthenticate), to_value(LoginCommand), to_value(DoLogin));
+	myCommandProcessor.Add(new VecFunctor<inet_player>(this, &inet_player::TryRegistration), to_value(Register), to_value(TryRegister));
+	myCommandProcessor.Add(new VecFunctor<inet_player>(this, &inet_player::getChunk), to_value(NetCommand), to_value(GetChunk));
+	myCommandProcessor.Add(new VecFunctor<inet_player>(this, &inet_player::clientChunkPush), to_value(NetCommand), to_value(PushChunk));
+	*/
+	CALLBACK_REGISTER(InventoryCommand, WearItem);
+	CALLBACK_REGISTER(InventoryCommand, RemoveItem);
+	CALLBACK_REGISTER(InventoryCommand, DropItem);
+	initialize_net_modules();
+	/*
+	enum inventory_commands { WearItem, RemoveItem, DropItem };
+enum shop_commands { BuyItem, SellItem, ListItems };
+enum combat_commands { Attack, Cast, ListCommands, HelpCommand / *return the description from the server to be displayed in txt with a box outlining * / };
+enum skill_commands { Learn, UpdateLevel, SetUsed };
+	*/
+	
+}
+

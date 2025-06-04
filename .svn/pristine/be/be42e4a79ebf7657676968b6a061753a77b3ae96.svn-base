@@ -1,0 +1,83 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#ifndef WIN32
+#include <unistd.h>
+#endif
+#include <fstream>
+#include "inet.h"
+
+#include "CState_MainMenu_Login.h"
+#define NET_MESSAGE_SIZE 4
+#if WIN32
+std::string cache_filedir = "..\\data\\chunk_cache\\";
+#else
+std::string cache_filedir = "../data/chunk_cache/";
+#endif
+// Inet client and inet server files are virtually the same, but distinct implimentations of the same objects in order to make the seperation clear when expanding
+// upon each end individually.
+#include "inet-client_globals.hpp"
+#include "inet-client_asoi_threaded_chatclient.hpp"
+#include "inet-client_chunk_cacher.hpp"
+#include "inet-client_inet_core.hpp"
+#include "inet-client_network_callbacks.hpp"
+#include "inet-client_create_commands.hpp"
+bool is_server = false;
+void inet_player::isAdmin(std::vector<std::string>&in) {
+	//admin = true;???
+	admin = true;
+	std::string &b = in[0];
+	std::string y = non_safe_string_deserialize(b);
+	admin_level = fromstring<unsigned int>(y);
+}
+
+#include "inet-client_initChunkNet.hpp"
+#include "inet-client_PTeleport.hpp"
+#include "inet-client_changeHeadText.hpp"
+void inet_player::requestChunk(std::vector<std::string>&in) {
+
+}
+#include "inet-client_getName.hpp"
+#include "inet-client_addPlayer.hpp"
+#include "inet-client_remPlayer.hpp"
+#include "inet-client_changePosition.hpp"
+#include "inet-client_followPlayer.hpp"
+
+void Chunk::render_chunk() {
+
+	chunk_lock locker(this);
+	if(!changed_from_last_render) return;
+	
+	if(myVertexList!=NULL) {
+		//temporal_lock();
+		if(ogre_plugin == NULL) {
+			std::stringstream lout;
+			lout << "hm_chunk("<<id<<")";
+			ogre_plugin = new OgreObjectWrapper(lout.str().c_str(), "General");
+		}
+		if(_in_view)
+			ogre_plugin->create_ogre_object(myVertexList,vertex_count,this->bbox,pColor,this->mcWeights);
+		else 
+			ogre_plugin->create_ogre_object(NULL,0,this->bbox,NULL,NULL);
+		if(!ogre_plugin->entity_loaded) {
+			std::stringstream sm_name;
+			sm_name << ogre_plugin->_name << "_ent";
+			Ogre::Entity *entity = CState_Testing::ReturnInstance()->mSceneManager->createEntity(sm_name.str().c_str(), ogre_plugin->_name, "General");
+			entity->setMaterialName("VoxelTexture", "General");
+			Ogre::SceneNode *node = CState_Testing::ReturnInstance()->mSceneManager->getRootSceneNode()->createChildSceneNode();
+			node->attachObject(entity);
+			ogre_plugin->entity_loaded=true;
+		}
+		changed_from_last_render = false;
+		//temporal_unlock();
+	} else if(ogre_plugin != NULL){
+		//temporal_lock();
+		if(_in_view)
+			ogre_plugin->create_ogre_object(myVertexList,0,this->bbox,pColor,this->mcWeights);
+		else 
+			ogre_plugin->create_ogre_object(NULL,0,this->bbox,NULL,NULL);
+		changed_from_last_render = false;
+		//temporal_unlock();
+	}
+}
+

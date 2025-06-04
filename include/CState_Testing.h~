@@ -1,0 +1,153 @@
+/**
+ * GAME-ONE APPLICATION FRAMEWORK
+ * Filename: CState_Testing.h
+ * Description: Introductory Game State
+ * Legal stuff ~
+ */
+#ifndef CSTATE_TESTING_H
+#define CSTATE_TESTING_H
+
+#include <Ogre.h>
+#include <OgreViewport.h>
+
+#include <OIS.h>
+
+#include <CEGUI.h>
+#include <CEGUI/RendererModules/Ogre/CEGUIOgreRenderer.h>
+
+#include <SdkCameraMan.h>
+
+#include "dotscene/dotscene.h"
+
+#include "CHUD.h"
+#include "CState.h"
+#include "CState_MainMenu.h"
+#include "CState_Splash.h"
+
+#include "server-map.h"
+#include "inet.h"
+#include <boost/filesystem.hpp>
+namespace gui_modules {
+class gui_module;
+}
+class net_module;
+class CState_Testing : public CState
+{
+  friend class gui_modules::gui_module;
+friend class net_module;
+  std::vector<boost::filesystem::path> files;
+    std::vector<boost::filesystem::path> subdirs;
+    boost::filesystem::path currentPath;
+public:
+    bool FillPath(const char*path=".");
+  
+    void OpenFileList(const CEGUI::EventArgs &event);
+    void SelectDir(const CEGUI::EventArgs &event);
+    void SelectFile(std::string filename);
+    void Enter();
+    void Exit();
+    void Pause();
+    void Resume();
+    bool frameStarted( const Ogre::FrameEvent & event );
+    virtual bool frameRenderingQueued( const Ogre::FrameEvent &event);
+    bool frameEnded( const Ogre::FrameEvent & event );
+    void keyPressed( const OIS::KeyEvent & event );
+    void keyReleased( const OIS::KeyEvent & event );
+    void mouseMoved( const OIS::MouseEvent & event );
+    void mousePressed( const OIS::MouseEvent & event, OIS::MouseButtonID identifier );
+    void mouseReleased( const OIS::MouseEvent & event, OIS::MouseButtonID identifier );
+    
+    void createInitialKeyboardMapping();
+    void createInitialMouseMapping();
+    
+    static CState_Testing * ReturnInstance() { return & STATE_TESTING; }
+    void walk_player();
+    void ConnectionSuccess();
+    void ConnectionClosed();
+    
+    void ToggleMinimap(OIS::KeyCode);
+    void CyclePolygonRenderingMode(OIS::KeyCode);
+    void CyclePolygonFilterMode(OIS::KeyCode);
+    void RefreshAllTextures(OIS::KeyCode);
+    void ToggleRareDebugStats(OIS::KeyCode);
+    void ToggleFrameStats(OIS::KeyCode);
+    void ScreenShot(OIS::KeyCode);
+    void Toggle3DView(const CEGUI::EventArgs &event);
+protected:
+    CState_Testing();
+    ~CState_Testing();
+    
+    void CreateCamera( void );
+    void CreateViewport( void );
+    void CreateScene( void );
+    void CreateGUI( void );
+    bool Event_LeaveGame(const CEGUI::EventArgs& e);
+    bool OnMinimapSliderChanged(const CEGUI::EventArgs &event);
+    
+bool OnPlayerZoneEditorOpen(const CEGUI::EventArgs &event);
+
+    bool OnItemLocalSearch(const CEGUI::EventArgs &event);
+    bool OnItemGlobalSearch(const CEGUI::EventArgs &event);
+    bool OnItemModifyPress(const CEGUI::EventArgs &event);
+    bool OnItemDeletePress(const CEGUI::EventArgs &event);
+    bool OnItemLockPress(const CEGUI::EventArgs &event);
+    bool OnItemDetailsRequest(const CEGUI::EventArgs &event);
+    bool OnItemAddPress(const CEGUI::EventArgs &event);
+
+    bool OnModelSearch(const CEGUI::EventArgs &event);
+    bool OnModelModifyPress(const CEGUI::EventArgs &event);
+    bool OnModelDeletePress(const CEGUI::EventArgs &event);
+    bool OnModelLockPress(const CEGUI::EventArgs &event);
+    bool OnModelDetailsRequest(const CEGUI::EventArgs &event);
+    bool OnModelAddPress(const CEGUI::EventArgs &event);
+    
+    bool IsRunning;
+    bool IsConnected;
+    bool IsTimeOut;
+    bool EscPressed;
+    bool CursorWasVisible;
+    bool FreelookEditMode;
+    bool FreelookEditModeFPS;
+    float minimap_slider;
+    Ogre::Timer CState_Clock;
+    
+    Ogre::Root		* mRoot;
+    
+    Ogre::Viewport	* mViewport;
+    Ogre::Camera	* mCamera;
+    Ogre::SceneNode	* mCamNode;
+    
+    OgreBites::SdkCameraMan	* mCameraMan;
+    OgreBites::SdkTrayManager	* mTrayMan;
+    OgreBites::ParamsPanel	* mDetailsPanel;
+public:
+	Ogre::SceneManager	* mSceneManager;
+    CEGUI::WindowManager	*WinMan;
+protected:
+    CEGUI::System		*SysMan;
+    CEGUI::Window		*Window;
+    // minimap members
+    CEGUI::Window		*m_minimap_window;
+    CEGUI::Window		*m_texture_atlas;
+	CEGUI::Window		*m_hud_window;
+    Ogre::Camera		*m_minimap_camera;
+    Ogre::RenderTexture 	*m_minimap_rt;
+  //  Ogre::SceneNode	* mMinimapCamPitchNode;
+    //Ogre::SceneNode	* mMinimapCamYawNode;
+    Ogre::SceneNode	* mMinimapCamNode;
+    Ogre::Vector3 mTranslateVector;
+    CEGUI::Window* minimap;
+    CEGUI::Imageset* textureImageSet;
+private:
+    static CState_Testing STATE_TESTING;
+    boost::shared_ptr<inet_player>mPlayer;
+    CHUD LRONHUDDARD;
+    bool showing_minimap;
+    
+    
+    Commands::tProc<OIS::KeyCode> KeyboardMap;
+    Commands::tProc<OIS::MouseEvent> MouseMap;
+    bool Event_ChatTextAdded(const CEGUI::EventArgs& args);
+};
+
+#endif // CSTATE_TESTING_H

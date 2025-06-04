@@ -1,0 +1,378 @@
+namespace heightmap_globals {
+	bool thread_running = false;
+	bool volatile alive = true;
+	bool changed = false;
+	bool kill_thread = false;
+	bool network_changed = false;
+	bool rthread;
+	boost::mutex a,b;//,mut_c; // mut_c must die a fast death.
+	boost::mutex thread_running_mtex;
+	boost::interprocess::interprocess_semaphore tlock(0);
+	boost::shared_ptr<boost::thread> m_thread;
+	std::vector<Chunk*>rendered_chunks;
+	Ogre::AxisAlignedBox bounding;
+	void wait_tlock() {
+		thread_running_mtex.unlock();
+		tlock.wait();
+	}
+	void post_tlock() {
+		thread_running_mtex.lock();
+				tlock.post();
+	}
+	bool is_thread_running() {
+		bool r;
+		a.lock();
+		r = thread_running;
+		a.unlock();
+		return r;
+	}
+	bool thread_ready() {
+	      bool r = rthread;
+	      rthread = false;
+	      return r;
+	}
+	void toggle_thread_running() {
+		a.lock();
+		thread_running = !thread_running;
+		rthread =  !thread_running;// == false ? true : false;
+		a.unlock();
+	}
+	
+}
+namespace heightmap_globals {
+boost::mutex chunk_iterator_lock; // For rendering.
+boost::mutex chunk_iterator_lock_two; // for movement. 
+}
+
+struct generic_single_function_locker { // Pass in a static mutex allocated on the function..
+  bool locked;
+  boost::mutex &flock;
+  generic_single_function_locker(boost::mutex &_i) : locked(false), flock(_i) { lock(); }
+  ~generic_single_function_locker() { unlock(); }
+  void unlock() { if(locked) flock.unlock(); locked = false;}
+  void lock() { if(!locked)  flock.lock(); locked = true; }
+};
+#define msize(X) (sizeof(X)/sizeof(X[0]))
+
+insert_sorted_chunks chunks;
+std::vector<unsigned short> mselvox;
+
+void error_break() {
+   std::cout << "Error_break()!:";
+}
+template<class T>
+inline std::string to_string(const T& t) {
+    std::stringstream ss;
+    ss << t;
+    return ss.str();
+}
+class NewHeightmapLoader;
+/*
+ * the first get_instance creates the initial map. To change the map simply call
+ * get_instance(std::string("different filename.png or jpg or whatever"));
+ * 
+ * 
+ * the heightmap object is created in group General with the name of heightmap, and is loaded by the dotscene. for now.
+ * 
+ * The create_server_heightmap must be run before the dotscene file is loaded, it creates an empty object named
+ * heightmap, then the first time create_heightmap_each_frame is called it will rebuild the heightmap object.
+ * 
+ * 
+ */
+
+
+void create_heightmap_each_frame(Ogre::Camera *mCam) {
+	NewHeightmapLoader *hm = NewHeightmapLoader::get_instance();
+	hm->create_scene(mCam);
+}
+void create_server_heightmap(std::string filename) {
+	size_t idx = filename.rfind(".",filename.size()-4);
+	bool img = true;
+	if(idx != std::string::npos){
+		if(filename.substr(idx+1) == "voxmap.gz") img = false;
+	} else {
+	  
+	}
+	/*NewHeightmapLoader *hm =*/ NewHeightmapLoader::get_instance(filename,img);
+//	std::string datafilename = "../data/heightmap.3.voxmap.gz";
+	//if(img)
+//		hm->saveDatafile(datafilename);
+}
+struct pos_ori {
+	Ogre::Vector3 pos;
+	Ogre::Quaternion ori;
+	const Chunk *c;
+	const Ogre::Camera *cam;
+	pos_ori() {}
+	pos_ori(const Ogre::Vector3 &_pos, const Ogre::Quaternion &_ori, const Chunk *_c, const Ogre::Camera *_cam) : pos(_pos), ori(_ori),c(_c),cam(_cam){; }
+	pos_ori(const pos_ori &old) { pos = old.pos, ori = old.ori; c = old.c; cam=old.cam;}
+	bool compare(const pos_ori &other) {
+	  return pos == other.pos && ori==other.ori && c == other.c && cam == other.cam;
+	}
+};
+
+std::vector<pos_ori> pori_map;
+void stop_heightmap_background_thread() {
+	if(heightmap_globals::thread_running) {
+		heightmap_globals::kill_thread = true;
+		heightmap_globals::post_tlock();
+		heightmap_globals::m_thread->join();
+		heightmap_globals::thread_running = false;
+		heightmap_globals::kill_thread = false;
+		heightmap_globals::rendered_chunks.clear();
+		while(pori_map.size() > 0) pori_map.pop_back();
+	}
+}
+
+template<class T1, class T2,class T3>
+bool IN_ARRAY(T1 ARRAY, T2 ELE,T3 CEND) {
+	
+	if(CEND == 0) return false;
+	for(size_t COUNTER = 0; COUNTER < CEND; COUNTER++) 
+	{
+		if(ARRAY[COUNTER]==ELE) return true;
+	}
+	return false;
+}
+bool IN_ARRAY(int ARRAY[], int ELE, unsigned int CEND) {
+	for(size_t COUNTER = 0; COUNTER < CEND; COUNTER++) 
+	{
+		if(ARRAY[COUNTER]==ELE) return true;
+	}
+	return false;
+}
+static size_t chunk_count = 0;
+
+unsigned short to_voxid(vec3 C) { return (floor(C.y)*31*31)+(floor(C.x)*31)+floor(C.z); }
+vec3 from_voxid(unsigned short idx) {
+  	int j = 31;
+	int k =j*j;
+	signed short y = idx/(k);
+	signed short x = (idx - y*k)/j;
+	signed short z = idx - y*k - x*j;
+	return vec3(x,y,z)*(CUBE_SIZE*2);
+}
+
+namespace Generic_Tools {
+  template<class T> bool contains(std::vector<T>&v, T o) {
+	auto iter = v.begin(), end = v.end();
+	for(;iter!=end;++iter) if( (*iter) == o) return true;
+	return false;
+  }
+  std::vector<unsigned short>::iterator iter_contains(std::vector<unsigned short>&v, unsigned short o) {
+	auto iter = v.begin(), end = v.end();
+	for(;iter!=end;++iter) if( (*iter) == o) return iter;
+	return end;
+  }
+};
+
+std::string truefalse(bool x) {
+      if(x) return "true";
+      return "false";
+}
+void debug_print(bool top, bool left, bool bottom, bool right) {
+      std::cout << "Top: " << truefalse(top) << " Left " << truefalse(left) << " bottom " << truefalse(bottom) << " right " << truefalse(right);
+}
+
+
+struct hm_ray {
+      vec3 P1, P2, PNorm;
+      hm_ray(vec3 _p1, vec3  _p2) : P1(_p1), P2(_p2), PNorm(_p2.div(_p1)) {}
+};
+struct hm_plane {
+      /*
+	 P2_____P3
+	  |     |
+	  |     |
+	  |     |	Only need P1 and P3 and a normal.
+	  |_____|
+         P1     P4
+      */
+  
+      vec3 P1, P2, P3;
+      vec3 PNorm;
+      hm_plane(vec3 _p1, vec3 _p2, vec3 _p3, vec3 _norm) :P1(_p1), P2(_p2), P3(_p3), PNorm(_norm) {}
+};
+#include <OgreMatrix3.h>
+bool hm_ray_plane_intersect(hm_ray&i, hm_plane &b) {
+		float t,u,v;
+		float bare_matrix[3][3];
+		bare_matrix[0][0] = i.P1.x-i.P2.x;
+		bare_matrix[0][1] = b.P2.x-b.P1.x;
+		bare_matrix[0][2] = b.P3.x-b.P1.x;
+		
+		bare_matrix[1][0] = i.P1.y-i.P2.y;
+		bare_matrix[1][1] = b.P2.y-b.P1.y;
+		bare_matrix[1][2] = b.P3.y-b.P1.y;
+		
+		bare_matrix[2][0] = i.P1.z-i.P2.z;
+		bare_matrix[2][1] = b.P2.z-b.P1.z;
+		bare_matrix[2][2] = b.P3.z-b.P1.z;
+		Ogre::Matrix3 int_matrix( bare_matrix);
+		Ogre::Matrix3 inverse;
+		inverse = int_matrix.Inverse();
+		Ogre::Vector3 lb(i.P1.x-b.P1.x,i.P1.y-b.P1.y,i.P1.z-b.P1.z);
+
+		t = inverse[0][0]*lb.x + inverse[0][1]*lb.y +inverse[0][2]*lb.z;
+		u = inverse[1][0]*lb.x + inverse[1][1]*lb.y +inverse[1][2]*lb.z;
+		v = inverse[2][0]*lb.x + inverse[2][1]*lb.y +inverse[2][2]*lb.z;
+
+		/*#define tinrange(Z, X,Y) (Z >= X && Z <= Y) */
+		if(tinrange(t,0,1) && tinrange(u, 0,1) && tinrange(v,0,1) && u+v<=1 )
+		      return true;
+			      
+		
+		return false;
+}
+
+
+
+
+selected_face find_selected_face(selected_face selectedFace, Ogre::Ray &SelRay, Ogre::Vector3 &pnt, float &c) {
+{
+//		      diff.normalized();
+	std::map<selected_face,Ogre::Vector3> facemap;
+	facemap[top] = Ogre::Vector3 (0,1,0);
+	facemap[bottom] = Ogre::Vector3 (0,-1,0);
+	facemap[left] = Ogre::Vector3(-1,0,0);
+	facemap[right] = Ogre::Vector3 (1,0,0);
+	facemap[front] = Ogre::Vector3 (0,0,1);
+	facemap[back] = Ogre::Vector3 (0,0,-1);
+	
+	std::map<selected_face,Ogre::Vector3>::iterator fmiter = facemap.begin(), fmend = facemap.end();
+	
+	for(;fmiter != fmend; fmiter++) {
+	      if((*fmiter).first == selectedFace) continue;
+	      /*
+	      std::fabs(_get3d_vecdistref(iter->ele->position, v)) < std::fabs(_get3d_vecdistref(closest_chunk->position, v)
+	      
+	      (diff-(*fmiter).second) < diff-facemap[selectedFace]
+	      
+	      */
+		  //if(std::fabs(_get3d_vecdistref(diff,(*fmiter).second)) < std::fabs(_get3d_vecdistref(diff,facemap[selectedFace])) ) 
+		  /*
+			  if fmiter.first = bottom, 
+		  */
+		  //float old_c = c;
+		  //c = sym_round(c);
+		  bool w = false;
+		  hm_ray one(SelRay.getPoint(c-1),SelRay.getPoint(c));
+		  if( (*fmiter).first == bottom) {
+		  //      std::cout <<"bottom\n";
+			hm_plane two(vec3(pnt.x-0.5, pnt.y-0.5,pnt.z+0.5),vec3(pnt.x-0.5, pnt.y-0.5,pnt.z-0.5),vec3(pnt.x+0.5, pnt.y-0.5,pnt.z-0.5),vec3(0.5, 0,0.5));
+			hm_plane three(vec3(pnt.x-0.5, pnt.y-0.5,pnt.z+0.5),vec3(pnt.x+0.5, pnt.y-0.5,pnt.z-0.5),vec3(pnt.x+0.5, pnt.y-0.5,pnt.z+0.5),vec3(0.5, 0,0.5));
+			w = hm_ray_plane_intersect(one,two) ||hm_ray_plane_intersect(one,three) ;
+		  } else if( (*fmiter).first == left) { 
+		    //std::cout <<"left\n";
+			hm_plane two(vec3(pnt.x-0.5, pnt.y-0.5,pnt.z+0.5),vec3(pnt.x-0.5, pnt.y-0.5,pnt.z-0.5),vec3(pnt.x-0.5, pnt.y+0.5,pnt.z-0.5),vec3(1, 0.5,0.5));
+			hm_plane three(vec3(pnt.x-0.5, pnt.y-0.5,pnt.z+0.5),vec3(pnt.x-0.5, pnt.y+0.5,pnt.z-0.5),vec3(pnt.x-0.5, pnt.y+0.5,pnt.z+0.5),vec3(1, 0.5,0.5));
+			w = hm_ray_plane_intersect(one,two) ||hm_ray_plane_intersect(one,three) ;
+		  } else if( (*fmiter).first == right) {
+		    //std::cout <<"right\n";
+			hm_plane two(vec3(pnt.x+0.5, pnt.y-0.5,pnt.z+0.5),vec3(pnt.x+0.5, pnt.y-0.5,pnt.z-0.5),vec3(pnt.x+0.5, pnt.y+0.5,pnt.z-0.5),vec3(0, 0.5,0.5));
+			hm_plane three(vec3(pnt.x+0.5, pnt.y-0.5,pnt.z+0.5),vec3(pnt.x+0.5, pnt.y+0.5,pnt.z-0.5),vec3(pnt.x+0.5, pnt.y+0.5,pnt.z+0.5),vec3(0, 0.5,0.5));
+			w = hm_ray_plane_intersect(one,two) ||hm_ray_plane_intersect(one,three) ;
+		  } else if( (*fmiter).first == front) {
+		    //std::cout <<"front\n";
+			hm_plane two(vec3(pnt.x-0.5, pnt.y-0.5,pnt.z+0.5),vec3(pnt.x-0.5, pnt.y+0.5,pnt.z+0.5),vec3(pnt.x+0.5, pnt.y+0.5,pnt.z+0.5),vec3(0.5, 0.5,0));
+			hm_plane three(vec3(pnt.x-0.5, pnt.y-0.5,pnt.z+0.5),vec3(pnt.x+0.5, pnt.y+0.5,pnt.z+0.5),vec3(pnt.x+0.5, pnt.y-0.5,pnt.z+0.5),vec3(0.5, 0.5,0));
+			w = hm_ray_plane_intersect(one,two) ||hm_ray_plane_intersect(one,three) ;
+		  } else if( (*fmiter).first == back) { 
+		    //std::cout <<"back\n";
+			hm_plane two(vec3(pnt.x-0.5, pnt.y-0.5,pnt.z-0.5),vec3(pnt.x-0.5, pnt.y+0.5,pnt.z-0.5),vec3(pnt.x+0.5, pnt.y+0.5,pnt.z-0.5),vec3(0.5, 0.5,1));
+			hm_plane three(vec3(pnt.x-0.5, pnt.y-0.5,pnt.z-0.5),vec3(pnt.x+0.5, pnt.y+0.5,pnt.z-0.5),vec3(pnt.x+0.5, pnt.y-0.5,pnt.z-0.5),vec3(0.5, 0.5,1));
+			w = hm_ray_plane_intersect(one,two) ||hm_ray_plane_intersect(one,three) ;
+		  }
+		  
+		  if(w) selectedFace = (*fmiter).first;
+		  //c = old_c;
+	}
+
+	return selectedFace;
+  }
+}
+
+template<class T> bool vcontains(std::vector<T> &i, T l) {
+      auto it = i.begin(), ie = i.end(); 
+      for(;it!=ie;++it) if((*it) == l) return true;
+      return false;
+}
+
+bool erase_from_vec(std::vector<unsigned short>&v, unsigned short j) {
+for(std::vector<unsigned short>::iterator i = v.begin(), ie=v.end();i!=ie;++i) {
+  if( (*i) == j) {
+    v.erase(i);
+    return true;
+  }
+}
+return false;
+}
+void giveup_priority() {
+  /*
+  if(heightmap_globals::kill_thread) throw "Exiting via throw().";
+      heightmap_globals::mut_c.unlock();
+
+      heightmap_globals::mut_c.lock();*/
+      
+      
+}
+NewHeightmapLoader *NewHeightmapLoader::hm_instance = NULL;
+#include "server_map_ogreobject.hpp"
+struct cleanupautomizer {
+	cleanupautomizer(){};
+	~cleanupautomizer(){
+	  // put any and all cleanup in here..
+		if(NewHeightmapLoader::hm_instance != NULL) delete NewHeightmapLoader::hm_instance;
+		//insert_sorted_chunks::iterator *i = chunks.begin();
+		//while(i != NULL) {
+		//	delete i->ele;
+		//	i = i->next;
+		//}
+		chunks.clear();
+		//delete OgreObjectWrapper::_stinstance;
+//		if(heightmap_globals::colours != NULL) delete[] heightmap_globals::colours;
+	}
+};
+volatile cleanupautomizer _symba_b_c_d_g_y_bored_ing();
+
+voxel_attributes::voxel_attributes():matid(3),render(false) {
+	//std::cout << "Error!\n"; This will get called on the server, due to the g++ impl. of std::map.
+	//A call from the client in windows using visual studio would be an error.
+}
+bool player_nearby_chunk(Chunk *c) {
+	auto i = Players.begin(), e = Players.end();
+	while(i!=e){
+		if(get_distance( (*i)->position, c->position) < 75 && (*i)->position.y-c->position.y <75) return true;
+		++i;
+	}
+	return false;
+}
+void clear_terrain_not_close_to_players() {
+//	chunk_iterator_locker itlocker;
+//	auto i = chunks._chunks.begin();
+//
+//	while(i!=chunks._chunks.end()) {
+//	      if(!player_nearby_chunk((*i))) i =chunks.quick_erase_chunk(i);
+//	      else ++i;//i = n;
+//	}
+	
+	//qgetchunk_mutex.unlock();
+}
+extern bool testcreate_chunks(vec3 &v);
+std::vector<Chunk*>::iterator find_by_point(vec3 &newpoint) {
+  chunk_iterator_locker itlocker;
+   std::vector<Chunk*>::iterator i = chunks._chunks.begin(), e = chunks._chunks.end();
+   for(;i!=e;++i) {
+     if((*i)->can_contain_voxel(newpoint)) return i;
+   }
+   itlocker.unlock();
+   while(!testcreate_chunks(newpoint));
+   itlocker.lock();
+   i = chunks._chunks.begin(), e = chunks._chunks.end();
+   for(;i!=e;++i) {
+     if((*i)->can_contain_voxel(newpoint)) return i;
+   }
+   return chunks._chunks.end(); // should never get to this one..
+   
+  
+  }

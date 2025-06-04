@@ -1,0 +1,46 @@
+void inet_player::broadcastNearby(net_commands arg, unsigned int *other_player_socket) {
+	if(Players.size() == 1) return;
+	
+	if(other_player_socket != NULL) {
+		send_updates(arg, *other_player_socket);
+		return;
+	}
+	//vec3 nearby(60,200,60);
+	//vec3 revnearby(-60,-200,-60);
+	vec3 my_position = vec3(position);
+	auto iter = Players.begin(), end = Players.end();
+	if( arg == RemPlayer) {
+		for(;iter!=end;++iter) {
+			  send_updates(arg, (*iter)->socket);
+		}
+/*		if(arg == AddPlayer) {
+			iter = Players.begin();
+			for(;iter!=end;++iter) {
+				net_commands tp = Teleport;
+				(*iter)->send_updates(arg, Players.back()->socket);// make sure to send the addPlayer first!
+				(*iter)->send_updates(tp, Players.back()->socket);// send the initial position to the new client.
+			}
+		}*/
+		return;
+	}
+	for(;iter!=end;iter++) {
+		if( (*iter).get() == this ) continue;
+		if( (*iter)->logged_in == false){
+			std::cout << "Other player not logged in! continue.\n";
+			 continue;
+		}
+		vec3 their_position = vec3((*iter)->position);
+	//	vec3 diff;
+	//	if( their_position > my_position ) {
+	//		diff = (their_position-my_position).abs();
+	//	} else {
+	//		diff = (my_position-their_position).abs();
+	//	}
+		if( get_distance(my_position,their_position) < 60) { //diff.x < 60.0 && diff.x > -60.0 && diff.z < 60.0 && diff.z > -60.0) {// <= vec3(60,200,60) && diff >= vec3(-60,-200,-60) ) 
+			std::cout << "Sending message between in range players..\n";
+			add_in_range((*iter).get());
+			send_updates(arg,(*iter)->socket);
+		} else ensure_not_in_range((*iter).get());
+		//else std::cout << "The difference is: " << diff.print() << std::endl;
+	}
+}

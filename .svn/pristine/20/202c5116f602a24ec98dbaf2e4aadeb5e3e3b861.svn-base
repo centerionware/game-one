@@ -1,0 +1,21 @@
+0xDeadC0de aka Matthew Adams
+?shepherd aka Nicholas Aaron Salsbury
+?courpse aka Guy who never gave me his name yet
+
+
+I'll be on IRC soon. 
+
+Things are looking down, not referring to the project, but everything else, which is what 
+has affected my ability to do anything, sorry about that. What I committed here functioned
+ on my computer, but I dont have time to write a list of what I did, we will talk on IRC soon. 
+I hope you didn't lose faith, or are angry, Ill let you know what has happened soon.  Tomorrow 
+I must go to the university and understand why I didnt get in, then try to get in ( pull strings ),
+ and do what I can to begin studying. Slight possibility ill just go back to the USA, but I am 
+trying to avoid that. -Shepherd
+
+Some things that were done
+Move configuration files to data/config
+Learnt about CEGUI and incorporated fully with some custom made imageset stuff, CEGUI will search for all its resources in the data directory now
+Implemented gamestates, there are four states currently, the splash screen; main menu; settings menu ( which in the future can be done inside the mainmenu without changing states, but simply by showing and hiding widgets; and the testing state which loads the ogre scene you create with the zombie, etc. 
+BaseApp.cpp/.h is not necessary anymore, as the states implementation is responsible for managing that stuff now
+maybe there are some other things, but I have forgotten. Some code and stuff is ugly and messy, for example the fading, which is not limited by miliseconds.

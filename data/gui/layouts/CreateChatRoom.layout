@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<GUILayout >
+    <Window Type="TaharezLook/FrameWindow" Name="CreateChatRoomWindow" >
+        <Property Name="TitlebarFont" Value="DejaVuSans-10" />
+        <Property Name="TitlebarEnabled" Value="True" />
+        <Property Name="UnifiedAreaRect" Value="{{0,0},{0,0},{1,0},{1,0}}" />
+        <Window Type="TaharezLook/Editbox" Name="ChatRoomName" >
+            <Property Name="MaxTextLength" Value="1073741823" />
+            <Property Name="UnifiedAreaRect" Value="{{0.150751,0},{0.0130137,0},{0.400751,0},{0.263014,0}}" />
+            <Property Name="TextParsingEnabled" Value="False" />
+        </Window>
+        <Window Type="TaharezLook/Editbox" Name="ChatRoomPassword" >
+            <Property Name="MaxTextLength" Value="1073741823" />
+            <Property Name="UnifiedAreaRect" Value="{{0.151652,0},{0.27911,0},{0.401652,0},{0.52911,0}}" />
+            <Property Name="TextParsingEnabled" Value="False" />
+        </Window>
+        <Window Type="TaharezLook/StaticText" Name="lbl_roomname" >
+            <Property Name="Text" Value="Room Name:" />
+            <Property Name="HorzExtent" Value="112" />
+            <Property Name="VertExtent" Value="15.0782" />
+            <Property Name="UnifiedAreaRect" Value="{{0.00380383,0},{0.0116439,0},{0.142693,0},{0.253082,0}}" />
+        </Window>
+        <Window Type="TaharezLook/StaticText" Name="lbl_rpassword" >
+            <Property Name="Text" Value="Password(opt)" />
+            <Property Name="HorzExtent" Value="122" />
+            <Property Name="VertExtent" Value="15.0782" />
+            <Property Name="UnifiedAreaRect" Value="{{0.00370373,0},{0.281164,0},{0.143594,0},{0.531164,0}}" />
+        </Window>
+        <Window Type="TaharezLook/Button" Name="button_CreateRoom" >
+            <Property Name="Text" Value="Create Chat Room" />
+            <Property Name="UnifiedAreaRect" Value="{{0.443043,0},{0.151712,0},{0.693043,0},{0.401713,0}}" />
+        </Window>
+    </Window>
+</GUILayout>

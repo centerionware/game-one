@@ -1,0 +1,552 @@
+04/11/2013 14:02:39 (Std) 	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+04/11/2013 14:02:39 (Std) 	+                     Crazy Eddie's GUI System - Event log                    +
+04/11/2013 14:02:39 (Std) 	+                          (http://www.cegui.org.uk/)                         +
+04/11/2013 14:02:39 (Std) 	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+04/11/2013 14:02:39 (Std) 	CEGUI::Logger singleton created. (0x9c029f0)
+04/11/2013 14:02:39 (Std) 	
+04/11/2013 14:02:39 (Std) 	********************************************************************************
+04/11/2013 14:02:39 (Std) 	* Important:                                                                   *
+04/11/2013 14:02:39 (Std) 	*     To get support at the CEGUI forums, you must post _at least_ the section *
+04/11/2013 14:02:39 (Std) 	*     of this log file indicated below.  Failure to do this will result in no  *
+04/11/2013 14:02:39 (Std) 	*     support being given; please do not waste our time.                       *
+04/11/2013 14:02:39 (Std) 	********************************************************************************
+04/11/2013 14:02:39 (Std) 	********************************************************************************
+04/11/2013 14:02:39 (Std) 	* -------- START OF ESSENTIAL SECTION TO BE POSTED ON THE FORUM       -------- *
+04/11/2013 14:02:39 (Std) 	********************************************************************************
+04/11/2013 14:02:39 (Std) 	---- Version 0.7.7 (Build: Jun 19 2013 GNU/Linux g++ 4.7.3 32 bit) ----
+04/11/2013 14:02:39 (Std) 	---- Renderer module is: CEGUI::OgreRenderer - Official OGRE based 2nd generation renderer module. ----
+04/11/2013 14:02:39 (Std) 	---- XML Parser module is: CEGUI::ExpatParser - Official expat based parser module for CEGUI ----
+04/11/2013 14:02:39 (Std) 	---- Image Codec module is: OgreImageCodec - Integrated ImageCodec using the Ogre engine. ----
+04/11/2013 14:02:39 (Std) 	---- Scripting module is: None ----
+04/11/2013 14:02:39 (Std) 	********************************************************************************
+04/11/2013 14:02:39 (Std) 	* -------- END OF ESSENTIAL SECTION TO BE POSTED ON THE FORUM         -------- *
+04/11/2013 14:02:39 (Std) 	********************************************************************************
+04/11/2013 14:02:39 (Std) 	
+04/11/2013 14:02:39 (Std) 	---- Begining CEGUI System initialisation ----
+04/11/2013 14:02:39 (Std) 	CEGUI::ImagesetManager singleton created (0x9c03448)
+04/11/2013 14:02:39 (Std) 	CEGUI::FontManager singleton created. (0x9c03520)
+04/11/2013 14:02:39 (Std) 	CEGUI::WindowFactoryManager singleton created
+04/11/2013 14:02:39 (Std) 	CEGUI::WindowManager singleton created (0x9c03d30)
+04/11/2013 14:02:39 (Std) 	CEGUI::SchemeManager singleton created. (0x9c035f8)
+04/11/2013 14:02:39 (Std) 	CEGUI::MouseCursor singleton created. (0x9c036d0)
+04/11/2013 14:02:39 (Std) 	CEGUI::GlobalEventSet singleton created. (0x9c03898)
+04/11/2013 14:02:39 (Std) 	CEGUI::AnimationManager singleton created (0x9c03d80)
+04/11/2013 14:02:39 (Std) 	CEGUI::WidgetLookManager singleton created. (0x9c021c0)
+04/11/2013 14:02:39 (Std) 	CEGUI::WindowRendererManager singleton created (0x9c047c8)
+04/11/2013 14:02:39 (Std) 	CEGUI::RenderEffectManager singleton created (0x9c075f8)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'DefaultWindow' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'DefaultWindow' windows added. (0x9c07630)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'DragContainer' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'DragContainer' windows added. (0x9c076d0)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'ScrolledContainer' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'ScrolledContainer' windows added. (0x9c07910)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'ClippedContainer' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'ClippedContainer' windows added. (0x9c07a60)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'CEGUI/Checkbox' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'CEGUI/Checkbox' windows added. (0x9c07bb0)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'CEGUI/PushButton' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'CEGUI/PushButton' windows added. (0x9c07d00)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'CEGUI/RadioButton' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'CEGUI/RadioButton' windows added. (0x9c07e50)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'CEGUI/Combobox' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'CEGUI/Combobox' windows added. (0x9c07fa0)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'CEGUI/ComboDropList' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'CEGUI/ComboDropList' windows added. (0x9c080f0)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'CEGUI/Editbox' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'CEGUI/Editbox' windows added. (0x9c08288)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'CEGUI/FrameWindow' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'CEGUI/FrameWindow' windows added. (0x9c083d8)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'CEGUI/ItemEntry' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'CEGUI/ItemEntry' windows added. (0x9c08528)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'CEGUI/Listbox' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'CEGUI/Listbox' windows added. (0x9c08678)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'CEGUI/ListHeader' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'CEGUI/ListHeader' windows added. (0x9c087c8)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'CEGUI/ListHeaderSegment' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'CEGUI/ListHeaderSegment' windows added. (0x9c08918)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'CEGUI/Menubar' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'CEGUI/Menubar' windows added. (0x9c08a68)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'CEGUI/PopupMenu' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'CEGUI/PopupMenu' windows added. (0x9c08bb8)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'CEGUI/MenuItem' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'CEGUI/MenuItem' windows added. (0x9c08d90)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'CEGUI/MultiColumnList' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'CEGUI/MultiColumnList' windows added. (0x9c0af98)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'CEGUI/MultiLineEditbox' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'CEGUI/MultiLineEditbox' windows added. (0x9c0b0e8)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'CEGUI/ProgressBar' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'CEGUI/ProgressBar' windows added. (0x9c0b238)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'CEGUI/ScrollablePane' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'CEGUI/ScrollablePane' windows added. (0x9c0b388)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'CEGUI/Scrollbar' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'CEGUI/Scrollbar' windows added. (0x9c0b4d8)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'CEGUI/Slider' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'CEGUI/Slider' windows added. (0x9c0b628)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'CEGUI/Spinner' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'CEGUI/Spinner' windows added. (0x9c0b778)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'CEGUI/TabButton' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'CEGUI/TabButton' windows added. (0x9c0b8c8)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'CEGUI/TabControl' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'CEGUI/TabControl' windows added. (0x9c0ba18)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'CEGUI/Thumb' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'CEGUI/Thumb' windows added. (0x9c0bb68)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'CEGUI/Titlebar' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'CEGUI/Titlebar' windows added. (0x9c0bcb8)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'CEGUI/Tooltip' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'CEGUI/Tooltip' windows added. (0x9c0be08)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'CEGUI/ItemListbox' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'CEGUI/ItemListbox' windows added. (0x9c0bf58)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'CEGUI/GroupBox' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'CEGUI/GroupBox' windows added. (0x9c0c0a8)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'CEGUI/Tree' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'CEGUI/Tree' windows added. (0x9c0c1f8)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'HorizontalLayoutContainer' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'HorizontalLayoutContainer' windows added. (0x9c0c450)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'VerticalLayoutContainer' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'VerticalLayoutContainer' windows added. (0x9c0c5a0)
+04/11/2013 14:02:39 (Std) 	Created WindowFactory for 'GridLayoutContainer' windows.
+04/11/2013 14:02:39 (Std) 	WindowFactory for 'GridLayoutContainer' windows added. (0x9c0c6f0)
+04/11/2013 14:02:39 (Std) 	Window type alias named 'DefaultGUISheet' added for window type 'DefaultWindow'.
+04/11/2013 14:02:39 (Std) 	CEGUI::System singleton created. (0x9c02780)
+04/11/2013 14:02:39 (Std) 	---- CEGUI System initialisation completed ----
+04/11/2013 14:02:39 (Std) 	
+04/11/2013 14:02:39 (Std) 	Started creation of Scheme from XML specification:
+04/11/2013 14:02:39 (Std) 	---- CEGUI GUIScheme name: TaharezLook
+04/11/2013 14:02:39 (Std) 	Started creation of Imageset from XML specification:
+04/11/2013 14:02:39 (Std) 	---- CEGUI Imageset name: TaharezLook
+04/11/2013 14:02:39 (Std) 	---- Source texture file: TaharezLook.tga in resource group: (Default)
+04/11/2013 14:02:39 (Std) 	Started creation of Font from XML specification:
+04/11/2013 14:02:39 (Std) 	---- CEGUI font name: DejaVuSans-10
+04/11/2013 14:02:39 (Std) 	----       Font type: FreeType
+04/11/2013 14:02:39 (Std) 	----     Source file: DejaVuSans.ttf in resource group: (Default)
+04/11/2013 14:02:39 (Std) 	---- Real point size: 10
+04/11/2013 14:02:39 (Std) 	Started creation of Font from XML specification:
+04/11/2013 14:02:39 (Std) 	---- CEGUI font name: monospace-bold-10
+04/11/2013 14:02:39 (Std) 	----       Font type: FreeType
+04/11/2013 14:02:39 (Std) 	----     Source file: Monospace-Bold.ttf in resource group: (Default)
+04/11/2013 14:02:39 (Std) 	---- Real point size: 10
+04/11/2013 14:02:39 (Std) 	===== Falagard 'root' element: look and feel parsing begins =====
+04/11/2013 14:02:39 (Std) 	===== Look and feel parsing completed =====
+04/11/2013 14:02:39 (Std) 	No window renderer factories specified for module 'CEGUIFalagardWRBase' - adding all available factories...
+04/11/2013 14:02:39 (Std) 	Created WindowRendererFactory for 'Falagard/Button' WindowRenderers.
+04/11/2013 14:02:39 (Std) 	WindowRendererFactory 'Falagard/Button' added. (0x9cb4c40)
+04/11/2013 14:02:39 (Std) 	Created WindowRendererFactory for 'Falagard/Default' WindowRenderers.
+04/11/2013 14:02:39 (Std) 	WindowRendererFactory 'Falagard/Default' added. (0x9c106f0)
+04/11/2013 14:02:39 (Std) 	Created WindowRendererFactory for 'Falagard/Editbox' WindowRenderers.
+04/11/2013 14:02:39 (Std) 	WindowRendererFactory 'Falagard/Editbox' added. (0x9cb52b8)
+04/11/2013 14:02:39 (Std) 	Created WindowRendererFactory for 'Falagard/FrameWindow' WindowRenderers.
+04/11/2013 14:02:39 (Std) 	WindowRendererFactory 'Falagard/FrameWindow' added. (0x9c1d908)
+04/11/2013 14:02:39 (Std) 	Created WindowRendererFactory for 'Falagard/ItemEntry' WindowRenderers.
+04/11/2013 14:02:39 (Std) 	WindowRendererFactory 'Falagard/ItemEntry' added. (0x9cb4f20)
+04/11/2013 14:02:39 (Std) 	Created WindowRendererFactory for 'Falagard/ListHeader' WindowRenderers.
+04/11/2013 14:02:39 (Std) 	WindowRendererFactory 'Falagard/ListHeader' added. (0x9c78508)
+04/11/2013 14:02:39 (Std) 	Created WindowRendererFactory for 'Falagard/ListHeaderSegment' WindowRenderers.
+04/11/2013 14:02:39 (Std) 	WindowRendererFactory 'Falagard/ListHeaderSegment' added. (0x9df33a0)
+04/11/2013 14:02:39 (Std) 	Created WindowRendererFactory for 'Falagard/Listbox' WindowRenderers.
+04/11/2013 14:02:39 (Std) 	WindowRendererFactory 'Falagard/Listbox' added. (0x9e15e28)
+04/11/2013 14:02:39 (Std) 	Created WindowRendererFactory for 'Falagard/Menubar' WindowRenderers.
+04/11/2013 14:02:39 (Std) 	WindowRendererFactory 'Falagard/Menubar' added. (0x9e15ec8)
+04/11/2013 14:02:39 (Std) 	Created WindowRendererFactory for 'Falagard/MenuItem' WindowRenderers.
+04/11/2013 14:02:39 (Std) 	WindowRendererFactory 'Falagard/MenuItem' added. (0x9df5cf0)
+04/11/2013 14:02:39 (Std) 	Created WindowRendererFactory for 'Falagard/MultiColumnList' WindowRenderers.
+04/11/2013 14:02:39 (Std) 	WindowRendererFactory 'Falagard/MultiColumnList' added. (0x9e04fd8)
+04/11/2013 14:02:39 (Std) 	Created WindowRendererFactory for 'Falagard/MultiLineEditbox' WindowRenderers.
+04/11/2013 14:02:39 (Std) 	WindowRendererFactory 'Falagard/MultiLineEditbox' added. (0x9df5f00)
+04/11/2013 14:02:39 (Std) 	Created WindowRendererFactory for 'Falagard/PopupMenu' WindowRenderers.
+04/11/2013 14:02:39 (Std) 	WindowRendererFactory 'Falagard/PopupMenu' added. (0x9e1a248)
+04/11/2013 14:02:39 (Std) 	Created WindowRendererFactory for 'Falagard/ProgressBar' WindowRenderers.
+04/11/2013 14:02:39 (Std) 	WindowRendererFactory 'Falagard/ProgressBar' added. (0x9e22210)
+04/11/2013 14:02:39 (Std) 	Created WindowRendererFactory for 'Falagard/ScrollablePane' WindowRenderers.
+04/11/2013 14:02:39 (Std) 	WindowRendererFactory 'Falagard/ScrollablePane' added. (0x9e22360)
+04/11/2013 14:02:39 (Std) 	Created WindowRendererFactory for 'Falagard/Scrollbar' WindowRenderers.
+04/11/2013 14:02:39 (Std) 	WindowRendererFactory 'Falagard/Scrollbar' added. (0x9e224b0)
+04/11/2013 14:02:39 (Std) 	Created WindowRendererFactory for 'Falagard/Slider' WindowRenderers.
+04/11/2013 14:02:39 (Std) 	WindowRendererFactory 'Falagard/Slider' added. (0x9e22600)
+04/11/2013 14:02:39 (Std) 	Created WindowRendererFactory for 'Falagard/Static' WindowRenderers.
+04/11/2013 14:02:39 (Std) 	WindowRendererFactory 'Falagard/Static' added. (0x9e22750)
+04/11/2013 14:02:39 (Std) 	Created WindowRendererFactory for 'Falagard/StaticImage' WindowRenderers.
+04/11/2013 14:02:39 (Std) 	WindowRendererFactory 'Falagard/StaticImage' added. (0x9e228a0)
+04/11/2013 14:02:39 (Std) 	Created WindowRendererFactory for 'Falagard/StaticText' WindowRenderers.
+04/11/2013 14:02:39 (Std) 	WindowRendererFactory 'Falagard/StaticText' added. (0x9e20cc8)
+04/11/2013 14:02:39 (Std) 	Created WindowRendererFactory for 'Falagard/SystemButton' WindowRenderers.
+04/11/2013 14:02:39 (Std) 	WindowRendererFactory 'Falagard/SystemButton' added. (0x9e20e18)
+04/11/2013 14:02:39 (Std) 	Created WindowRendererFactory for 'Falagard/TabButton' WindowRenderers.
+04/11/2013 14:02:39 (Std) 	WindowRendererFactory 'Falagard/TabButton' added. (0x9e20f68)
+04/11/2013 14:02:39 (Std) 	Created WindowRendererFactory for 'Falagard/TabControl' WindowRenderers.
+04/11/2013 14:02:39 (Std) 	WindowRendererFactory 'Falagard/TabControl' added. (0x9e210b8)
+04/11/2013 14:02:39 (Std) 	Created WindowRendererFactory for 'Falagard/Titlebar' WindowRenderers.
+04/11/2013 14:02:39 (Std) 	WindowRendererFactory 'Falagard/Titlebar' added. (0x9e21208)
+04/11/2013 14:02:39 (Std) 	Created WindowRendererFactory for 'Falagard/ToggleButton' WindowRenderers.
+04/11/2013 14:02:39 (Std) 	WindowRendererFactory 'Falagard/ToggleButton' added. (0x9e21358)
+04/11/2013 14:02:39 (Std) 	Created WindowRendererFactory for 'Falagard/Tooltip' WindowRenderers.
+04/11/2013 14:02:39 (Std) 	WindowRendererFactory 'Falagard/Tooltip' added. (0x9e214a8)
+04/11/2013 14:02:39 (Std) 	Created WindowRendererFactory for 'Falagard/ItemListbox' WindowRenderers.
+04/11/2013 14:02:39 (Std) 	WindowRendererFactory 'Falagard/ItemListbox' added. (0x9c17e60)
+04/11/2013 14:02:39 (Std) 	Created WindowRendererFactory for 'Falagard/Tree' WindowRenderers.
+04/11/2013 14:02:39 (Std) 	WindowRendererFactory 'Falagard/Tree' added. (0x9c17fb0)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/Button' using base type 'CEGUI/PushButton', window renderer 'Falagard/Button' Look'N'Feel 'TaharezLook/Button' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/Checkbox' using base type 'CEGUI/Checkbox', window renderer 'Falagard/ToggleButton' Look'N'Feel 'TaharezLook/Checkbox' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/ImageButton' using base type 'CEGUI/PushButton', window renderer 'Falagard/Button' Look'N'Feel 'TaharezLook/ImageButton' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/RadioButton' using base type 'CEGUI/RadioButton', window renderer 'Falagard/ToggleButton' Look'N'Feel 'TaharezLook/RadioButton' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/FrameWindow' using base type 'CEGUI/FrameWindow', window renderer 'Falagard/FrameWindow' Look'N'Feel 'TaharezLook/FrameWindow' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/Titlebar' using base type 'CEGUI/Titlebar', window renderer 'Falagard/Titlebar' Look'N'Feel 'TaharezLook/Titlebar' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/SystemButton' using base type 'CEGUI/PushButton', window renderer 'Falagard/Button' Look'N'Feel 'TaharezLook/Button' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/Editbox' using base type 'CEGUI/Editbox', window renderer 'Falagard/Editbox' Look'N'Feel 'TaharezLook/Editbox' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/MultiLineEditbox' using base type 'CEGUI/MultiLineEditbox', window renderer 'Falagard/MultiLineEditbox' Look'N'Feel 'TaharezLook/MultiLineEditbox' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/Menubar' using base type 'CEGUI/Menubar', window renderer 'Falagard/Menubar' Look'N'Feel 'TaharezLook/Menubar' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/PopupMenu' using base type 'CEGUI/PopupMenu', window renderer 'Falagard/PopupMenu' Look'N'Feel 'TaharezLook/PopupMenu' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/MenuItem' using base type 'CEGUI/MenuItem', window renderer 'Falagard/MenuItem' Look'N'Feel 'TaharezLook/MenuItem' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/AlternateProgressBar' using base type 'CEGUI/ProgressBar', window renderer 'Falagard/ProgressBar' Look'N'Feel 'TaharezLook/AltProgressBar' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/ProgressBar' using base type 'CEGUI/ProgressBar', window renderer 'Falagard/ProgressBar' Look'N'Feel 'TaharezLook/ProgressBar' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/VUMeter' using base type 'CEGUI/ProgressBar', window renderer 'Falagard/ProgressBar' Look'N'Feel 'TaharezLook/VUMeter' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/VerticalScrollbar' using base type 'CEGUI/Scrollbar', window renderer 'Falagard/Scrollbar' Look'N'Feel 'TaharezLook/VerticalScrollbar' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/HorizontalScrollbar' using base type 'CEGUI/Scrollbar', window renderer 'Falagard/Scrollbar' Look'N'Feel 'TaharezLook/HorizontalScrollbar' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/VerticalScrollbarThumb' using base type 'CEGUI/Thumb', window renderer 'Falagard/Button' Look'N'Feel 'TaharezLook/VerticalScrollbarThumb' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/HorizontalScrollbarThumb' using base type 'CEGUI/Thumb', window renderer 'Falagard/Button' Look'N'Feel 'TaharezLook/HorizontalScrollbarThumb' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/LargeVerticalScrollbar' using base type 'CEGUI/Scrollbar', window renderer 'Falagard/Scrollbar' Look'N'Feel 'TaharezLook/LargeVerticalScrollbar' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/LargeVerticalScrollbarThumb' using base type 'CEGUI/Thumb', window renderer 'Falagard/Button' Look'N'Feel 'TaharezLook/LargeVerticalScrollbarThumb' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/TabButton' using base type 'CEGUI/TabButton', window renderer 'Falagard/TabButton' Look'N'Feel 'TaharezLook/TabButton' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/TabControl' using base type 'CEGUI/TabControl', window renderer 'Falagard/TabControl' Look'N'Feel 'TaharezLook/TabControl' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/TabContentPane' using base type 'DefaultWindow', window renderer 'Falagard/Default' Look'N'Feel 'TaharezLook/TabContentPane' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/TabButtonPane' using base type 'DefaultWindow', window renderer 'Falagard/Default' Look'N'Feel 'TaharezLook/TabButtonPane' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/ComboDropList' using base type 'CEGUI/ComboDropList', window renderer 'Falagard/Listbox' Look'N'Feel 'TaharezLook/ComboDropList' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/ComboEditbox' using base type 'CEGUI/Editbox', window renderer 'Falagard/Editbox' Look'N'Feel 'TaharezLook/ComboEditbox' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/Combobox' using base type 'CEGUI/Combobox', window renderer 'Falagard/Default' Look'N'Feel 'TaharezLook/Combobox' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/Listbox' using base type 'CEGUI/Listbox', window renderer 'Falagard/Listbox' Look'N'Feel 'TaharezLook/Listbox' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/ListHeader' using base type 'CEGUI/ListHeader', window renderer 'Falagard/ListHeader' Look'N'Feel 'TaharezLook/ListHeader' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/ListHeaderSegment' using base type 'CEGUI/ListHeaderSegment', window renderer 'Falagard/ListHeaderSegment' Look'N'Feel 'TaharezLook/ListHeaderSegment' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/MultiColumnList' using base type 'CEGUI/MultiColumnList', window renderer 'Falagard/MultiColumnList' Look'N'Feel 'TaharezLook/MultiColumnList' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/Slider' using base type 'CEGUI/Slider', window renderer 'Falagard/Slider' Look'N'Feel 'TaharezLook/Slider' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/SliderThumb' using base type 'CEGUI/Thumb', window renderer 'Falagard/Button' Look'N'Feel 'TaharezLook/SliderThumb' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/ScrollablePane' using base type 'CEGUI/ScrollablePane', window renderer 'Falagard/ScrollablePane' Look'N'Feel 'TaharezLook/ScrollablePane' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/Spinner' using base type 'CEGUI/Spinner', window renderer 'Falagard/Default' Look'N'Feel 'TaharezLook/Spinner' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/Tooltip' using base type 'CEGUI/Tooltip', window renderer 'Falagard/Tooltip' Look'N'Feel 'TaharezLook/Tooltip' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/StaticImage' using base type 'DefaultWindow', window renderer 'Falagard/StaticImage' Look'N'Feel 'TaharezLook/StaticImage' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/StaticText' using base type 'DefaultWindow', window renderer 'Falagard/StaticText' Look'N'Feel 'TaharezLook/StaticText' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/ItemListbox' using base type 'CEGUI/ItemListbox', window renderer 'Falagard/ItemListbox' Look'N'Feel 'TaharezLook/ItemListbox' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/ListboxItem' using base type 'CEGUI/ItemEntry', window renderer 'Falagard/ItemEntry' Look'N'Feel 'TaharezLook/ListboxItem' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/GroupBox' using base type 'CEGUI/GroupBox', window renderer 'Falagard/Default' Look'N'Feel 'TaharezLook/GroupBox' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Creating falagard mapping for type 'TaharezLook/Tree' using base type 'CEGUI/Tree', window renderer 'Falagard/Tree' Look'N'Feel 'TaharezLook/Tree' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:39 (Std) 	Started creation of Scheme from XML specification:
+04/11/2013 14:02:39 (Std) 	---- CEGUI GUIScheme name: GameOneLook
+04/11/2013 14:02:39 (Std) 	Started creation of Imageset from XML specification:
+04/11/2013 14:02:39 (Std) 	---- CEGUI Imageset name: Splash
+04/11/2013 14:02:39 (Std) 	---- Source texture file: Splash.png in resource group: (Default)
+04/11/2013 14:02:39 (Std) 	Started creation of Imageset from XML specification:
+04/11/2013 14:02:39 (Std) 	---- CEGUI Imageset name: SplashAlpha
+04/11/2013 14:02:39 (Std) 	---- Source texture file: SplashAlpha.png in resource group: (Default)
+04/11/2013 14:02:39 (Std) 	Started creation of Imageset from XML specification:
+04/11/2013 14:02:39 (Std) 	---- CEGUI Imageset name: MainMenu
+04/11/2013 14:02:39 (Std) 	---- Source texture file: MainMenu.png in resource group: (Default)
+04/11/2013 14:02:40 (Std) 	Started creation of Imageset from XML specification:
+04/11/2013 14:02:40 (Std) 	---- CEGUI Imageset name: HUD
+04/11/2013 14:02:40 (Std) 	---- Source texture file: HUD.png in resource group: (Default)
+04/11/2013 14:02:40 (Std) 	Started creation of Imageset from XML specification:
+04/11/2013 14:02:40 (Std) 	---- CEGUI Imageset name: MainMenu_Settings
+04/11/2013 14:02:40 (Std) 	---- Source texture file: MainMenu_Settings.png in resource group: (Default)
+04/11/2013 14:02:40 (Std) 	Started creation of Imageset from XML specification:
+04/11/2013 14:02:40 (Std) 	---- CEGUI Imageset name: TextureAtlas
+04/11/2013 14:02:40 (Std) 	---- Source texture file: ../../TextureAtlas.png in resource group: (Default)
+04/11/2013 14:02:40 (Std) 	Started creation of Imageset from XML specification:
+04/11/2013 14:02:40 (Std) 	---- CEGUI Imageset name: WaitSpinner
+04/11/2013 14:02:40 (Std) 	---- Source texture file: WaitSpinner.png in resource group: (Default)
+04/11/2013 14:02:40 (Std) 	Started creation of Font from XML specification:
+04/11/2013 14:02:40 (Std) 	---- CEGUI font name: DejaVuSans-10
+04/11/2013 14:02:40 (Std) 	----       Font type: FreeType
+04/11/2013 14:02:40 (Std) 	----     Source file: DejaVuSans.ttf in resource group: (Default)
+04/11/2013 14:02:40 (Std) 	---- Real point size: 10
+04/11/2013 14:02:40 (Std) 	---- Returning existing instance of Font named 'DejaVuSans-10'.
+04/11/2013 14:02:40 (Std) 	Started creation of Font from XML specification:
+04/11/2013 14:02:40 (Std) 	---- CEGUI font name: monospace-bold-10
+04/11/2013 14:02:40 (Std) 	----       Font type: FreeType
+04/11/2013 14:02:40 (Std) 	----     Source file: Monospace-Bold.ttf in resource group: (Default)
+04/11/2013 14:02:40 (Std) 	---- Real point size: 10
+04/11/2013 14:02:40 (Std) 	---- Returning existing instance of Font named 'monospace-bold-10'.
+04/11/2013 14:02:40 (Std) 	===== Falagard 'root' element: look and feel parsing begins =====
+04/11/2013 14:02:40 (Std) 	===== Look and feel parsing completed =====
+04/11/2013 14:02:40 (Std) 	No window renderer factories specified for module 'CEGUIFalagardWRBase' - adding all available factories...
+04/11/2013 14:02:40 (Std) 	Creating falagard mapping for type 'GameOneLook/ImageButton' using base type 'CEGUI/PushButton', window renderer 'Falagard/Button' Look'N'Feel 'GameOneLook/ImageButton' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:40 (Std) 	Creating falagard mapping for type 'GameOneLook/StaticImage' using base type 'DefaultWindow', window renderer 'Falagard/StaticImage' Look'N'Feel 'GameOneLook/StaticImage' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:40 (Std) 	Creating falagard mapping for type 'GameOneLook/StaticText' using base type 'DefaultWindow', window renderer 'Falagard/Default' Look'N'Feel 'GameOneLook/StaticText' and RenderEffect ''. (0xbfb58dcc)
+04/11/2013 14:02:40 (Std) 	===== Begin Animations parsing =====
+04/11/2013 14:02:40 (Std) 	Defining animation named: WaitSpinner  Duration: 3.000000  Replay mode: Loop  Auto start: false
+04/11/2013 14:02:40 (Std) 		Adding affector for property: Image  Interpolator: String  Application method: absolute
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.000000  Value: set:WaitSpinner image:WaitSpinner0  Progression: discrete
+04/11/2013 14:02:40 (Std) 	WARNING: progression type specified for first keyframe in animation will be ignored.
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.013393  Value: set:WaitSpinner image:WaitSpinner1  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.026786  Value: set:WaitSpinner image:WaitSpinner2  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.040179  Value: set:WaitSpinner image:WaitSpinner3  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.053571  Value: set:WaitSpinner image:WaitSpinner4  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.066964  Value: set:WaitSpinner image:WaitSpinner5  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.080357  Value: set:WaitSpinner image:WaitSpinner6  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.093750  Value: set:WaitSpinner image:WaitSpinner7  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.107143  Value: set:WaitSpinner image:WaitSpinner8  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.120536  Value: set:WaitSpinner image:WaitSpinner9  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.133929  Value: set:WaitSpinner image:WaitSpinner10  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.147321  Value: set:WaitSpinner image:WaitSpinner11  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.160714  Value: set:WaitSpinner image:WaitSpinner12  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.174107  Value: set:WaitSpinner image:WaitSpinner13  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.187500  Value: set:WaitSpinner image:WaitSpinner14  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.200893  Value: set:WaitSpinner image:WaitSpinner15  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.214286  Value: set:WaitSpinner image:WaitSpinner16  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.227679  Value: set:WaitSpinner image:WaitSpinner17  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.241071  Value: set:WaitSpinner image:WaitSpinner18  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.254464  Value: set:WaitSpinner image:WaitSpinner19  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.267857  Value: set:WaitSpinner image:WaitSpinner20  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.281250  Value: set:WaitSpinner image:WaitSpinner21  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.294643  Value: set:WaitSpinner image:WaitSpinner22  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.308036  Value: set:WaitSpinner image:WaitSpinner23  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.321429  Value: set:WaitSpinner image:WaitSpinner24  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.334821  Value: set:WaitSpinner image:WaitSpinner25  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.348214  Value: set:WaitSpinner image:WaitSpinner26  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.361607  Value: set:WaitSpinner image:WaitSpinner27  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.375000  Value: set:WaitSpinner image:WaitSpinner28  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.388393  Value: set:WaitSpinner image:WaitSpinner29  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.401786  Value: set:WaitSpinner image:WaitSpinner30  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.415179  Value: set:WaitSpinner image:WaitSpinner31  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.428571  Value: set:WaitSpinner image:WaitSpinner32  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.441964  Value: set:WaitSpinner image:WaitSpinner33  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.455357  Value: set:WaitSpinner image:WaitSpinner34  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.468750  Value: set:WaitSpinner image:WaitSpinner35  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.482143  Value: set:WaitSpinner image:WaitSpinner36  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.495536  Value: set:WaitSpinner image:WaitSpinner37  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.508929  Value: set:WaitSpinner image:WaitSpinner38  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.522321  Value: set:WaitSpinner image:WaitSpinner39  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.535714  Value: set:WaitSpinner image:WaitSpinner40  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.549107  Value: set:WaitSpinner image:WaitSpinner41  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.562500  Value: set:WaitSpinner image:WaitSpinner42  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.575893  Value: set:WaitSpinner image:WaitSpinner43  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.589286  Value: set:WaitSpinner image:WaitSpinner44  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.602679  Value: set:WaitSpinner image:WaitSpinner45  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.616071  Value: set:WaitSpinner image:WaitSpinner46  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.629464  Value: set:WaitSpinner image:WaitSpinner47  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.642857  Value: set:WaitSpinner image:WaitSpinner48  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.656250  Value: set:WaitSpinner image:WaitSpinner49  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.669643  Value: set:WaitSpinner image:WaitSpinner50  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.683036  Value: set:WaitSpinner image:WaitSpinner51  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.696429  Value: set:WaitSpinner image:WaitSpinner52  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.709821  Value: set:WaitSpinner image:WaitSpinner53  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.723214  Value: set:WaitSpinner image:WaitSpinner54  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.736607  Value: set:WaitSpinner image:WaitSpinner55  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.750000  Value: set:WaitSpinner image:WaitSpinner56  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.763393  Value: set:WaitSpinner image:WaitSpinner57  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.776786  Value: set:WaitSpinner image:WaitSpinner58  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.790179  Value: set:WaitSpinner image:WaitSpinner59  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.803571  Value: set:WaitSpinner image:WaitSpinner60  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.816964  Value: set:WaitSpinner image:WaitSpinner61  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.830357  Value: set:WaitSpinner image:WaitSpinner62  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.843750  Value: set:WaitSpinner image:WaitSpinner63  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.857143  Value: set:WaitSpinner image:WaitSpinner64  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.870536  Value: set:WaitSpinner image:WaitSpinner65  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.883929  Value: set:WaitSpinner image:WaitSpinner66  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.897321  Value: set:WaitSpinner image:WaitSpinner67  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.910714  Value: set:WaitSpinner image:WaitSpinner68  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.924107  Value: set:WaitSpinner image:WaitSpinner69  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.937500  Value: set:WaitSpinner image:WaitSpinner70  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.950893  Value: set:WaitSpinner image:WaitSpinner71  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.964286  Value: set:WaitSpinner image:WaitSpinner72  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.977679  Value: set:WaitSpinner image:WaitSpinner73  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 0.991071  Value: set:WaitSpinner image:WaitSpinner74  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.004464  Value: set:WaitSpinner image:WaitSpinner75  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.017857  Value: set:WaitSpinner image:WaitSpinner76  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.031250  Value: set:WaitSpinner image:WaitSpinner77  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.044643  Value: set:WaitSpinner image:WaitSpinner78  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.058036  Value: set:WaitSpinner image:WaitSpinner79  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.071429  Value: set:WaitSpinner image:WaitSpinner80  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.084821  Value: set:WaitSpinner image:WaitSpinner81  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.098214  Value: set:WaitSpinner image:WaitSpinner82  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.111607  Value: set:WaitSpinner image:WaitSpinner83  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.125000  Value: set:WaitSpinner image:WaitSpinner84  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.138393  Value: set:WaitSpinner image:WaitSpinner85  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.151786  Value: set:WaitSpinner image:WaitSpinner86  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.165179  Value: set:WaitSpinner image:WaitSpinner87  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.178571  Value: set:WaitSpinner image:WaitSpinner88  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.191964  Value: set:WaitSpinner image:WaitSpinner89  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.205357  Value: set:WaitSpinner image:WaitSpinner90  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.218750  Value: set:WaitSpinner image:WaitSpinner91  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.232143  Value: set:WaitSpinner image:WaitSpinner92  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.245536  Value: set:WaitSpinner image:WaitSpinner93  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.258929  Value: set:WaitSpinner image:WaitSpinner94  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.272321  Value: set:WaitSpinner image:WaitSpinner95  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.285714  Value: set:WaitSpinner image:WaitSpinner96  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.299107  Value: set:WaitSpinner image:WaitSpinner97  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.312500  Value: set:WaitSpinner image:WaitSpinner98  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.325893  Value: set:WaitSpinner image:WaitSpinner99  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.339286  Value: set:WaitSpinner image:WaitSpinner100  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.352679  Value: set:WaitSpinner image:WaitSpinner101  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.366071  Value: set:WaitSpinner image:WaitSpinner102  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.379464  Value: set:WaitSpinner image:WaitSpinner103  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.392857  Value: set:WaitSpinner image:WaitSpinner104  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.406250  Value: set:WaitSpinner image:WaitSpinner105  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.419643  Value: set:WaitSpinner image:WaitSpinner106  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.433036  Value: set:WaitSpinner image:WaitSpinner107  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.446429  Value: set:WaitSpinner image:WaitSpinner108  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.459821  Value: set:WaitSpinner image:WaitSpinner109  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.473214  Value: set:WaitSpinner image:WaitSpinner110  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.486607  Value: set:WaitSpinner image:WaitSpinner111  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.500000  Value: set:WaitSpinner image:WaitSpinner111  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.513393  Value: set:WaitSpinner image:WaitSpinner111  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.526786  Value: set:WaitSpinner image:WaitSpinner110  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.540179  Value: set:WaitSpinner image:WaitSpinner109  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.553571  Value: set:WaitSpinner image:WaitSpinner108  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.566964  Value: set:WaitSpinner image:WaitSpinner107  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.580357  Value: set:WaitSpinner image:WaitSpinner106  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.593750  Value: set:WaitSpinner image:WaitSpinner105  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.607143  Value: set:WaitSpinner image:WaitSpinner104  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.620536  Value: set:WaitSpinner image:WaitSpinner103  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.633929  Value: set:WaitSpinner image:WaitSpinner102  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.647321  Value: set:WaitSpinner image:WaitSpinner101  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.660714  Value: set:WaitSpinner image:WaitSpinner100  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.674107  Value: set:WaitSpinner image:WaitSpinner99  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.687500  Value: set:WaitSpinner image:WaitSpinner98  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.700893  Value: set:WaitSpinner image:WaitSpinner97  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.714286  Value: set:WaitSpinner image:WaitSpinner96  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.727679  Value: set:WaitSpinner image:WaitSpinner95  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.741071  Value: set:WaitSpinner image:WaitSpinner94  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.754464  Value: set:WaitSpinner image:WaitSpinner93  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.767857  Value: set:WaitSpinner image:WaitSpinner92  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.781250  Value: set:WaitSpinner image:WaitSpinner91  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.794643  Value: set:WaitSpinner image:WaitSpinner90  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.808036  Value: set:WaitSpinner image:WaitSpinner89  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.821429  Value: set:WaitSpinner image:WaitSpinner88  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.834821  Value: set:WaitSpinner image:WaitSpinner87  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.848214  Value: set:WaitSpinner image:WaitSpinner86  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.861607  Value: set:WaitSpinner image:WaitSpinner85  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.875000  Value: set:WaitSpinner image:WaitSpinner84  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.888393  Value: set:WaitSpinner image:WaitSpinner83  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.901786  Value: set:WaitSpinner image:WaitSpinner82  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.915179  Value: set:WaitSpinner image:WaitSpinner81  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.928571  Value: set:WaitSpinner image:WaitSpinner80  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.941964  Value: set:WaitSpinner image:WaitSpinner79  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.955357  Value: set:WaitSpinner image:WaitSpinner78  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.968750  Value: set:WaitSpinner image:WaitSpinner77  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.982143  Value: set:WaitSpinner image:WaitSpinner76  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 1.995536  Value: set:WaitSpinner image:WaitSpinner75  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.008929  Value: set:WaitSpinner image:WaitSpinner74  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.022321  Value: set:WaitSpinner image:WaitSpinner73  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.035714  Value: set:WaitSpinner image:WaitSpinner72  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.049107  Value: set:WaitSpinner image:WaitSpinner71  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.062500  Value: set:WaitSpinner image:WaitSpinner70  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.075893  Value: set:WaitSpinner image:WaitSpinner69  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.089286  Value: set:WaitSpinner image:WaitSpinner68  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.102679  Value: set:WaitSpinner image:WaitSpinner67  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.116071  Value: set:WaitSpinner image:WaitSpinner66  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.129464  Value: set:WaitSpinner image:WaitSpinner65  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.142857  Value: set:WaitSpinner image:WaitSpinner64  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.156250  Value: set:WaitSpinner image:WaitSpinner63  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.169643  Value: set:WaitSpinner image:WaitSpinner62  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.183036  Value: set:WaitSpinner image:WaitSpinner61  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.196429  Value: set:WaitSpinner image:WaitSpinner60  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.209821  Value: set:WaitSpinner image:WaitSpinner59  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.223214  Value: set:WaitSpinner image:WaitSpinner58  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.236607  Value: set:WaitSpinner image:WaitSpinner57  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.250000  Value: set:WaitSpinner image:WaitSpinner56  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.263393  Value: set:WaitSpinner image:WaitSpinner55  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.276786  Value: set:WaitSpinner image:WaitSpinner54  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.290179  Value: set:WaitSpinner image:WaitSpinner53  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.303571  Value: set:WaitSpinner image:WaitSpinner52  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.316964  Value: set:WaitSpinner image:WaitSpinner51  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.330357  Value: set:WaitSpinner image:WaitSpinner50  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.343750  Value: set:WaitSpinner image:WaitSpinner49  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.357143  Value: set:WaitSpinner image:WaitSpinner48  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.370536  Value: set:WaitSpinner image:WaitSpinner47  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.383929  Value: set:WaitSpinner image:WaitSpinner46  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.397321  Value: set:WaitSpinner image:WaitSpinner45  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.410714  Value: set:WaitSpinner image:WaitSpinner44  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.424107  Value: set:WaitSpinner image:WaitSpinner43  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.437500  Value: set:WaitSpinner image:WaitSpinner42  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.450893  Value: set:WaitSpinner image:WaitSpinner41  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.464286  Value: set:WaitSpinner image:WaitSpinner40  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.477679  Value: set:WaitSpinner image:WaitSpinner39  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.491071  Value: set:WaitSpinner image:WaitSpinner38  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.504464  Value: set:WaitSpinner image:WaitSpinner37  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.517857  Value: set:WaitSpinner image:WaitSpinner36  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.531250  Value: set:WaitSpinner image:WaitSpinner35  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.544643  Value: set:WaitSpinner image:WaitSpinner34  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.558036  Value: set:WaitSpinner image:WaitSpinner33  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.571429  Value: set:WaitSpinner image:WaitSpinner32  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.584821  Value: set:WaitSpinner image:WaitSpinner31  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.598214  Value: set:WaitSpinner image:WaitSpinner30  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.611607  Value: set:WaitSpinner image:WaitSpinner29  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.625000  Value: set:WaitSpinner image:WaitSpinner28  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.638393  Value: set:WaitSpinner image:WaitSpinner27  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.651786  Value: set:WaitSpinner image:WaitSpinner26  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.665179  Value: set:WaitSpinner image:WaitSpinner25  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.678571  Value: set:WaitSpinner image:WaitSpinner24  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.691964  Value: set:WaitSpinner image:WaitSpinner23  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.705357  Value: set:WaitSpinner image:WaitSpinner22  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.718750  Value: set:WaitSpinner image:WaitSpinner21  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.732143  Value: set:WaitSpinner image:WaitSpinner20  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.745536  Value: set:WaitSpinner image:WaitSpinner19  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.758929  Value: set:WaitSpinner image:WaitSpinner18  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.772321  Value: set:WaitSpinner image:WaitSpinner17  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.785714  Value: set:WaitSpinner image:WaitSpinner16  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.799107  Value: set:WaitSpinner image:WaitSpinner15  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.812500  Value: set:WaitSpinner image:WaitSpinner14  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.825893  Value: set:WaitSpinner image:WaitSpinner13  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.839286  Value: set:WaitSpinner image:WaitSpinner12  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.852679  Value: set:WaitSpinner image:WaitSpinner11  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.866071  Value: set:WaitSpinner image:WaitSpinner10  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.879464  Value: set:WaitSpinner image:WaitSpinner9  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.892857  Value: set:WaitSpinner image:WaitSpinner8  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.906250  Value: set:WaitSpinner image:WaitSpinner7  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.919643  Value: set:WaitSpinner image:WaitSpinner6  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.933036  Value: set:WaitSpinner image:WaitSpinner5  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.946429  Value: set:WaitSpinner image:WaitSpinner4  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.959821  Value: set:WaitSpinner image:WaitSpinner3  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.973214  Value: set:WaitSpinner image:WaitSpinner2  Progression: discrete
+04/11/2013 14:02:40 (Std) 			Adding KeyFrame at position: 2.986607  Value: set:WaitSpinner image:WaitSpinner1  Progression: discrete
+04/11/2013 14:02:40 (Std) 	===== End Animations parsing =====
+04/11/2013 14:02:40 (Std) 	---- Successfully completed loading of GUI layout from 'Splash.layout' ----
+04/11/2013 14:02:40 (Std) 	Attempting to create Imageset 'DejaVuSans-10_auto_glyph_images_ ' with texture only.
+04/11/2013 14:02:40 (Std) 	---- Successfully completed loading of GUI layout from '../data/gui/layouts/MainMenu.layout' ----
+04/11/2013 14:02:41 (Std) 	---- Successfully completed loading of GUI layout from '../data/gui/layouts/MainMenu_Login.layout' ----
+04/11/2013 14:02:41 (Std) 	---- Successfully completed loading of GUI layout from '../data/gui/layouts/MainMenu_Register.layout' ----
+04/11/2013 14:02:45 (Std) 	Attempting to create Imageset 'monospace-bold-10_auto_glyph_images_ ' with texture only.
+04/11/2013 14:02:45 (Std) 	---- Successfully completed loading of GUI layout from '../data/gui/layouts/ChatLobby.layout' ----
+04/11/2013 14:02:45 (Std) 	---- Successfully completed loading of GUI layout from '../data/gui/layouts/CreateGame.layout' ----
+04/11/2013 14:02:45 (Std) 	---- Successfully completed loading of GUI layout from '../data/gui/layouts/Lobby_GameSearch.layout' ----
+04/11/2013 14:02:45 (Error)	Attempt to set value of '112'  to read only property 'HorzExtent' on window: lbl_roomname
+04/11/2013 14:02:45 (Error)	Attempt to set value of '15.0782'  to read only property 'VertExtent' on window: lbl_roomname
+04/11/2013 14:02:45 (Error)	Attempt to set value of '122'  to read only property 'HorzExtent' on window: lbl_rpassword
+04/11/2013 14:02:45 (Error)	Attempt to set value of '15.0782'  to read only property 'VertExtent' on window: lbl_rpassword
+04/11/2013 14:02:45 (Std) 	---- Successfully completed loading of GUI layout from '../data/gui/layouts/CreateChatRoom.layout' ----
+04/11/2013 14:02:45 (Std) 	---- Successfully completed loading of GUI layout from '../data/gui/layouts/ListPublicChatRooms.layout' ----
+04/11/2013 14:02:45 (Error)	Attempt to set value of '112'  to read only property 'HorzExtent' on window: lbl_pvtrmname
+04/11/2013 14:02:45 (Error)	Attempt to set value of '15.0782'  to read only property 'VertExtent' on window: lbl_pvtrmname
+04/11/2013 14:02:45 (Error)	Attempt to set value of '87'  to read only property 'HorzExtent' on window: lbl_pvtrmpassword
+04/11/2013 14:02:45 (Error)	Attempt to set value of '15.0782'  to read only property 'VertExtent' on window: lbl_pvtrmpassword
+04/11/2013 14:02:45 (Std) 	---- Successfully completed loading of GUI layout from '../data/gui/layouts/JoinPrivateChatRoom.layout' ----
+04/11/2013 14:02:47 (Std) 	---- Successfully completed loading of GUI layout from '../data/gui/layouts/HUD_Base.layout' ----
+04/11/2013 14:02:47 (Std) 	---- Successfully completed loading of GUI layout from '../data/gui/layouts/TextureAtlas.layout' ----
+04/11/2013 14:02:47 (Error)	Attempt to set value of '109'  to read only property 'HorzExtent' on window: RadiusLbl
+04/11/2013 14:02:47 (Error)	Attempt to set value of '13.9142'  to read only property 'VertExtent' on window: RadiusLbl
+04/11/2013 14:02:47 (Error)	Attempt to set value of '129'  to read only property 'HorzExtent' on window: EnterRadiusFrameWindow/
+04/11/2013 14:02:47 (Error)	Attempt to set value of '13.9142'  to read only property 'VertExtent' on window: EnterRadiusFrameWindow/
+04/11/2013 14:02:47 (Std) 	---- Successfully completed loading of GUI layout from '../data/gui/layouts/EnterRadius.layout' ----
+04/11/2013 14:05:14 (Std) 	---- Successfully completed loading of GUI layout from '../data/gui/layouts/MainMenu.layout' ----
+04/11/2013 14:05:16 (Std) 	---- Successfully completed loading of GUI layout from '../data/gui/layouts/MainMenu_Login.layout' ----
+04/11/2013 14:05:16 (Std) 	---- Successfully completed loading of GUI layout from '../data/gui/layouts/MainMenu_Register.layout' ----
+04/11/2013 14:05:20 (Std) 	---- Successfully completed loading of GUI layout from '../data/gui/layouts/ChatLobby.layout' ----
+04/11/2013 14:05:20 (Std) 	---- Successfully completed loading of GUI layout from '../data/gui/layouts/CreateGame.layout' ----
+04/11/2013 14:05:20 (Std) 	---- Successfully completed loading of GUI layout from '../data/gui/layouts/Lobby_GameSearch.layout' ----
+04/11/2013 14:05:20 (Error)	Attempt to set value of '112'  to read only property 'HorzExtent' on window: lbl_roomname
+04/11/2013 14:05:20 (Error)	Attempt to set value of '15.0782'  to read only property 'VertExtent' on window: lbl_roomname
+04/11/2013 14:05:20 (Error)	Attempt to set value of '122'  to read only property 'HorzExtent' on window: lbl_rpassword
+04/11/2013 14:05:20 (Error)	Attempt to set value of '15.0782'  to read only property 'VertExtent' on window: lbl_rpassword
+04/11/2013 14:05:20 (Std) 	---- Successfully completed loading of GUI layout from '../data/gui/layouts/CreateChatRoom.layout' ----
+04/11/2013 14:05:20 (Std) 	---- Successfully completed loading of GUI layout from '../data/gui/layouts/ListPublicChatRooms.layout' ----
+04/11/2013 14:05:20 (Error)	Attempt to set value of '112'  to read only property 'HorzExtent' on window: lbl_pvtrmname
+04/11/2013 14:05:20 (Error)	Attempt to set value of '15.0782'  to read only property 'VertExtent' on window: lbl_pvtrmname
+04/11/2013 14:05:20 (Error)	Attempt to set value of '87'  to read only property 'HorzExtent' on window: lbl_pvtrmpassword
+04/11/2013 14:05:20 (Error)	Attempt to set value of '15.0782'  to read only property 'VertExtent' on window: lbl_pvtrmpassword
+04/11/2013 14:05:20 (Std) 	---- Successfully completed loading of GUI layout from '../data/gui/layouts/JoinPrivateChatRoom.layout' ----
+04/11/2013 14:05:21 (Std) 	---- Successfully completed loading of GUI layout from '../data/gui/layouts/HUD_Base.layout' ----
+04/11/2013 14:05:21 (Std) 	---- Successfully completed loading of GUI layout from '../data/gui/layouts/TextureAtlas.layout' ----
+04/11/2013 14:05:21 (Error)	Attempt to set value of '109'  to read only property 'HorzExtent' on window: RadiusLbl
+04/11/2013 14:05:21 (Error)	Attempt to set value of '13.9142'  to read only property 'VertExtent' on window: RadiusLbl
+04/11/2013 14:05:21 (Error)	Attempt to set value of '129'  to read only property 'HorzExtent' on window: EnterRadiusFrameWindow/
+04/11/2013 14:05:21 (Error)	Attempt to set value of '13.9142'  to read only property 'VertExtent' on window: EnterRadiusFrameWindow/
+04/11/2013 14:05:21 (Std) 	---- Successfully completed loading of GUI layout from '../data/gui/layouts/EnterRadius.layout' ----
+04/11/2013 14:19:27 (Std) 	---- Successfully completed loading of GUI layout from '../data/gui/layouts/MainMenu.layout' ----

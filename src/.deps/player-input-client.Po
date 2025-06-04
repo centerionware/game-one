@@ -1,0 +1,3 @@
+player-input-client.o: player-input-client.cpp tinyxmlfix.h
+
+tinyxmlfix.h:

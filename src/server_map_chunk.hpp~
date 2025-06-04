@@ -1,0 +1,423 @@
+
+Chunk::Chunk(vec3 &_position) : myVertexList(NULL),myTriangles(NULL),matid(NULL),ogre_plugin(NULL),pColor(NULL) {
+	v3bbox = chunkbbox(_position);
+	lod = -1;
+	triangle_count = 0;
+	vertex_count = 0;
+	position = _position;
+	bbox.setExtents(_position.x - chunk_min_x, _position.y- chunk_min_y, _position.z-chunk_min_x, _position.x+chunk_min_x, _position.y+chunk_min_y, _position.z+chunk_min_x);
+	changed_from_last_render = false;
+	std::cout << "\rCreating chunk #" << chunk_count++ << " @ " << _position.print();
+}
+
+Chunk::~Chunk() {
+	cleanup();
+	if(ogre_plugin != NULL) delete ogre_plugin;
+}
+
+bool Chunk::voxel_exists(unsigned short vid) {
+	if( NewNewVoxels.find(vid) != NewNewVoxels.end() ) return true;
+	return false;
+ }
+bool Chunk::can_contain_voxel(vec3 &_position) {
+  	if(bbox.contains(_position.toOgre())) {
+		return true;
+	}
+	return false;
+}
+bool Chunk::check_voxel(vec3 &_position) {
+	if(bbox.contains(_position.toOgre())) {
+		vec3 temp_v = _position-position;
+		vec3 offset(15,30,15);
+		temp_v += offset;
+		unsigned short idx = (unsigned short)((temp_v.y*31*31)+(temp_v.x*31)+temp_v.z );
+		unsigned char mid = 0;
+		if(NewNewVoxels.find(idx) == NewNewVoxels.end())NewNewVoxels[idx] = voxel_attributes(mid);
+		
+		return true;
+	}
+	return false;
+}
+void Chunk::cleanup() {
+	if(myVertexList!=NULL) {
+		delete[] myTriangles;
+		delete[] myVertexList;
+		delete[] matid;
+		delete[] pColor;
+		changed_from_last_render = true;
+		pColor = NULL;
+		myVertexList = NULL;
+		myTriangles = NULL;
+		matid = NULL;
+		lod = -1;
+		for(auto i = NewNewVoxels.begin(), e = NewNewVoxels.end(); i!=e;++i) (*i).second.render = false;
+	}
+}
+#include "CState_Testing.h"
+void Chunk::render_chunk() {
+#ifndef SERVER
+	chunk_lock locker(this);
+	if(!changed_from_last_render) return;
+	if(myVertexList!=NULL) {
+		//temporal_lock();
+		if(ogre_plugin == NULL) {
+			std::stringstream lout;
+			lout << "hm_chunk("<<id<<")";
+			ogre_plugin = new OgreObjectWrapper(lout.str().c_str(), "General");
+		}
+		ogre_plugin->create_ogre_object(myTriangles,myVertexList,vertex_count,this->triangle_count,this->bbox,pColor);
+		if(!ogre_plugin->entity_loaded) {
+			std::stringstream sm_name;
+			sm_name << ogre_plugin->_name << "_ent";
+			Ogre::Entity *entity = CState_Testing::ReturnInstance()->mSceneManager->createEntity(sm_name.str().c_str(), ogre_plugin->_name, "General");
+			entity->setMaterialName("VoxelTexture", "General");
+			Ogre::SceneNode *node = CState_Testing::ReturnInstance()->mSceneManager->getRootSceneNode()->createChildSceneNode();
+			node->attachObject(entity);
+			ogre_plugin->entity_loaded=true;
+		}
+		changed_from_last_render = false;
+		//temporal_unlock();
+	} else if(ogre_plugin != NULL){
+		//temporal_lock();
+		ogre_plugin->create_ogre_object(myTriangles,myVertexList,0,0,this->bbox,pColor);
+		changed_from_last_render = false;
+		//temporal_unlock();
+	}
+#endif
+}
+bool ContainsAaBox(Ogre::AxisAlignedBox &refBox, const Ogre::Plane *frustPlanes)
+{
+
+	const Ogre::Vector3 *vCorner = refBox.getAllCorners();
+	int iTotalIn = 0;
+	for(int p = 0; p < 6; ++p) {
+	
+		int iInCount = 8;
+		int iPtIn = 1;
+
+		for(int i = 0; i < 8; ++i) {
+			auto dst =frustPlanes[p].getDistance(vCorner[i]);// Ogre::Plane::Side m_s = frustPlanes[p].getSide(vCorner[i]);
+			if(dst < 0 && fabs(dst) > 7 ) {
+				return false;
+				iPtIn = 0;
+				--iInCount;
+			}
+		}
+		if(iInCount == 0) {
+//			std::cout << "aabb is not inside the frustum\n";
+			return(false);
+		}
+		iTotalIn += iPtIn;
+	}
+	if(iTotalIn == 6)
+		return(true);
+	return(true);
+}
+bool is_vec3_in_view(vec3 &i, std::vector<Ogre::Camera *>&cams, int lod) {
+	vec3 off = vec3(0.5,0.5,0.5);
+	Ogre::AxisAlignedBox aabb( vec3(i-off).toOgre(), vec3(i+off).toOgre());
+	
+	std::vector<Ogre::Camera *>::iterator it = cams.begin(), ie = cams.end();
+	for(;it!=ie;++it) if(ContainsAaBox(aabb, (*it)->getFrustumPlanes())) return true;
+	return false;
+}
+
+
+bool Chunk::in_view(vec3 &cp, std::vector<Ogre::Camera *>&mCam){
+// LOD has actually been completely removed, in favor of geometry reduction.
+	int newlod = -1;
+	
+	float dist = _get2d_vecdist(cp, position);
+	if(dist < 30) newlod = 0;
+	else if (dist<30*2) newlod = 1;
+	else if (dist<30*3) newlod = 2;
+	else if (dist<30*4) newlod = 3;
+	else if (dist<30*5) newlod = 4;
+	else if (dist<30*6) newlod = 5;
+	else if (dist<30*7) newlod = 6;
+	
+	if(lod != newlod) {
+		heightmap_globals::changed = true;
+	      cleanup();
+		  lod = newlod;
+	} else if(myVertexList!=NULL) {
+		bool rme = true;
+		auto iter = mCam.begin(), end = mCam.end();
+		for(;iter!=end;++iter) {
+			  bool cam_has_one = false;
+			  pos_ori nv((*iter)->getRealPosition(), (*iter)->getParentSceneNode()->_getDerivedOrientation(), this, (*iter));
+			  auto mvb = pori_map.begin(), mve = pori_map.end();
+			  for(;mvb!=mve&&!cam_has_one;++mvb) 
+				  if( (*mvb).cam == (*iter) && (*mvb).c == this) { cam_has_one = true; }
+			  if(!cam_has_one) {
+				  pori_map.push_back(nv);
+				  rme = false;
+			  } else {
+				  --mvb;
+				  if(!nv.compare((*mvb))) {
+							rme = false;
+							(*mvb) = nv;
+				  }
+			  }
+		}
+		if(rme) {
+		 if(lod == 7) return false;
+		 else return true;
+		}
+		heightmap_globals::changed = true;
+		cleanup();
+	}
+	lod = newlod;
+	
+	if(lod >= 0 && lod != 7) {
+		unsigned short lods[7] = { 1, 2, 3, 5, 7, 10, 15 };
+		auto iter = NewNewVoxels.begin(), end = NewNewVoxels.end();
+		for(;iter!=end;iter++) {
+			const unsigned short &voxid  = (*iter).first;
+			int j = 31;
+			int k =j*j;
+			signed short y = voxid/(k);
+			signed short x = (voxid - y*k)/j;
+			signed short z = voxid - y*k - x*j;
+
+			vec3 np(x-15,y-30,z-15);
+			np = position+np;
+			if(!is_vec3_in_view(np, mCam, lods[lod])) continue;
+			(*iter).second.render = true;
+		}
+		changed_from_last_render = true;
+		return true;  
+	}
+	return false;
+	
+}
+
+
+bool Chunk::is_selected(unsigned short voxid) {
+ std::vector<unsigned short>::iterator iter = selected_voxels.begin(), end = selected_voxels.end();
+ for(;iter!=end;iter++) if( (*iter) == voxid) return true;
+ return false;
+}
+void Chunk::select_voxid(unsigned short voxid){
+  std::vector<unsigned short>::iterator iter = selected_voxels.begin(), end = selected_voxels.end();
+ for(;iter!=end;iter++) if( (*iter) == voxid) return;
+ selected_voxels.push_back(voxid);
+ return;
+}
+void Chunk::unselect_voxid(unsigned short voxid) {
+   std::vector<unsigned short>::iterator iter = selected_voxels.begin(), end = selected_voxels.end();
+ for(;iter!=end;iter++) if( (*iter) == voxid) { selected_voxels.erase(iter); return;}
+ return;
+}
+
+vec8 Chunk::gen_vox_vertex_data(unsigned short voxid) {
+ // if(NewNewVoxels.find(voxid)!=NewNewVoxels.end())
+  return new_vertex_generator(voxid, (Chunk*)this);
+ // else return vec8();
+}
+unsigned char Chunk::get_material_id(unsigned short voxid) {
+	return NewNewVoxels[voxid].matid;
+	//if(voxel_materials.find(voxid) != voxel_materials.end()) return voxel_materials[voxid];
+
+	vec3 temp_v = position; 
+
+	int j = 31;
+	int k =j*j;
+	signed short y = voxid/(k);
+	signed short x = (voxid - y*k)/j;
+	signed short z = voxid - y*k - x*j;
+	x-=15; z-=15;y-=30;
+	temp_v.x += x;
+	temp_v.y += y;
+	temp_v.z += z;
+	
+	unsigned char mid = 0;
+	/*
+		Add a material ID based on the Y position, if one doesn't exist.
+	*/
+	unsigned int iarr[] = { 3,6,11,13,15,18,20,25,30,33,35,37,40 };
+	unsigned char marr[] = { 7,10,1,9,2,10,3,4,5,12,13,4,14,8 };
+	
+	mid = 6;
+	for(unsigned int i = 0; i < msize(iarr); ++i) if(temp_v.y < iarr[i]) {  mid = marr[i];break; }
+	NewNewVoxels[voxid].matid = mid;
+//	voxel_materials[voxid] = mid;// store it in an std::map.
+	return mid;
+		
+	return 0;
+}
+
+inline bool quicksort_chunks(vec3 & oc) {
+	return chunks.sort(oc); 
+}
+inline bool chunk_sort(vec3 &m) {
+	return chunks.sort(m);// redundant?
+}
+static vec3 zerovec = vec3(0,0,0);
+namespace heightmap_globals {
+    extern boost::mutex mut_c;
+}
+inline Chunk* find_closest(vec3 &v) {
+	// The requested voxel
+	vec3 firstoff(48, -61, 527);
+	// The closest found chunk .. each time.
+	vec3 secondoff(48, 0, 620);
+	// The newest inserted chunk..?
+	vec3 thirdoff(48,0,589);
+
+	std::cout <<"\n"<< _get3d_vecdistref(firstoff, secondoff) << " " << _get3d_vecdistref(firstoff, thirdoff) << std::endl;
+	if(chunks._chunks.size() == 0) return NULL;
+	Chunk *closest_chunk = *(chunks._chunks.begin());
+	for(auto i = chunks._chunks.begin(), e= chunks._chunks.end();i!=e;++i){
+		if(_get3d_vecdistref(v, (*i)->position) < _get3d_vecdistref(v,closest_chunk->position) ) {
+			closest_chunk = (*i);
+			if(_get3d_vecdistref(v,closest_chunk->position) == 0) return closest_chunk;
+		}
+	}
+
+	return closest_chunk;
+}
+
+#define CHK_POS _get3d_vecdistref(v,t_position) < _get3d_vecdistref(v,closest_point)
+
+namespace Dirs {
+   enum Dirs { Left, Right, Front, Back, Top, Bottom };
+};
+Dirs::Dirs find_direction(vec3 &v, Chunk *closest_chunk) {
+#define tpos_set(X,Y,Z) { t_position.set(n_position.x+X,n_position.y+Y,n_position.z+Z); }
+	vec3 &n_position = closest_chunk->position;
+	char dir = to_value(Dirs::Left);
+	vec3 t_position(0,0,0);
+	vec3 closest_point = closest_chunk->position; 
+	for(char x = to_value(Dirs::Left); x <= to_value(Dirs::Bottom); ++x) {
+		  if(x == to_value(Dirs::Left)) {
+		    tpos_set(chunk_max_x,0,0);
+		    if(CHK_POS) {
+			    closest_point = t_position;
+			    dir = x;
+		    }
+		  } else if(x == to_value(Dirs::Right)) {
+		    tpos_set(-chunk_max_x,0,0)
+		    if(CHK_POS) {
+			    closest_point = t_position;
+			    dir = x;
+		    }
+		  } else if(x == to_value(Dirs::Top)) {
+		   tpos_set(0,chunk_max_y,0)
+		    if(CHK_POS) {
+			    closest_point = t_position;
+			    dir = x;
+		    }
+		  } else if(x == to_value(Dirs::Bottom)) {
+		    tpos_set(0,-chunk_max_y, 0)
+		    if(CHK_POS) {
+			    closest_point = t_position;
+			    dir = x;
+		    }
+		  } else if(x == to_value(Dirs::Front)) {
+		    tpos_set(0,0,chunk_max_x)
+		    if(CHK_POS) {
+			    closest_point = t_position;
+			    dir = x;
+		    }
+		  } else if(x == to_value(Dirs::Back)) {
+		    tpos_set(0,0,-chunk_max_x)
+		    if(CHK_POS) {
+			    closest_point = t_position;
+			    dir = x;
+		    }
+		  }
+	}
+	return static_cast<Dirs::Dirs>(dir);
+}
+inline vec3 create_direction(Dirs::Dirs dir, vec3 npos) {
+  using namespace Dirs;
+	switch(dir) {
+	  case Left:
+		npos.x = npos.x + (chunk_max_x+1);
+		break;
+	  case Right:
+		npos.x = npos.x - (chunk_max_x+1);
+		break;
+	  case Top:
+		npos.y = npos.y + (chunk_max_y+1);
+		break;
+	  case Bottom:
+		npos.y = npos.y - (chunk_max_y+1);
+		break;
+	  case Front:
+		npos.z = npos.z + (chunk_max_x+1);
+		break;
+	  case Back:
+		npos.z = npos.z - (chunk_max_x+1);
+		break;
+	}
+	return npos;
+}
+bool testcreate_chunks(vec3 &v) {
+	Chunk *closest_chunk = find_closest(v);
+	if(closest_chunk->check_voxel(v)) return true;	
+  
+	vec3 chunk_containing_v = vec3(0,0,0); // First chunk is at 14,0,0.. why not 0,0,0? I don't fucking know..
+	vec3 offset(((unsigned int)std::fabs(v.x))/31,((unsigned int)std::fabs(v.y))/61,((unsigned int)std::fabs(v.z))/31);
+	std::cout << offset.print("After modulus") << std::endl;
+	
+	if(v.x < 0) offset.x = offset.x*-1;
+	if(v.y < 0) offset.y = offset.y*-1;
+	if(v.z < 0) offset.z = offset.z*-1;
+	std::cout << offset.print("After negativize") << std::endl;
+	chunk_containing_v = offset*31;//.set(xoff*31,yoff*61,zoff*31);
+	std::cout << chunk_containing_v.print("After multiply") << std::endl;
+
+	std::cout << chunk_containing_v.print("Creating chunk at") << std::endl;
+	std::cout << closest_chunk->position.print("Closest chunk position") << std::endl;
+	std::cout << v.print("The initial voxel is") << std::endl;
+	  Chunk *c = new Chunk(chunk_containing_v);
+	  c->id = -1;
+	  chunks.insert(c, zerovec);
+	return c->check_voxel(v);
+	
+}
+void chunk_control(vec3 &v) {
+	// Try adding this point to existing chunks, if no chunk contains the point, make empty ones until one does.
+	v.ceil();
+	if(chunks._chunks.begin() == chunks._chunks.end()) {
+		chunks.insert(new Chunk(v),zerovec);
+		while(!testcreate_chunks(v));
+		return;
+	}
+	auto i = chunks._chunks.begin(), e = chunks._chunks.end();
+	for(;i!=e;++i) if( (*i)->check_voxel(v) ) return;
+	while(!testcreate_chunks(v));	
+}
+
+
+extern std::vector<Chunk*> movement_cpy;
+extern bool is_server;
+Chunk *qgetChunk(Ogre::Vector3 &pnt) {
+	// only search the closest chunks?
+	//chunk_iterator_locker lockit();
+	std::vector<Chunk*>::iterator iter,end;
+	if(is_server) {
+		chunk_iterator_locker lockit;
+		iter = chunks._chunks.begin(), end=chunks._chunks.end();
+		for(;iter!=end;++iter) {
+			if((*iter)->bbox.contains(pnt)) {
+				Chunk *c = (*iter);
+				return c;
+			}
+		}
+	} else {
+		chunk_iterator_locker2 lockit;
+		iter = movement_cpy.begin(),end=movement_cpy.end();
+		for(;iter!=end;++iter) {
+			if((*iter)->bbox.contains(pnt)) {
+				Chunk *c = (*iter);
+				return c;
+			}
+		}
+	}
+
+	
+	return NULL;
+}

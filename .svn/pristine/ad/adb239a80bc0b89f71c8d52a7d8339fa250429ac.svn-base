@@ -1,0 +1,57 @@
+void initialize_net_modules(inet_player const*);
+void inet_player::create_commands() {
+	//myCommandProcessor.add(TFunctor*c, char Id, char Idb);
+	// For now add changeHeadText and changePosition as 0 and 1.
+	// Need login, inventory, and a lot of other functions.. later.
+	/*
+	
+#define CALLBACK(X, Y) void _cb_ ## X ## _ ## Y (inet_player &player, std::vector<std::string>&in)
+#define CALLBACK_REGISTER(X,Y) myCommandProcessor.Add(new InetPlayerFunctor(this, _cb_ ## X ## _ ## Y ),  to_value(X), to_value(Y));
+#define INET_PLAYER_COMMAND(X, Y, Z) myCommandProcessor.Add(new VecFunctor<inet_player>(this, &inet_player::X), to_value(Y), to_value(Z));
+
+/
+	 * GetPlayerList,ModifyPlayer,DeletePlayer,LockPlayer,GetPlayerDetails
+	 *
+	void getPlayerList(std::vector<std::string>&);
+	void modifyPlayer(std::vector<std::string>&);
+	void deletePlayer(std::vector<std::string>&);
+	void lockPlayer(std::vector<std::string>&);
+	void getPlayerDetails(std::vector<std::string>&);
+	*/
+	CALLBACK_REGISTER(InventoryCommand, WearItem);
+	CALLBACK_REGISTER(InventoryCommand, RemoveItem);
+	CALLBACK_REGISTER(InventoryCommand, DropItem);
+	INET_PLAYER_COMMAND(getName, NetCommand, GetName);
+	INET_PLAYER_COMMAND(followPlayer, NetCommand, FollowPlayer);
+	INET_PLAYER_COMMAND(unFollowPlayer, NetCommand, UnFollowPlayer);
+initialize_net_modules();
+
+	myCommandProcessor.Add(new VecFunctor<inet_player>(this, &inet_player::changeHeadText), to_value(NetCommand), to_value(HeadText));
+	myCommandProcessor.Add(new VecFunctor<inet_player>(this, &inet_player::changePosition), to_value(NetCommand), to_value(Position));
+	myCommandProcessor.Add(new VecFunctor<inet_player>(this, &inet_player::addPlayer),	to_value(NetCommand), to_value(AddPlayer));
+	myCommandProcessor.Add(new VecFunctor<inet_player>(this, &inet_player::remPlayer),	to_value(NetCommand), to_value(RemPlayer));
+	myCommandProcessor.Add(new VecFunctor<inet_player>(this, &inet_player::PTeleport), 	to_value(NetCommand), to_value(Teleport));// client side teleport,
+	myCommandProcessor.Add(new VecFunctor<inet_player>(this, &inet_player::isAdmin), 	to_value(NetCommand), to_value(AdminAuth));
+	myCommandProcessor.Add(new VecFunctor<inet_player>(this, &inet_player::clientChunkPush),	to_value(NetCommand), to_value(PushChunk));
+	myCommandProcessor.Add(new VecFunctor<inet_player>(this, &inet_player::initChunkNet),	to_value(NetCommand), to_value(GetChunk));
+	// told to do by the server, doesn't update the server and try to tell it.
+	myCommandProcessor.Add(new VoidFunctor<CState_MainMenu_Login>(CState_MainMenu_Login::ReturnInstance(), &CState_MainMenu_Login::badLogin), to_value(LoginCommand), to_value(BadLogin));
+	myCommandProcessor.Add(new VoidFunctor<CState_MainMenu_Login>(CState_MainMenu_Login::ReturnInstance(), &CState_MainMenu_Login::goodLogin), to_value(LoginCommand), to_value(GoodLogin));
+}
+void inet_player::login_menu_conndisconn(){
+	myCommandProcessor.Add(new VoidFunctor<CState_MainMenu_Login>(CState_MainMenu_Login::ReturnInstance(), &CState_MainMenu_Login::badLogin), to_value(LoginCommand), to_value(BadLogin));
+	myCommandProcessor.Add(new VoidFunctor<CState_MainMenu_Login>(CState_MainMenu_Login::ReturnInstance(), &CState_MainMenu_Login::goodLogin), to_value(LoginCommand), to_value(GoodLogin));
+	myCommandProcessor.Add(new VoidFunctor<CState_MainMenu_Login>(CState_MainMenu_Login::ReturnInstance(), &CState_MainMenu_Login::ServerFull), to_value(LoginCommand), to_value(ServerFull));
+	myCommandProcessor.Add(new VoidFunctor<CState_MainMenu_Login>(CState_MainMenu_Login::ReturnInstance(), &CState_MainMenu_Login::ConnectionSuccess), to_value(LocalEvent), to_value(Connected));
+	myCommandProcessor.Add(new VoidFunctor<CState_MainMenu_Login>(CState_MainMenu_Login::ReturnInstance(), &CState_MainMenu_Login::ConnectionClosed), to_value(LocalEvent), to_value(Disconnected));
+	//enum registration_commands { TryRegister, GoodRegister, PasswordToShort, InvalidPassword, InvalidUsername, InvalidEmail, UnknownRegistrationResponse };
+	myCommandProcessor.Add(new VoidFunctor<CState_MainMenu_Login>(CState_MainMenu_Login::ReturnInstance(), &CState_MainMenu_Login::goodRegistration), to_value(Register), to_value(GoodRegister));
+	myCommandProcessor.Add(new VoidFunctor<CState_MainMenu_Login>(CState_MainMenu_Login::ReturnInstance(), &CState_MainMenu_Login::shortPasswordRegistration), to_value(Register), to_value(PasswordToShort));
+	myCommandProcessor.Add(new VoidFunctor<CState_MainMenu_Login>(CState_MainMenu_Login::ReturnInstance(), &CState_MainMenu_Login::invalidPasswordRegistration), to_value(Register), to_value(InvalidPassword));
+	myCommandProcessor.Add(new VoidFunctor<CState_MainMenu_Login>(CState_MainMenu_Login::ReturnInstance(), &CState_MainMenu_Login::invalidUsernameRegistration), to_value(Register), to_value(InvalidUsername));
+	myCommandProcessor.Add(new VoidFunctor<CState_MainMenu_Login>(CState_MainMenu_Login::ReturnInstance(), &CState_MainMenu_Login::invalidEmailRegistration), to_value(Register), to_value(InvalidEmail));  
+}
+void inet_player::testing_state_conndisconn(){
+	myCommandProcessor.Add(new VoidFunctor<CState_Testing>(CState_Testing::ReturnInstance(), &CState_Testing::ConnectionSuccess), to_value(LocalEvent), to_value(Connected));
+	myCommandProcessor.Add(new VoidFunctor<CState_Testing>(CState_Testing::ReturnInstance(), &CState_Testing::ConnectionClosed), to_value(LocalEvent), to_value(Disconnected));
+}

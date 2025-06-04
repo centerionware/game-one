@@ -1,0 +1,92 @@
+/**
+ * GAME-ONE APPLICATION FRAMEWORK
+ * Filename: CState_MainMenu_Settings.h
+ * Description: Introductory Game State
+ * Legal stuff ~
+ */
+
+
+#ifndef CSTATE_MAINMENU_SETTINGS_H
+#define CSTATE_MAINMENU_SETTINGS_H
+
+#include <Ogre.h>
+#include <OgreViewport.h>
+
+#include <OIS.h>
+
+#include <CEGUI.h>
+#include <CEGUI/RendererModules/Ogre/CEGUIOgreRenderer.h>
+
+#include <SdkCameraMan.h>
+
+#include "dotscene/dotscene.h"
+
+#include "CState.h"
+#include "CState_MainMenu.h"
+#include "server-map.h"
+
+
+class CState_MainMenu_Settings : public CState
+{
+public:
+    void Enter();
+
+    void Exit();
+
+
+    void Pause();
+
+    void Resume();
+
+
+    bool frameStarted( const Ogre::FrameEvent & event );
+
+    bool frameRenderingQueued( const Ogre::FrameEvent &event);
+
+    bool frameEnded( const Ogre::FrameEvent & event );
+
+
+    void keyPressed( const OIS::KeyEvent & event );
+
+    void keyReleased( const OIS::KeyEvent & event );
+
+
+    void mouseMoved( const OIS::MouseEvent & event );
+
+    void mousePressed( const OIS::MouseEvent & event, OIS::MouseButtonID identifier );
+
+    void mouseReleased( const OIS::MouseEvent & event, OIS::MouseButtonID identifier );
+
+    static CState_MainMenu_Settings * ReturnInstance() {
+        return & STATE_MAINMENU_SETTINGS;
+    }
+
+protected:
+    CState_MainMenu_Settings() {};
+
+    void CreateGUI( void );
+
+    bool OnNetwork( const CEGUI::EventArgs &event );
+
+    bool OnAudio( const CEGUI::EventArgs &event );
+
+    bool OnGraphics( const CEGUI::EventArgs &event );
+
+    bool OnControls( const CEGUI::EventArgs &event );
+
+    bool OnBack( const CEGUI::EventArgs &event );
+
+    bool ActivateNetwork;
+    bool ActivateAudio;
+    bool ActivateGraphics;
+    bool ActivateControls;
+    bool ActivateBack;
+    bool IsRunning;
+
+
+
+private:
+    static CState_MainMenu_Settings STATE_MAINMENU_SETTINGS;
+};
+
+#endif // CSTATE_MAINMENU_SETTINGS_H

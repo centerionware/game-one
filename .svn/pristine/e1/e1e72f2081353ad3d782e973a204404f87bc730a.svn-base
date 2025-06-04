@@ -1,0 +1,7 @@
+#!/bin/bash
+export CFLAGS="-msse -mfpmath=sse -mtune=native -march=native -Wall -std=gnu++0x"
+export CXXFLAGS="-msse -mfpmath=sse -mtune=native -march=native  -Wall -std=gnu++0x -D__STRICT_ANSI__ -ftree-vectorizer-verbose=9"
+export CPPFLAGS="-msse -mfpmath=sse -mtune=native -march=native  -Wall -std=gnu++0x"
+./configure #--enable-debug 
+make clean
+make -j7

@@ -1,0 +1,69 @@
+#!/bin/bash
+echo "It is recommended you get the python 2.6 libraries and install them. They should be in repositories for major distrobutions."
+echo "Currently I'm fairly a ubuntu specific unless you pass 'min' as the first argument. "
+echo "if 'min' is passed, I will only get CEGUI and SILLY, the rest of the dependencies listed in the apt-get line in this file are still required. "
+echo "I need root to install"
+sudo echo Thank you
+mkdir  deps
+cd deps
+if [ ! "$1" = "min" ]
+then
+
+# sources the /etc/lsb-release file in order to grab the DISTRIB_CODENAME variable for when adding the repository
+./etc/lsb-release
+# add the repository
+sudo deb http://ppa.launchpad.net/ogre-team/ogre/ubuntu $DISTRIB_CODENAME main 
+sudo deb-src http://ppa.launchpad.net/ogre-team/ogre/ubuntu $DISTRIB_CODENAME main 
+# install everything from the repository
+sudo apt-get install libogre-dev libtolua++5.1-dev libboost-python1.46.1 libboost-system1.46.1 libboost-filesystem1.46.1 libboost-thread1.46.1 libboost-iostreams1.46-dev
+
+## There was a bug on my system that libboost_system.so didn't exist?
+## Dunno why.
+if [ ! -f /usr/lib/libboost_system.so ];
+then
+	sudo ln -s /usr/lib/libboost_system.so.1.46.1 /usr/lib/libboost_system.so
+fi
+## Same bug with libboost_python
+if [ ! -f /usr/lib/libboost_python.so ];
+then
+	sudo ln -s /usr/lib/libboost_python-py26.so.1.46.1 /usr/lib/libboost_python.so
+fi
+## And again with boost iostreams..
+if [ ! -f /usr/lib/libboost_system.so ];
+then
+	        sudo ln -s /usr/lib/libboost_system.so.1.46.1 /usr/lib/libboost_system.so
+	fi
+
+sudo ldconfig
+else 
+#done with the ubuntu specific stuff
+echo "Min selected"
+
+fi
+#check for SILLY, if not found, retrieve, compile, and install it.
+if [ ! -z `pkg-config --exists SILLY` ]
+then
+	wget --no-clobber -O silly.tar.gz "http://downloads.sourceforge.net/project/crayzedsgui/SILLY/0.1.0/SILLY-0.1.0.tar.gz?r=http%3A%2F%2Fwww.cegui.org.uk%2Fwiki%2Findex.php%2FSILLY_Downloads_0.1.0&ts=1313266193&use_mirror=voxel"
+	tar -xvzf silly.tar.gz
+	cd SILLY-0.1.0
+	./configure
+	make
+	sudo make install
+	cd ..
+fi
+
+#check for CEGUI, if not found, retrieve, compile, and install it.
+if [ ! -z `pkg-config --exists CEGUI` ]
+then
+
+	wget --no-clobber -O cegui.tar.gz "http://downloads.sourceforge.net/project/crayzedsgui/CEGUI%20Mk-2/0.7.5/CEGUI-0.7.5.tar.gz?r=http%3A%2F%2Fwww.cegui.org.uk%2Fwiki%2Findex.php%2FCEGUI_Downloads_0.7.5&ts=1313265825&use_mirror=softlayer"
+	tar -xvzf cegui.tar.gz
+	cd CEGUI-0.7.5/
+	export CXXFLAGS=-I/usr/include/python2.6
+	./configure
+	make
+	sudo make install
+	cd ..
+fi
+
+

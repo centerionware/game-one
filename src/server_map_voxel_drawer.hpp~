@@ -1,0 +1,608 @@
+std::vector<Chunk*> movement_cpy;
+
+void sync_render_array(std::vector<Chunk*>&read_only_cpy) {
+	chunk_iterator_locker itlocker;
+	read_only_cpy.clear();
+    std::copy(chunks._chunks.begin(), chunks._chunks.end(), std::back_inserter(read_only_cpy));
+}
+void sync_movement_array() {
+	chunk_iterator_locker2 secondlock;
+	movement_cpy.clear();
+	size_t ac = chunks._chunks.size() <100 ? chunks._chunks.size():99;
+	movement_cpy.reserve(ac);
+	std::vector<Chunk*>::iterator cit = chunks._chunks.begin(),citend = chunks._chunks.begin()+ac;
+	std::copy(cit, citend, std::back_inserter(movement_cpy));
+}
+
+std::ostringstream timer_log;
+struct time_logger {
+	static time_logger *time_logger_inst;
+	static time_logger* instance() {if(time_logger_inst == NULL) time_logger_inst = new time_logger(); return time_logger_inst; }
+	
+	Ogre::Timer dtimer;
+	void start() { dtimer.reset(); }
+	void stop() { log(dtimer.getMicroseconds()); }
+	template<class T> void stop(T _in) { log(_in,dtimer.getMicroseconds()); }
+	template<class T> void log(T _in) {
+//		std::ofstream outfile;
+//		outfile.open("timer_log.output",std::ios_base::app);
+		timer_log << _in <<"µs\n";
+//		outfile.close();
+	}
+	template<class T,class Y> void log(T _in,Y _el) {
+	//	std::ofstream outfile;
+//		outfile.open("timer_log.output",std::ios_base::app);
+		timer_log << _in << " " << _el <<"µs\n";
+//		outfile.close();
+	}
+	time_logger() {start();} 
+	~time_logger() {}
+};
+time_logger *time_logger::time_logger_inst = NULL;
+struct blahdidyblah {
+	blahdidyblah() {}
+	~blahdidyblah() { 
+		std::ofstream outfile;
+		outfile.open("timer_log.output",std::ios_base::out);
+		outfile << timer_log.str().c_str();
+		outfile.close();
+	}
+};
+volatile blahdidyblah foofoo; // Memory cleanup 
+struct CameraPosOriRememberer {
+	struct posori {
+		Ogre::Vector3 pos;
+		Ogre::Quaternion ori;
+	};
+	std::vector<posori> remembering;
+	bool has_changed(std::vector<Ogre::Camera *> &c) {
+		if(c.size() != remembering.size()) {
+			remembering.clear();
+			for(auto a=c.begin(), b=c.end(); a<b;a++) { posori y; y.pos = (*a)->getPosition(); y.ori = (*a)->getOrientation(); remembering.push_back(y); }
+			return true;
+		}
+		int ct = 0;
+		bool ret = false;
+		for(auto a=c.begin(), b=c.end(); a<b;++a,++ct) {
+			if(remembering[ct].pos != (*a)->getRealPosition()) {remembering[ct].pos = (*a)->getRealPosition(); ret = true; }
+			if(remembering[ct].ori != (*a)->getRealOrientation()) {remembering[ct].ori = (*a)->getRealOrientation(); ret = true; }
+		}
+		return ret;
+	}
+	void crit_reset() { remembering.clear(); }
+};
+
+struct voxel_drawer {
+	vec3 allfaces[12];
+	vec3 curfaces[12];
+	std::map<unsigned int, vec3> new_normals;
+	insert_sorted_vec3s faces; // the faces are ready to be inserted in to ogre order after calling create_faces.
+	//insert_sorted_vec3s vertex_number_map_list;
+	insert_sorted_vec3s vertex_number_map;
+	bool set;
+	static voxel_drawer _int_draw;
+	static voxel_drawer*get_drawer() {
+	      return &_int_draw;
+	}
+	static void clear() {
+	      _int_draw.faces.clear();
+	      _int_draw.vertex_number_map.clear();
+	     _int_draw.set = false;
+	}
+	voxel_drawer() : set(false){};
+	void create_faces(vec3 &cp, std::vector<Ogre::Camera *>mCam) {
+		/// The very first order of business is to create faces using the normal numbers
+		/// for each vertice in this voxel.
+		static CameraPosOriRememberer cposrem;
+		if(!cposrem.has_changed(mCam)) return;
+		time_logger all_of_create_faces;
+		if(!set) {
+		  init_allfaces();
+		  set = true;
+		  chunk_sort(cp);
+		}
+		static std::vector<Ogre::Vector3> lCamPos;
+		if(lCamPos.size() != mCam.size()) {
+			lCamPos.clear();
+			auto i = mCam.begin(), e = mCam.end();
+			for(;i!=e;++i) {
+				lCamPos.push_back( (*i)->getRealPosition());
+			}
+		}
+		static bool FRUN = true;
+		static std::vector<Chunk*> read_only_cpy;
+		if(FRUN) {
+		      chunk_sort(cp);
+			  if(chunks._chunks.size() > 0) {
+				  sync_render_array(read_only_cpy);
+				  sync_movement_array();
+			  }
+			  FRUN = false;
+		} else {
+			auto i = mCam.begin(), e = mCam.end();
+			auto b = lCamPos.begin();
+			static bool movement_array_needs_syncd = false;
+			if(movement_array_needs_syncd) {
+				static Ogre::Timer movement_sync_timer;
+				if(chunks._chunks.size() > 0) {
+					if(movement_sync_timer.getMilliseconds() > 1000) {
+						movement_sync_timer.reset();
+						sync_movement_array();
+						movement_array_needs_syncd = false;
+					}
+				}
+			}
+			for(;i!=e;++i,++b) {
+				if( (*i)->getRealPosition() != (*b) ) {
+					bool needs_synced = chunk_sort(cp); 
+					if(needs_synced) {
+						if(chunks._chunks.size() > 0) 
+							sync_render_array(read_only_cpy);
+						movement_array_needs_syncd = true;
+					}
+				lCamPos.clear(); break;}
+			}
+			if(read_only_cpy.size() != chunks._chunks.size()) {
+				//if(chunks._chunks.size() > 0) 
+				sync_render_array(read_only_cpy);
+				movement_array_needs_syncd = true;
+					//sync_movement_array()
+			}
+			if(lCamPos.size() != mCam.size()) {
+				lCamPos.clear();
+				auto i = mCam.begin(), e = mCam.end();
+				for(;i!=e;++i) {
+					lCamPos.push_back( (*i)->getRealPosition());
+				}
+			}	
+		}
+	//	else 
+	//	  mlcp = mlcp < 10 ? mlcp+1 : 0;
+		all_of_create_faces.stop("TT sync Movement and render arrays faces (ms):");
+		all_of_create_faces.start();
+		
+		auto iter = read_only_cpy.begin(), end = read_only_cpy.end();
+//		Ogre::Vector3 ccc = mCam->getRealPosition();
+		//vec3 cp(ccc.x,ccc.y,ccc.z);
+		Chunk *it;
+		//	int rcount = 0;
+		unsigned short mrchunks=0;
+		for(;iter!=end&&mrchunks <=16;++iter) {
+			if(faces.begin() != faces.end()) faces.clear();
+			if(vertex_number_map.begin() != vertex_number_map.end()) { vertex_number_map.clear(); }
+			chunk_lock locker( (*iter));
+
+			if((*iter)->in_view(cp,mCam)){ 
+				
+				if( (*iter)->myVertexList == NULL ) {
+					
+					it = (*iter);
+					time_logger setup_from_vec;
+					setup_from_vector( it ,cp );
+					setup_from_vec.stop("Set up from vector");
+					if(faces._items.size()== 0)  continue; 
+					heightmap_globals::changed = true;
+					++mrchunks;/*
+					if(it->myTriangles != NULL) delete[] it->myTriangles;
+					it->myTriangles = new unsigned int[(faces._items.size())*3];
+					
+					++mrchunks;
+					it->triangle_count = (faces._items.size())*3;
+					{
+						auto iterr = faces.begin(), iterrend=faces.end();//, end = drawer->faces.end();
+						size_t c = 0,actual_count;
+						for(;iterr!=iterrend;++iterr,++c) {
+							actual_count = c*3;
+							it->myTriangles[actual_count] = (*iterr).ele.x;
+							it->myTriangles[actual_count+1] = (*iterr).ele.y;
+							it->myTriangles[actual_count+2] = (*iterr).ele.z;
+						}
+					}*/
+					//heightmap_globals::rendered_chunks.push_back( it);
+				}
+				
+			}
+			heightmap_globals::rendered_chunks.push_back( (*iter) );
+			//(*iter)->temporal_unlock();
+		}
+		if(mrchunks >=16) cposrem.crit_reset();
+		all_of_create_faces.stop("Time to create all faces");
+	}
+	inline void setup_from_vector(Chunk*c,vec3 &mCam) 
+	{
+		//std::map<unsigned int, vec3> new_normals;
+		new_normals.clear();
+		{
+
+			time_logger vertnum_map_timer;
+			auto l = c->NewNewVoxels.begin(), e = c->NewNewVoxels.end();
+			for(; l!=e;++l)
+			if( (*l).second.render) 
+				create_vertnum_map( (*l).first, c,mCam);
+			//vertnum_map_timer.stop("TT create number map");
+			//time_logger vcpy_timer;
+
+			//vertice_veclist_uniqsort();
+			//vcpy_timer.stop("TT copy vertices");
+			// Due to insertion sort of the vertices into the vertnum_map
+			// the faces and vertices can't be made in the same loop.
+			/*time_logger facerender_timer;
+			for(l = c->NewNewVoxels.begin(); l!=e;++l)
+			if( (*l).second.render)
+				create_indiv_faces((*l).first,c,mCam,new_normals);
+			facerender_timer.stop("TT create faces");*/
+			  
+		}
+		if(c->myVertexList != NULL) delete[] c->myVertexList;
+		if(c->matid != NULL) delete[] c->matid;
+		if(c->myTriangles != NULL){ delete[] c->myTriangles; c->myTriangles = NULL;}
+		if(c->pColor != NULL) { delete[] c->pColor; c->pColor = NULL; }
+		
+		c->vertex_count = vertex_number_map._items.size()*3;
+		c->myVertexList = new GOREAL[c->vertex_count+1];
+		c->pColor = new Ogre::RGBA[new_normals.size()+1];
+		
+		auto iter = vertex_number_map.begin();
+		auto end = vertex_number_map.end();
+		Ogre::RGBA *color_inserter = c->pColor;
+		for(size_t count = 0;iter!=end;++iter,count+=3){
+			c->myVertexList[count] = (*iter).ele.x;
+			c->myVertexList[count+1] = (*iter).ele.y;
+			c->myVertexList[count+2] = (*iter).ele.z;
+			
+			unsigned char mmid = (*iter).color;
+			
+			float zed = 0;
+			vec3 &ves = (*iter).ele;
+			// the ZED color will be used to indicate which faces to draw. It simply finds neighboring cubes, checks if they're the same texture, if so, they don't render the faces between them. 
+			// It uses the firsst 6 bits (once for each face), to indicate whether or not to draw.
+			// 
+			// 0 will indicate a draw, and 1 will indicate do not draw.
+			// 
+			// I want to assume RIGHT TO LEFT bits are used (bit 0 is the farthest to the right, bit 1 is 1 left of bit 0)
+			// 
+			// left, right,  bottom, top, back, front. Why? Because.
+			vec3 list[6] = { vec3(-1,0,0), vec3(1,0,0),vec3(0,-1,0), vec3(0,1,0), vec3(0,0,-1),vec3(0,0,1) };
+			float valuel[6] = { 1,2,4,8,16,32 };
+			for(unsigned char counter = 0; counter < 6; ++counter) {
+				auto lp = c->NewNewVoxels.find(to_voxid((c->position - ves + vec3(15,30,15))+list[counter]));
+				if(lp != c->NewNewVoxels.end() && c->get_material_id((*lp).first)  == (*iter).color)
+				    zed += valuel[counter];
+			}
+			
+			float mid = float(mmid);
+			float yid = 0.0f;
+			if(mid == 19) yid = 1;
+			if(mid == 25) yid = 1;
+			if(mid >= 128) {
+				mid -=128;
+				yid = 1;
+			}
+			Ogre::Root::getSingleton().getRenderSystem()->convertColourValue(Ogre::ColourValue(mid/255, yid,zed,1.0f), color_inserter++);
+		
+		}
+		return;
+		
+		
+		
+		
+		
+		time_logger cleanup_and_allocation;
+		auto iter = vertex_number_map._items.begin(), iterend = vertex_number_map._items.end();
+		std::vector<unsigned int> removed_vertex_indices;
+		if(c->myVertexList != NULL) delete[] c->myVertexList;
+		if(c->matid != NULL) delete[] c->matid;
+		if(c->myTriangles != NULL){ delete[] c->myTriangles; c->myTriangles = NULL;}
+		if(c->pColor != NULL) { delete[] c->pColor; c->pColor = NULL; }
+		if(new_normals.size() == 0) {
+			c->myVertexList = NULL;
+			c->matid = NULL;
+			cleanup_and_allocation.stop("Cleanup, no allocation");
+			return;
+		}
+		c->vertex_count = new_normals.size()*6;
+		c->myVertexList = new GOREAL[c->vertex_count+1];
+		if(c->pColor != NULL) delete[] c->pColor;
+		c->pColor = new Ogre::RGBA[new_normals.size()+1];
+		Ogre::RGBA *color_inserter = c->pColor;
+		c->matid = new char[new_normals.size()+1];
+		cleanup_and_allocation.stop("Cleanup and allocation");
+		time_logger unused_vert_remover_vertlist_creation;
+		{
+			unsigned int bcnt = 0;
+			//std::vector<Cont> tmp;
+			for(unsigned int acnt=0;iter!=iterend;++acnt) 
+				if( new_normals.find( acnt ) == new_normals.end()) {
+					removed_vertex_indices.push_back((iter-vertex_number_map.begin())-removed_vertex_indices.size());//acnt);
+					//iter = vertex_number_map._items.erase( iter );
+					//iterend = vertex_number_map._items.end();
+					++iter;
+				} else {
+					//tmp.push_back( (*iter) );
+					c->matid[bcnt] = (*iter).color;//materials[itery.n];
+						
+					unsigned int actual_count = bcnt*6;
+					c->myVertexList[actual_count] = (*iter).ele.x;
+					c->myVertexList[actual_count+1] = (*iter).ele.y;
+					c->myVertexList[actual_count+2] = (*iter).ele.z;
+					c->myVertexList[actual_count+3] = new_normals[ acnt ].x;
+					c->myVertexList[actual_count+4] = new_normals[ acnt ].y;
+					c->myVertexList[actual_count+5] = new_normals[ acnt ].z;
+					unsigned char mmid = (*iter).color;
+					float mid = float(mmid);
+					float yid = 0.0f;
+					if(mid == 19) yid = 1;
+					if(mid == 25) yid = 1;
+					if(mid >= 128) {
+						mid -=128;
+						yid = 1;
+					}
+					Ogre::Root::getSingleton().getRenderSystem()->convertColourValue(Ogre::ColourValue(mid/255, yid,0,1.0f), color_inserter++);
+					++iter;
+
+					++bcnt;
+				}
+			//vertex_number_map._items.assign(tmp.begin(), tmp.end());
+			
+		}
+		unused_vert_remover_vertlist_creation.stop("Remove unused verts and create 2d vert+normal array");
+		time_logger fixup_faces;
+		auto lmt = faces.begin(), lmte = faces.end();
+		auto v = removed_vertex_indices.begin(), ve = removed_vertex_indices.end();
+		for(;lmt<lmte;++lmt) { 
+			for(;v!=ve;++v) {
+				if( (*lmt).ele.x > (*v) ) --((*lmt).ele.x);
+				if( (*lmt).ele.y > (*v) ) --((*lmt).ele.y);
+				if( (*lmt).ele.z > (*v) ) --((*lmt).ele.z);
+			}
+			v = removed_vertex_indices.begin();
+		}
+		fixup_faces.stop("Fix up the faces");
+		return;
+	}
+	volatile bool dbbreak() {
+	      return true;
+	}
+	inline const char* to_char(unsigned char i) {
+		const char *vb[17] = { "0", "1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16"} ;
+		return vb[i];
+	}
+	inline void create_vertnum_map(unsigned short voxid, Chunk*c, vec3 &mCam) {
+		
+		vec3 temp_v = c->position+(from_voxid(voxid)-vec3(15,30,15)); 
+		unsigned char color = c->get_material_id(voxid);
+		vertex_number_map.push_back(temp_v, color);
+		return;
+		/*
+		vec8 verts = c->gen_vox_vertex_data(voxid);
+		unsigned char color = c->get_material_id(voxid);
+		vec3 vpos = c->position+(from_voxid(voxid)-vec3(15,30,15));
+		for(int i = 0; i < 8; ++i) {
+			vertex_number_map.push_back(verts[i],color);
+		}*/
+
+	}
+	inline void vertice_veclist_uniqsort() {
+		std::set<Cont> uniq;
+		for(auto i = vertex_number_map.begin(), e = vertex_number_map.end(); i!=e;++i) uniq.insert((*i));
+		vertex_number_map._items.assign(uniq.begin(),uniq.end());
+		std::sort(vertex_number_map.begin(), vertex_number_map.end());
+//		auto i = vertex_number_map_list.begin(), e = vertex_number_map_list.end();
+//		for(;i!=vertex_number_map_list.end();i = vertex_number_map_list._items.erase(i))
+	//		vertex_number_map.push_back((*i));
+	}
+	inline void create_indiv_faces(unsigned short voxid, Chunk*c,vec3 &mCam,std::map<unsigned int, vec3> &new_normals) {
+		vec8 verts = c->gen_vox_vertex_data(voxid);
+		unsigned char color = c->get_material_id(voxid);
+		auto allbegin = vertex_number_map.begin();
+
+		int curdir = 0;
+		vec3 tbarr[6] = { vec3(0,0,-1),vec3(1,0,0),vec3(0,0,1),vec3(-1,0,0),vec3(0,1,0),vec3(0,-1,0) };
+		for(int x = 0, every_two=0; x < 12; ++x) {
+			if(x > 0) {
+				if(every_two==1) {
+					++curdir;
+					every_two=0;
+				} else {
+					++every_two;
+				}
+			}
+			// front right back left top bottom
+			
+			vec3 vpos = from_voxid(voxid);// c->position+(from_voxid(voxid)-vec3(15,30,15));
+
+			vpos += tbarr[curdir];
+			if(vpos.x >0 && vpos.x <31 && vpos.y > 0 && vpos.y < 61 && vpos.z > 0 && vpos.z<31) {
+				// Pro's to the above if:
+				//    prevents overflow of the voxid's on a chunk, allowing voxels on
+				//    chunk edges to render properly. 
+				// Cons:
+				//    It will allow seams in glass if the glass extends
+				//    through the edges of two chunks.
+				// To prevent the con lookup in neighboring chunk is necessary........
+				// 
+				unsigned short tid = to_voxid(vpos);//c->position-(vpos+vec3(15,30,15)));
+				auto comperator = c->NewNewVoxels.find(tid);
+			
+				if(comperator != c->NewNewVoxels.end()
+					&& (*comperator).second.render && (*comperator).second.matid == color) continue;
+			}
+			vpos =  c->position+(from_voxid(voxid)-vec3(15,30,15));
+			// Some faces of the voxels shouldn't be rendered if the camera can't even see them
+			// So... check, and skip them.
+			if(curdir == 0) {
+				if(mCam.z > vpos.z) continue;
+			} else if(curdir == 1) {
+				if(mCam.x < vpos.x) continue;
+			} else if(curdir == 2) {
+				if(mCam.z < vpos.z) continue;
+			} else if(curdir == 3) {
+				if(mCam.x > vpos.x) continue;
+			} else if(curdir == 4) {
+				if(mCam.y < vpos.y) continue;
+			} else if(curdir == 5) {
+				if(mCam.y > vpos.y) continue;
+			} 
+			vec3& vnum = this->allfaces[x];
+			
+
+			auto        	cfacea = vertex_number_map.find(verts[(int)(vnum.x)],color),
+							cfaceb = vertex_number_map.find(verts[(int)(vnum.y)],color), 
+							cfacec = vertex_number_map.find(verts[(int)(vnum.z)],color);
+#define is_end(X) X == vertex_number_map.end()
+			if(is_end(cfacea) || is_end(cfaceb) || is_end(cfacec) ) continue;
+			vec3 t(cfacea-allbegin,cfaceb-allbegin,cfacec-allbegin);
+			
+
+			faces.push_back(t,0);
+
+			vec3 res = ((((*cfaceb).ele)-((*cfacea).ele)).cross_product(((*cfacec).ele)-((*cfacea).ele)));
+			if(new_normals.find(t.x) == new_normals.end() ) 
+				new_normals[t.x] = res;
+			else new_normals[t.x] = new_normals[t.x]+res;
+			if(new_normals.find(t.y) == new_normals.end() ) 
+				new_normals[t.y] = res;
+			else new_normals[t.y] = new_normals[t.y]+res;
+			if(new_normals.find(t.z) == new_normals.end() ) 
+				new_normals[t.z] = res;
+			else new_normals[t.z] = new_normals[t.z]+res;
+
+		}
+		
+	}
+	// This defines a normalised 'faces' array with the numbers of the vertices
+	// as the x,y,z (triangles). Each normalised number will have to be converted
+	// later to the vertex number of the voxels vertex..
+	void init_allfaces() {
+	  /*
+                  4_______5_
+                  /|       /| |
+                 / |      / | | +
+                /  |        | | Y
+              0/  _| _1_/   | | -
+               |  7|____|__6| |
+               |   /    |   / / 
+               |  /        / / +
+               | /      | / / Z
+               |/_______|/ / -
+               3--------2-/  
+                 - X +
+                 
+                 
+                 and the faces are defined:
+                 0,2,3	0,1,2	1,6,2	1,5,6	4,6,5	4,7,6	0,7,4	0,3,7	0,5,1	0,4,5	2,7,3	2,6,7
+                 
+                 
+                 
+                              Cube vertice order             Octree neighbor ordering
+                  definition                       +Y
+                                                    |
+                  6_______7_                        4 +Z
+                 /|       /| |                      | /
+                / |      / | | +                    |2
+               /  |        | | Y          -X---0----/----5---+X
+             2/  _| _3_/   | | -                   3|  				32*32*64=65536, unsigned short can represent exactly that many.
+              |  4|____|__5| |                    / |				Meaning, an array of unsigned shorts
+              |   /    |   / /                  -Z  1
+              |  /        / / +                     |
+              | /      | / / Z                     -Y
+              |/_______|/ / -
+              0--------1-/           opposite neighbor index  = 5-current neighbor index
+                - X +
+                 
+ 7__6  2__3  3__7  5__4  6__2  6__7
+B|  | F|  | L|  | O|  | R|  | T|  |
+ 5__4  0__1  1__5  1__0  4__0  2__3
+
+Back, Front, Left, bOttom, Right, Top
+
+        r[0] = vec3(temp_v.x-CC,temp_v.y-CC,temp_v.z-CC);
+	r[1] = vec3(temp_v.x+CC,temp_v.y-CC,temp_v.z-CC);
+	r[2] = vec3(temp_v.x-CC,temp_v.y+CC,temp_v.z-CC);
+	r[3] = vec3(temp_v.x+CC,temp_v.y+CC,temp_v.z-CC);
+	r[4] = vec3(temp_v.x-CC,temp_v.y-CC,temp_v.z+CC);
+	r[5] = vec3(temp_v.x+CC,temp_v.y-CC,temp_v.z+CC);
+	r[6] = vec3(temp_v.x-CC,temp_v.y+CC,temp_v.z+CC);
+	r[7] = vec3(temp_v.x+CC,temp_v.y+CC,temp_v.z+CC);
+	
+                 */
+	  // front
+	  allfaces[0] = vec3(0,2,3);
+	  allfaces[1] = vec3(0,3,1);
+	  
+	  //right
+	  allfaces[2] = vec3(3,5,1);
+	  allfaces[3] = vec3(3,7,5);
+	  
+	  // back
+	  allfaces[4] = vec3(6,5,7);  
+	  allfaces[5] = vec3(6,4,5);
+	  
+	  // left
+	  allfaces[6] = vec3(2,4,6);
+	  allfaces[7] = vec3(2,0,4);
+	  //top
+	  allfaces[8] = vec3(2,6,7);
+	  allfaces[9] = vec3(7,3,2);
+	  
+	  //bottom
+	  allfaces[10]= vec3(4,0,1);
+	  allfaces[11]= vec3(1,5,4);
+	  
+	}
+};
+voxel_drawer voxel_drawer::_int_draw = voxel_drawer();
+
+
+void NewHeightmapLoader::transparent_roofs(inet_player *oldpdontuse) {
+	return;
+	vec3 pnt2(vec3(player_position)+vec3(-2,3.5,-2));
+	vec3 pnt1(vec3(player_position)+vec3(2,25.5,2));
+	vec3 nodecimals((long long)player_position.x,(long long)player_position.y,(long long)player_position.z);
+	nodecimals.floor();
+//	if( (vec3(player_position)-nodecimals).abs() != vec3(0.0,0.5,0.0) ) {
+//		return;
+//	}
+	
+	static vec3 last_pnt(0,.001,0);//, last_pnt2(0,0,0);
+	if(last_pnt  == vec3(nodecimals)) return;//pnt1 && last_pnt2 
+	last_pnt = vec3(nodecimals);
+	if(transparented.pnts.size() != 0) {
+		auto it = transparented.pnts.begin(), end = transparented.pnts.end();
+		for(;it!=end;++it) {
+			(*it).c->NewNewVoxels[(*it).idx].matid -= 128;
+			//(*it).c->voxel_materials[(*it).idx] -= 128;
+			(*it).c->cleanup();
+		}
+		transparented.pnts.clear();
+	}
+	editor_2pnt roofpnts;
+	Chunk *c1, *c2;
+	c1 = contains(pnt1);
+	c2 = contains(pnt2);
+	if(c2 != NULL) while(c1 == NULL && pnt1.y > pnt2.y) {
+		pnt1 = pnt1-vec3(0,1,0);
+		c1 = contains(pnt1);
+		
+	}
+	if(c1 == NULL || c2 == NULL) return; // avoid segfault by introducing potential roof bug near high areas without a chunk over them.
+
+	{
+
+		vec3 temp_v = (pnt1-c1->position)+vec3(15,30,15);
+		unsigned short idx = to_voxid(temp_v);
+		roofpnts.setup(true, c1, idx);
+		temp_v = (pnt2-c2->position)+vec3(15,30,15);
+		idx = to_voxid(temp_v);
+		roofpnts.setup(false, c2, idx);
+	}
+	if(roofpnts.c[0] != NULL && roofpnts.c[1] != NULL) roofpnts.set = true;
+	static multipoint last;
+	multipoint existing = roofpnts.all_existing_between(this);
+	std::vector<multipoint::pnt>::iterator iter = existing.pnts.begin(), end = existing.pnts.end();
+	for(;iter!=end;++iter) { 
+		(*iter).c->cleanup(); 
+		(*iter).c->NewNewVoxels[(*iter).idx].matid += 128; 
+		transparented.pnts.push_back((*iter));
+	}
+}

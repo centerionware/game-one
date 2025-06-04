@@ -1,0 +1,223 @@
+#ifndef FILE_BROWSER
+#define FILE_BROWSER
+//boost::filesystem::path path_normalize(const boost::filesystem::path path) {
+// return path.normalize();
+//}
+
+
+
+
+
+struct fbDataStorageBase {
+  std::string data;
+  bool multiselect;
+  virtual void Update()=0;
+};
+template<class T>
+struct FileBrowserDataStorage : public fbDataStorageBase {
+  void (T::*fpt)();
+  T *obj;
+  FileBrowserDataStorage(T*o, void (T::*fp)(), bool MultiSel=false) { fpt=fp; obj=o;multiselect=MultiSel; }
+  virtual void Update(){ (*obj.*fpt)(); } 
+};
+/* 
+ *  The FileBrowserDataStorage class is designed to allow some window to retrieve the selected filename and do something with it
+ *  when a file is clicked on in the browser.
+ * 
+ *  The Update() function will call whatever object&&function on that object specified in the constructor
+ *  
+ *  basic usage example:
+ *  struct ex_struct : public gui_module {
+ *  	FileBrowserDataStorage<ex_struct> fb_data;
+ *  	ex_struct() : fb_data(this,&ex_struct::fb_data_hasbeen_set) {...}
+ *  	void initialize() {
+ * 		event_subscribe("ex_struct/someEditboxToFillInWithFilenameOnceSelected", CEGUI::Editbox::EventActivated, ex_struct::show_fb);
+ * 	}
+ * 	void create_gui { all the gui creation stuff; }
+ * 	void show_fb() {
+ * 		FileBrowserSingleton.setDataStorage(fb_data);
+ * 		FileBrowserSingleton.show();
+ * 	}
+ * 	void fb_data_hasbeen_set() { do_something_with(fb_data.data); FileBrowserSingleton.hide(); }
+ *  };
+ * 
+ */
+  static std::string lpth="./"; // This should be temporary, the FilePathSaver object should be stored in a cfg file or something of the like.
+struct FilePathSaver : public autosaver {	
+  FilePathSaver() { load(); }
+  ~FilePathSaver() { save(); }
+  virtual std::string Name() { return (std::string)"LastDir"; }
+  virtual std::string &Value() { return lpth; }
+};
+struct FileBrowser_GUI : public gui_module {
+    std::vector<boost::filesystem::path> files;
+    std::vector<boost::filesystem::path> subdirs;
+    boost::filesystem::path currentPath;
+    static std::string selectedDir;
+    fbDataStorageBase *cur_callback_helper;
+
+ 
+
+    bool OnPlayerOLCSearch(const CEGUI::EventArgs &event);
+    void initialize();
+    void create_file_browser();
+
+    void setDataStorage(fbDataStorageBase &i) { 
+      cur_callback_helper = &i;
+      if(i.multiselect) {
+	      WinMan->getWindow("FileBrowser/OkayButton")->show();
+      } else {
+	      WinMan->getWindow("FileBrowser/OkayButton")->hide();
+      }
+    }
+    bool FillPath(const char*_path);
+    bool OpenFileList(const CEGUI::EventArgs &event);
+    bool SelectDir(const CEGUI::EventArgs &event);
+    bool OkayPressed(const CEGUI::EventArgs &event);
+    bool SelectFile(std::string file);
+    void show() {  WinMan->getWindow("FileBrowser")->show();WinMan->getWindow("FileBrowser")->activate(); }
+    void hide() { WinMan->getWindow("FileBrowser")->hide();WinMan->getWindow("FileBrowser")->deactivate(); }
+};
+std::string FileBrowser_GUI::selectedDir;
+
+FileBrowser_GUI FileBrowserSingleton; // Yes, this line is actually needed.
+
+void FileBrowser_GUI::initialize() {
+	create_file_browser();
+	FillPath(".");
+	CEGUI::EventArgs fake;
+	OpenFileList(fake);
+	event_subscribe("FileBrowser/Files",CEGUI::Listbox::EventSelectionChanged,FileBrowser_GUI::SelectDir);
+	event_subscribe("FileBrowser/OkayButton",CEGUI::PushButton::EventClicked,FileBrowser_GUI::OkayPressed);
+	cur_callback_helper = NULL;
+	//event_subscribe("FileBrowser_GUI/Searchbox",CEGUI::Combobox::EventTextAccepted,FileBrowser_GUI::OnPlayerOLCSearch);
+}
+void FileBrowser_GUI::create_file_browser() {
+	auto file_browser_window = basic_window_create("TaharezLook/FrameWindow", "FileBrowser",0.25,0.25,0.5,0.5,WinMan);
+	auto FileBrowserListbox = basic_window_create("TaharezLook/Listbox", "FileBrowser/Files", 0.0, 0.0, 1, .75,WinMan);
+	auto FileBrowserSortby = basic_window_create("TaharezLook/Combobox", "FileBrowser/FileSortBy",0.0,.755,1,.10,WinMan);
+	auto FileBrowserCurWd = basic_window_create("TaharezLook/StaticText", "FileBrowser/CurWD",0.0,.86,.8,.1,WinMan);
+	auto OkayButton = basic_window_create("TaharezLook/Button", "FileBrowser/OkayButton",0.81,.86,.175,.1,WinMan);
+	file_browser_window->addChildWindow(FileBrowserListbox);
+	file_browser_window->addChildWindow(FileBrowserSortby);
+	file_browser_window->addChildWindow(FileBrowserCurWd);
+	file_browser_window->addChildWindow(OkayButton);
+	file_browser_window->hide();
+	Window->addChildWindow(file_browser_window);
+
+}
+
+bool FileBrowser_GUI::FillPath(const char*_path) {
+	subdirs.clear();
+	files.clear();
+	boost::filesystem::path dotdot("..");
+	subdirs.push_back(dotdot);
+	boost::filesystem::path path (_path);
+	if(boost::filesystem::exists(path)) {
+	  if(boost::filesystem::is_regular_file(path)) {
+	    // Regular file selected, prepare for uploading 
+	    return true;
+	  } else if(boost::filesystem::is_directory(path)) {
+	      for(auto i = boost::filesystem::directory_iterator(path), e = boost::filesystem::directory_iterator();
+		  i!=e; ++i) 
+		      if(boost::filesystem::is_regular_file((*i))) files.push_back((*i));
+		      else subdirs.push_back((*i));
+		      WinMan->getWindow("FileBrowser/CurWD")->setText(_path);
+
+	      return false;
+	  }
+	}
+      //   WinMan->getWindow("FileBrowser/CurWD")->setText("Selected path does not exist!");
+
+	throw "Not a dir or file"; 
+	return false;
+}
+
+
+  bool FileBrowser_GUI::OpenFileList(const CEGUI::EventArgs &event) {
+    auto fbwindow = ((CEGUI::Listbox*)(CState_Testing::ReturnInstance()->WinMan->getWindow("FileBrowser/Files")));
+    fbwindow->resetList();
+    for(auto i = subdirs.begin(), e = subdirs.end(); i!=e;++i) {
+		fbwindow->addItem(new CEGUI::ListboxTextItem((*i).filename().string()));
+    }
+    for(auto i = files.begin(), e = files.end(); i!=e;++i) {
+	fbwindow->addItem(new CEGUI::ListboxTextItem((*i).filename().string()));
+    }
+	if(WinMan->getWindow("FileBrowser")->isVisible()) {hide(); show();}
+    return true;
+  }
+  bool FileBrowser_GUI::SelectDir(const CEGUI::EventArgs &event) {
+	FilePathSaver svv; // Right on..Now when this goes out of scope, right after lpth is set, it will set to be saved when program exits.
+	bool is_file = false;
+	auto lbitem = ((CEGUI::Listbox*)(WinMan->getWindow("FileBrowser/Files")))->getFirstSelectedItem();
+	
+	lpth = Tools::str_replace(lpth, "/", "\\");
+	auto br = lpth;
+	std::string lbittxt = lbitem->getText().c_str();
+      
+	if(lbittxt == "..") {
+		size_t p1 = 0,p2 = 0;
+		for(size_t t=lpth.find("/",0);t!=std::string::npos;t=lpth.find("/",p2+1)) {p1=p2;p2=t;}
+		if(p1!=p2 && p1!=0 && p2!=lpth.size()-1)br = lpth.substr(0,p2+1);
+		if(p1!=p2 && p1!=0 && p2==lpth.size()-1)br = lpth.substr(0,p1+1);
+#ifdef _WIN32
+//	if(p1 == p2) br = "My Computer"; Not that simple. >_<. Simplest thing possible is test from [a-z]:\ and see if exists.
+//	But that would skip network drives on windows.
+//	
+//	I love linux here, seriously.. Everything is connected to root, so this crap isn't an issue.
+//	
+#endif
+	} else {
+		  if(br.substr(br.size()-1,1)!="/")br.append("/");
+		  br.append(lbitem->getText().c_str());
+	}
+	try {
+		  is_file = FillPath(br.c_str());
+	} catch ( ...) { is_file=false; }
+	if(!is_file) {
+		  OpenFileList(event);
+		  lpth=br;
+	}else {
+		  if(cur_callback_helper != NULL && !cur_callback_helper->multiselect)
+			SelectFile(br);
+		  else {
+		    
+		  }
+	}
+	return true;
+    }
+  bool FileBrowser_GUI::OkayPressed(const CEGUI::EventArgs &event) {
+	//int count = ((CEGUI::Listbox*)(WinMan->getWindow("FileBrowser/Files")))->getSelectedCount();
+	//if(count ==0) {
+	//	SelectFile("");
+	//	return true;
+	//}
+	auto lb = ((CEGUI::Listbox*)(WinMan->getWindow("FileBrowser/Files")));
+	std::string out;
+	for(auto lbitem = lb->getFirstSelectedItem();lbitem!=NULL;lbitem=lb->getNextSelectedItem(lbitem)) {
+		if(out.size()!=0)out.append(";");
+		out.append(lbitem->getText().c_str());
+	}
+	SelectFile(out);
+	return true; 
+  }
+  bool FileBrowser_GUI::SelectFile(std::string file) {
+	// do something with the filename..
+	if(cur_callback_helper != NULL) {
+		cur_callback_helper->data = file;
+		cur_callback_helper->Update();
+	}
+	return true;
+  }
+
+  
+  
+/*
+    bool CState_Testing::OnModelSearch(const CEGUI::EventArgs &event){return true;}
+    bool CState_Testing::OnModelModifyPress(const CEGUI::EventArgs &event){return true;}
+    bool CState_Testing::OnModelDeletePress(const CEGUI::EventArgs &event){return true;}
+    bool CState_Testing::OnModelLockPress(const CEGUI::EventArgs &event){return true;}
+    bool CState_Testing::OnModelDetailsRequest(const CEGUI::EventArgs &event){return true;}
+    bool CState_Testing::OnModelAddPress(const CEGUI::EventArgs &event){return true;}
+*/
+#endif

@@ -1,0 +1,288 @@
+/**
+ * GAME-ONE APPLICATION FRAMEWORK
+ * Filename: CState_Lobby.h
+ * Description: Introductory Game State
+ * Legal stuff ~
+ */
+
+#include "CState_Lobby.h"
+#include "CEGUI/RendererModules/Ogre/CEGUIOgreRenderer.h"
+
+CState_Lobby CState_Lobby::STATE_LOBBY;
+
+void CState_Lobby::CreateGUI( void )
+{
+    //Initialise CEGUI's Ogre Renderer, and create necessary pointers to CEGUI's subsystems;
+//     MainMenuGUIRenderer = &CEGUI::OgreRenderer::bootstrapSystem();
+    WinMan = CEGUI::WindowManager::getSingletonPtr();
+    SysMan = CEGUI::System::getSingletonPtr();
+
+    /* Load the Main Menu from an XML file located in
+     * "data/gui/layouts/" and Set Focus on the Main Menu*/
+	try {
+		Window = CEGUI::WindowManager::getSingleton().loadWindowLayout("../data/gui/layouts/ChatLobby.layout");
+	}catch(CEGUI::Exception e) {
+		std::ostringstream i;
+		i << e.getName() << " " << e.getMessage() << " " << e.getFileName() << " " << e.getLine() << " ";
+		
+		 DoStateChange( CState_MainMenu_Login::ReturnInstance() );
+		// CState_MainMenu_Login::ReturnInstance()->set_status_message(i.str());
+		 return;
+	}
+	catch(...) {
+		
+		 DoStateChange( CState_MainMenu_Login::ReturnInstance() );
+		// CState_MainMenu_Login::ReturnInstance()->set_status_message("CEGUI Exception!");
+		 return;
+		// unknown exception.
+	}
+    SysMan->setGUISheet( Window );
+
+    /* Handle GUI events ( should be done with lua scripts later,
+     * but we have to include another library to allow LUA and C++
+     * code to interact, so that is for another time ), look into
+     ToLua++ or something like that, can't remember right of the bat*/
+    //WinMan->getWindow( "Lobby/btnBack" )->subscribeEvent( CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber( &CState_Lobby::OnBack, this ) );
+	//create_game_button // open subwindow with create_game. Created games limited by available ports and system sockets?
+	//find_game_button // Open the gamesearch subwindow
+	//chat_window // All chat from the network is piped to here
+	//chat_input // Add input
+	//hero_portrait // Render a portrait of their hero
+	//switch_hero // Switch hero
+	//create_hero // I was thinking the main server ought be mmo. Subservers can be
+	//				and can choose to use the main servers inventory (But couldn't update the inventory on the main server)
+	//list_public_chat_rooms // The chat system may stay connected durring the entire experience, and in-game chat upgraded to reflect that.
+	//join_private_chat_room // subwindow will need a room name, and room password to join. password may be blank. private rooms are unlisted - except to admin.
+	//create_chat_room
+	//join_main_instance // Join the main instance. Spawned immediatly if not already. bound to next available port.
+	auto * chat_input = Window->getChild("chat_input");
+	chat_input->subscribeEvent(CEGUI::Editbox::EventTextAccepted, CEGUI::Event::Subscriber(&CState_Lobby::OnLocalChat,this));
+	auto * join_main_instance = Window->getChild("join_main_instance");
+	join_main_instance->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&CState_Lobby::OnJoinMainServer, this));
+
+}
+bool CState_Lobby::OnLocalChat(const CEGUI::EventArgs &Event) {
+	if(!isLoggedIn) return false;
+	std::string chat_text = Window->getChild("chat_input")->getText().c_str();
+	std::string output;
+	output += to_value(LobbyCommands);
+	output += to_value(LobbyChat);
+	output.append(string_serialize(chat_text));
+	mPlayer->send_text(output, mPlayer->socket);
+	return true;
+}
+void CState_Lobby::goodLogin() { 
+	isLoggedIn = true; 
+}
+void CState_Lobby::badLogin() { 
+	isLoggedIn = false; 
+}
+bool CState_Lobby::OnJoinMainServer(const CEGUI::EventArgs &event) {
+	if(!isLoggedIn) return false;
+	std::string output;
+	output += to_value(LobbyCommands);
+	output += to_value(LobbyJoinServer);
+	mPlayer->send_text(output, mPlayer->socket);
+	return true;
+}
+void CState_Lobby::InstanceJoined(std::vector<std::string>&in) {
+	// in now contains whatever format I come up with to contain connection info to the instance.
+	// The instance may have a different IP or Port. I could see this being wide open to Man in middle attack
+	std::string &d = in[0];
+	server = non_safe_string_deserialize(d);
+	port = non_safe_string_deserialize(d);
+	instance_joined = true;
+}
+bool CState_Lobby::OnBack( const CEGUI::EventArgs &event )
+{
+    DoStateChange( CState_MainMenu::ReturnInstance() );
+    return false;
+}
+void CState_Lobby::ConnectionSuccess(){ 
+	std::string uname = CState_MainMenu_Login::ReturnInstance()->mUname;
+	std::string pword = CState_MainMenu_Login::ReturnInstance()->mPword;
+	char op[4];
+	size_t t_si = uname.size();
+	memcpy(op, &(t_si), 4);
+	std::string update;
+	update += to_value(LoginCommand);
+	update += to_value(DoLogin);
+	//update+= (char)1;
+	//update+= (char)3;
+	update.append(op,4);
+	t_si = pword.size();
+	memcpy(op, &(t_si), 4);
+	update.append(op,4);
+	update.append(uname.c_str(), uname.size());
+	update.append(pword.c_str(), pword.size());
+	mPlayer->send_text(update, mPlayer->socket);
+	IsConnected = true;
+}
+void CState_Lobby::ConnectionClosed(){
+
+		IsConnected = false;
+    
+}
+void CState_Lobby::Enter()
+{
+    mRoot = Ogre::Root::getSingletonPtr();
+	instance_joined = false;
+	isLoggedIn = false;
+	IsConnected = false;
+    if ( mSceneManager == NULL )
+    {
+        mSceneManager = mRoot->createSceneManager(Ogre::ST_GENERIC);
+    }
+    else
+    {
+        mSceneManager->clearScene();
+        mSceneManager = NULL;
+        mSceneManager = mRoot->createSceneManager(Ogre::ST_GENERIC);
+    }
+
+    CreateGUI();
+	    mPlayer = boost::shared_ptr<inet_player>(new inet_player());//mSceneManager,"soldier.mesh","TestPlayer", mCamera,0));
+       inet_player::Players.push_back(mPlayer);
+    mPlayer->create_commands();
+    mPlayer->lobby_state_conndisconn();
+    this->mPlayer->loginToServer("gameone.dyndns.biz", "6720","","");
+
+    IsRunning = true;
+}
+
+void CState_Lobby::Exit()
+{
+    CEGUI::WindowManager::getSingleton().destroyWindow( Window );
+	mPlayer.reset();
+    if ( IsRunning == false )
+    {
+        CEGUI::OgreRenderer::destroySystem();
+    }
+
+    if ( mSceneManager != NULL )
+    {
+        mSceneManager->destroyAllCameras();
+        mSceneManager->destroyAllEntities();
+        mSceneManager->getRootSceneNode()->removeAndDestroyAllChildren();
+        mSceneManager->destroyAllLights();
+        mSceneManager->clearScene();
+    }
+
+    mRoot->getAutoCreatedWindow()->removeAllViewports();
+	inet_player::Players.clear();
+}
+
+bool CState_Lobby::frameStarted( const Ogre::FrameEvent & event )
+{
+    return true;
+}
+
+bool CState_Lobby::frameRenderingQueued( const Ogre::FrameEvent &event)
+{
+    //This is not needed in this state, in fact I have no idea what it does, but I think you had it here ...
+    //create_heightmap_each_frame(mCamera);
+	if(instance_joined) {
+		instance_joined = false;
+		DoStateChange( CState_Testing::ReturnInstance() );
+	} else {
+		this->mPlayer->pump_net_messages();
+	}
+    return true;
+}
+
+bool CState_Lobby::frameEnded( const Ogre::FrameEvent & event )
+{
+    if ( IsRunning == false )
+    {
+        return false;
+    }
+
+    return true;
+}
+
+void CState_Lobby::keyPressed( const OIS::KeyEvent  & event)
+{
+    SysMan->injectKeyDown( event.key );
+    SysMan->injectChar( event.text );
+}
+
+void CState_Lobby::keyReleased( const OIS::KeyEvent  & event)
+{
+    SysMan->injectKeyDown( event.key );
+    SysMan->injectChar( event.text );
+
+    if( event.key == OIS::KC_ESCAPE )
+    {
+	DoStateChange( CState_MainMenu::ReturnInstance() );
+    }
+}
+
+void CState_Lobby::mouseMoved( const OIS::MouseEvent  & event)
+{
+    SysMan->injectMouseMove( event.state.X.rel, event.state.Y.rel );
+}
+
+void CState_Lobby::mousePressed( const OIS::MouseEvent  & event, OIS::MouseButtonID identifier )
+{
+    switch ( identifier )
+    {
+    case OIS::MB_Left:
+    {
+        SysMan->injectMouseButtonDown( CEGUI::LeftButton );
+
+        break;
+    }
+
+    case OIS::MB_Right:
+    {
+        SysMan->injectMouseButtonDown( CEGUI::RightButton );
+
+        break;
+    }
+
+    case OIS::MB_Middle:
+    {
+        SysMan->injectMouseButtonDown( CEGUI::MiddleButton );
+
+        break;
+    }
+
+    default:
+    {
+        SysMan->injectMouseButtonDown( CEGUI::LeftButton);
+    }
+
+    }
+}
+
+void CState_Lobby::mouseReleased( const OIS::MouseEvent  & event, OIS::MouseButtonID identifier )
+{
+    switch ( identifier )
+    {
+    case OIS::MB_Left:
+    {
+        SysMan->injectMouseButtonUp( CEGUI::LeftButton );
+
+        break;
+    }
+
+    case OIS::MB_Right:
+    {
+        SysMan->injectMouseButtonUp( CEGUI::RightButton );
+
+        break;
+    }
+
+    case OIS::MB_Middle:
+    {
+        SysMan->injectMouseButtonUp( CEGUI::MiddleButton );
+
+        break;
+    }
+
+    default:
+    {
+        SysMan->injectMouseButtonUp( CEGUI::LeftButton);
+    }
+    }
+}

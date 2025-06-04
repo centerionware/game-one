@@ -1,0 +1,13 @@
+void inet_player::remPlayer(std::vector<std::string>&in) {
+	unsigned int player_socket;
+	memcpy(&player_socket,in[0].c_str(),sizeof(unsigned int));
+	auto iter = Players.begin(), end = Players.end();
+	if(following_player != NULL && following_player->socket == player_socket) following_player = NULL;
+	for(;iter!=end;++iter) if( (*iter)->following_player != NULL && (*iter)->following_player->socket == player_socket) (*iter)->following_player = NULL;
+	iter = Players.begin(), end = Players.end();
+	for(;iter!=end;++iter) 
+		if( (*iter)->socket == player_socket) {
+			Players.erase(iter);
+			return;
+		}
+}

@@ -1,0 +1,73 @@
+/**
+ * GAME-ONE APPLICATION FRAMEWORK
+ * Filename: CState.h
+ * Description: class model to be inherited for each game state
+ * Legal stuff ~
+ */
+
+#ifndef _CGAMESTATE_H_
+#define _CGAMESTATE_H_
+
+#include <Ogre.h>
+//#include <OIS.h>
+#include <OIS/OISEvents.h>
+#include <OISInputManager.h>
+#include <OISKeyboard.h>
+#include <OISMouse.h>
+
+#include <CEGUI.h>
+#include <CEGUI/RendererModules/Ogre/CEGUIOgreRenderer.h>
+
+#include <CGameManager.h>
+#include <CEventManager.h>
+class inet_player;
+namespace LostConnectionStates {
+	enum { MAINMENU_DISCONNECTED_FROM_SERVER, MAINMENU_DEFAULT, MAINMENU_KICKED_FROM_SERVER, MAINMENU_BANNED_FROM_SERVER };
+}
+class CState // Pure virtual? Really? 
+{
+protected:
+    CState() {};
+    
+    virtual ~CState() {};
+
+public:
+    
+    Ogre::Root		* mRoot;
+    Ogre::SceneManager	* mSceneManager;
+    Ogre::Viewport	* mViewport;
+    Ogre::Camera	* mCamera;
+    
+    OgreBites::SdkCameraMan	* mCameraMan;
+    
+    CEGUI::WindowManager	*WinMan;
+    CEGUI::System		*SysMan;
+    CEGUI::Window		*Window;
+	boost::shared_ptr<inet_player>mPlayer;
+    virtual void Enter() = 0;
+    
+    virtual void Exit() = 0;
+    
+    
+    virtual void keyPressed( const OIS::KeyEvent & event ) = 0;
+    
+    virtual void keyReleased( const OIS::KeyEvent & event ) = 0;
+    
+    virtual void mouseMoved( const OIS::MouseEvent & event ) = 0;
+    
+    virtual void mousePressed( const OIS::MouseEvent & event, OIS::MouseButtonID identifier ) = 0;
+    
+    virtual void mouseReleased( const OIS::MouseEvent & event, OIS::MouseButtonID identifier ) = 0;
+    
+    
+    virtual bool frameStarted( const Ogre::FrameEvent & event ) = 0;
+    
+    virtual bool frameRenderingQueued( const Ogre::FrameEvent &event) = 0;
+    
+    virtual bool frameEnded( const Ogre::FrameEvent & event ) = 0;
+    
+    
+    virtual void DoStateChange( CState* state ) { CGameManager::ReturnSingletonPointer()->DoStateChange( state ); }
+};
+
+#endif // _CGAMESTATE_H_

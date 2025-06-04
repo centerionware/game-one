@@ -1,0 +1,27 @@
+<skeleton>
+	<bones>
+		<bone id="0" name="Bone">
+			<position x="-0.000001" y="-1.000000" z="1.412381"/>
+			<rotation angle="0.000000">
+				<axis x="-0.000000" y="0.000000" z="-0.000000"/>
+			</rotation>
+		</bone>
+		<bone id="1" name="Bone.001">
+			<position x="0.000000" y="1.000000" z="-0.000000"/>
+			<rotation angle="2.843837">
+				<axis x="-0.259225" y="0.948733" z="0.180856"/>
+			</rotation>
+		</bone>
+		<bone id="2" name="Bone.002">
+			<position x="0.000000" y="1.000000" z="-0.000000"/>
+			<rotation angle="2.794354">
+				<axis x="-0.193490" y="0.161010" z="0.967800"/>
+			</rotation>
+		</bone>
+	</bones>
+	<bonehierarchy>
+		<boneparent bone="Bone.001" parent="Bone"/>
+		<boneparent bone="Bone.002" parent="Bone"/>
+	</bonehierarchy>
+	<animations/>
+</skeleton>

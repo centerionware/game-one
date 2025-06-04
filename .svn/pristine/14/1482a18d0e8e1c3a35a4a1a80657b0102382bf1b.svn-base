@@ -1,0 +1,304 @@
+void CState_Testing::keyPressed( const OIS::KeyEvent  & event)
+{
+    SysMan->injectKeyDown( event.key );
+    SysMan->injectChar( event.text );
+	CEGUI::Editbox *eb = ((CEGUI::Editbox*)WinMan->getWindow("MainChatInputBar"));
+	if(eb->hasInputFocus()) {
+		if (event.key == OIS::KC_RETURN) {
+			CEGUI::String outputtext = eb->getText();
+			std::string text_to_selfchat;
+			text_to_selfchat.append("You: ");
+			text_to_selfchat.append(outputtext.c_str());
+			add_chatwindow_text(text_to_selfchat);
+			mPlayer->headtext = outputtext.c_str();
+			mPlayer->textBox->setText(outputtext.c_str());
+			 mPlayer->send_to_server(HeadText);
+			 eb->setText("");
+			 WinMan->getWindow("MainChatBox")->activate();
+		}
+		return;
+	}
+
+	CEGUI::Window* sheet = CEGUI::System::getSingleton().getGUISheet();
+	CEGUI::Point mousePos = CEGUI::MouseCursor::getSingleton().getPosition();
+	CEGUI::Window* active_window = sheet->getChildAtPosition(mousePos);
+	if(active_window) return;
+    if (event.key == OIS::KC_RETURN) {
+        isChatOn = !isChatOn;
+        if (!isChatOn) {
+	  	
+		{
+			std::string text_to_selfchat;
+			text_to_selfchat.append("You: ");
+			text_to_selfchat.append(mPlayer->headtext);
+			add_chatwindow_text(text_to_selfchat);
+		}
+            mPlayer->send_to_server(HeadText);
+        } else {
+            mPlayer->headtext = "";
+            mPlayer->textBox->setText("");
+            headTextEditString.clear();
+        }
+    }
+	if(event.key == OIS::KC_LSHIFT) shift_key_down = true;
+    if (isChatOn) {
+        headTextEditString.injectKeyPress(event);
+        mPlayer->headtext = headTextEditString.getText();
+        mPlayer->textBox->setText(mPlayer->headtext);
+        return;
+    }
+    if(FreelookEditModeFPS) {
+      /*
+      		//enum EditMode { Add, Modify, Remove, Select_Point_One, Select_Point_Two, Add_between, Modify_between, Remove_between };
+		
+      */
+     if(event.key == OIS::KC_TAB) {
+	  using namespace modmap;
+	  auto it = tex_mod.find(current_editmode);
+	  if(shift_key_down) {
+		  if(it!=tex_mod.begin())--it;
+		  else { it = tex_mod.end(); --it; }
+
+	  } else {
+			  if(it!=tex_mod.end()) ++it;
+			  if(it==tex_mod.end()) it = tex_mod.begin();
+	  }
+	   current_editmode = (*it).first;
+	   WinMan->getWindow( "lblCurrentEditMode" )->setText((*it).second);
+     }
+     return;
+    }
+    if(FreelookEditMode) {
+   //  
+	
+	
+ float moveScale = 10;
+ if(shift_key_down) moveScale = 35;
+ Ogre::Degree rotateScale(0.1);
+     // Move camera upwards along to world's Y-axis.
+// if(event.key == OIS::KC_PGUP)
+     //mTranslateVector.y = moveScale;
+//     mMinimapCamNode->setPosition(mMinimapCamNode->getPosition() + Ogre::Vector3(0, .5, 0));
+ 
+ // Move camera downwards along to world's Y-axis.
+ //if(event.key == OIS::KC_PGDOWN)
+     //mTranslateVector.y = -(moveScale);
+  //   mMinimapCamNode->setPosition(mMinimapCamNode->getPosition() - Ogre::Vector3(0, .5, 0));
+ 
+ // Move camera forward.
+ if(event.key == OIS::KC_W)
+     mTranslateVector.z = -(moveScale);
+ 
+ // Move camera backward.
+ if(event.key == OIS::KC_S)
+     mTranslateVector.z = moveScale;
+ 
+ // Move camera left.
+ if(event.key == OIS::KC_A)
+     mTranslateVector.x = -(moveScale);
+ 
+ // Move camera right.
+ if(event.key == OIS::KC_D)
+     mTranslateVector.x = moveScale;
+ if(event.key == OIS::KC_I) {
+		//if(FreelookEditMode || FreelookEditModeFPS) {
+	if(WinMan->getWindow("ItemEditorWindow")->isVisible())
+		WinMan->getWindow("ItemEditorWindow")->hide();
+	else
+	 WinMan->getWindow("ItemEditorWindow")->show();
+		//}
+ }
+ if(event.key == OIS::KC_P) {
+	 if(WinMan->getWindow("AdminWindow")->isVisible())
+		 WinMan->getWindow("AdminWindow")->hide();	
+	 else
+	  WinMan->getWindow("AdminWindow")->show();
+ }
+ // Rotate camera left.
+ //if(event.key == OIS::KC_Q)
+//     mMinimapCamYawNode->yaw(rotateScale);
+ 
+ // Rotate camera right.
+ //if(event.key == OIS::KC_D)
+  //   mMinimapCamYawNode->yaw(-(rotateScale));
+ 
+ // Strip all yaw rotation on the camera.
+ 
+ 
+ // Rotate camera upwards.
+// if(event.key == OIS::KC_Z)
+    // mMinimapCamPitchNode->pitch(rotateScale);
+ 
+ // Rotate camera downwards.
+// if(event.key == OIS::KC_S)
+   //  mMinimapCamPitchNode->pitch(-(rotateScale));
+ 
+ 
+ if(event.key == OIS::KC_TAB) {
+      using namespace modmap; 
+      auto it = tex_mod.find(current_editmode);
+   	  if(shift_key_down) {
+		  if(it!=tex_mod.begin())--it;
+		  else { it = tex_mod.end(); --it; }
+
+	  } else {
+			  if(it!=tex_mod.end()) ++it;
+			  if(it==tex_mod.end()) it = tex_mod.begin();
+	  }
+      current_editmode = (*it).first;
+      WinMan->getWindow( "lblCurrentEditMode" )->setText((*it).second);
+      
+ }
+ /*
+ // Tilt camera on the left.
+ if(event.key == OIS::KC_L))
+     this->cameraRollNode->roll(-(rotateScale));
+ 
+ // Tilt camera on the right.
+ if(event.key == OIS::KC_M))
+     this->cameraRollNode->roll(rotateScale);
+ 
+ // Strip all tilt applied to the camera.
+ if(event.key == OIS::KC_P))
+     this->cameraRollNode->setOrientation(Ogre::Quaternion::IDENTITY);
+ */
+ // Strip all rotation to the camera.
+// if(event.key == OIS::KC_O)
+// {
+//     mMinimapCamNode->setOrientation(Ogre::Quaternion::IDENTITY);
+     //mMinimapCamPitchNode->setOrientation(Ogre::Quaternion::IDENTITY);
+  //   this->cameraRollNode->setOrientation(Ogre::Quaternion::IDENTITY);
+// }
+      return;
+    }
+    
+    KeyboardMap.Call(event.key, true,boost::shared_ptr<inet_player>());
+}
+void CState_Testing::keyReleased( const OIS::KeyEvent  & event)
+{
+    SysMan->injectKeyUp( event.key );
+    SysMan->injectChar( event.text );
+	 if(event.key == OIS::KC_LSHIFT) shift_key_down = false;
+    if ( event.key == OIS::KC_ESCAPE )
+    {
+			bool anymode = false;
+			if(FreelookEditModeFPS) {
+				mCamNode->setPosition(mPlayer->position + Ogre::Vector3(0, 25, 0));
+				mCamNode->resetOrientation();
+				mCamNode->pitch(Ogre::Degree(-90), Ogre::Node::TS_LOCAL);
+				FreelookEditModeFPS = false;
+				anymode = true;
+			}
+			if(FreelookEditMode) {
+				mCamNode->setPosition(mPlayer->position + Ogre::Vector3(0, 25, 0));
+				mCamNode->resetOrientation();
+				mCamNode->pitch(Ogre::Degree(-90), Ogre::Node::TS_LOCAL);
+				FreelookEditMode = false;
+				anymode = true;
+			}
+			//if(showing_minimap) {
+			//	anymode = true;
+				//ToggleMinimap(OIS::KC_M);
+			//}
+			if(WinMan->getWindow("ModelUploaderWindow")->isVisible()) {
+				anymode = true;
+				WinMan->getWindow("ModelUploaderWindow")->hide();
+			}
+			if(WinMan->getWindow("FileBrowser")->isVisible()) {
+				anymode = true;
+				WinMan->getWindow("FileBrowser")->hide();
+			}
+			if(!anymode) {
+				if(WinMan->getWindow("ItemEditorWindow")->isVisible()) {
+					WinMan->getWindow("ItemEditorWindow")->hide();
+					anymode = true;
+				}
+				if(WinMan->getWindow("TextureAtlas")->isVisible()) {
+					WinMan->getWindow("TextureAtlas")->hide();
+					anymode = true;
+				}
+				if(WinMan->getWindow("PlayerEditorWindow")->isVisible()) {
+					anymode = true;
+					WinMan->getWindow("PlayerEditorWindow")->hide();	
+				}
+				if(!anymode) 
+				if(WinMan->getWindow("AdminWindow")->isVisible()) {
+					anymode = true;
+					WinMan->getWindow("AdminWindow")->hide();
+				}
+			}
+			// Thisi list will only grow. It may make it easier to maintain and reduce redundant code to
+			// simply use a stack, and when we show() a window, push that window to the stack.. Then on
+			// esc pop the back, set anymode = true, and continue..
+			
+			if(!anymode) {
+				if(!WinMan->getWindow("LeaveButton")->isVisible())
+					{
+						std::stringstream xits;
+						CEGUI::Point mousePos = CEGUI::MouseCursor::getSingleton().getPosition();
+						auto r = Window->getInnerRectClipper();
+						xits << "d_x" << mousePos.d_x/r.getWidth() << "d_y" << mousePos.d_y/r.getHeight();
+						
+						CEGUI::String mstr = xits.str().c_str();
+						WinMan->getWindow("LeaveButton")->setPosition(CEGUI::UVector2(cegui_reldim(mousePos.d_x/r.getWidth()), cegui_reldim( mousePos.d_y/r.getHeight())));
+						WinMan->getWindow("lblCurrentEditMode")->setText(mstr);
+						WinMan->getWindow("LeaveButton")->show();
+					}
+				else WinMan->getWindow("LeaveButton")->hide();
+			}
+			
+    } else {
+		if(WinMan->getWindow("LeaveButton")->isVisible())WinMan->getWindow("LeaveButton")->hide();
+	}
+ //   if(event.key == OIS::KC_SHIFT) shift_key_down = false;
+    if(FreelookEditMode) {
+	      // Move camera forward.
+	      
+	if(event.key == OIS::KC_W)
+	    mTranslateVector.z = 0;//-(moveScale);
+	
+	// Move camera backward.
+	if(event.key == OIS::KC_S)
+	    mTranslateVector.z = 0;// moveScale;
+	
+	// Move camera left.
+	if(event.key == OIS::KC_A)
+	    mTranslateVector.x = 0;//-(moveScale);
+	
+	// Move camera right.
+	if(event.key == OIS::KC_D)
+	    mTranslateVector.x = 0;// moveScale; 
+    }
+	/*CEGUI::Window* sheet = CEGUI::System::getSingleton().getGUISheet();
+	CEGUI::Point mousePos = CEGUI::MouseCursor::getSingleton().getPosition();
+	CEGUI::Window* active_window = sheet->getChildAtPosition(mousePos);*/
+//	if(showing_minimap) {
+		 if( event.key == OIS::KC_F5 ) {
+			if(FreelookEditMode) {
+				mCamNode->setPosition(mPlayer->position + Ogre::Vector3(0, 25, 0));
+				mCamNode->resetOrientation();
+				mCamNode->pitch(Ogre::Degree(-90), Ogre::Node::TS_LOCAL);
+				FreelookEditMode = false;
+				
+			} else {
+				using namespace modmap; 
+				auto it = tex_mod.find(current_editmode);
+				WinMan->getWindow( "lblCurrentEditMode" )->setText((*it).second);
+				FreelookEditMode = true;
+			}
+		}
+		 if( event.key == OIS::KC_F6 ) {
+			if(FreelookEditModeFPS) {
+				mCamNode->setPosition(mPlayer->position + Ogre::Vector3(0, 25, 0));
+				mCamNode->resetOrientation();
+				mCamNode->pitch(Ogre::Degree(-90), Ogre::Node::TS_LOCAL);
+				FreelookEditModeFPS = false;
+			} else {
+				using namespace modmap; 
+				auto it = tex_mod.find(current_editmode);
+				WinMan->getWindow( "lblCurrentEditMode" )->setText((*it).second);
+				FreelookEditModeFPS = true;
+			}
+		}
+//	}
+}

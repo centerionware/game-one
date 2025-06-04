@@ -1,0 +1,267 @@
+<?xml version="1.0" ?>
+<scene export_time="1308345916.88708" exported_by="deadc0de" previous_export_time="1308343200.683617">
+	<nodes>
+		<node name="Lamp" uuid="63a2d9f0278452d38782c68d1a268f15">
+			<position x="-4.076245" y="5.903862" z="1.005454"/>
+			<quaternion w="0.570947" x="-0.169076" y="0.755880" z="0.272171"/>
+			<scale x="1.000000" y="1.000000" z="1.000000"/>
+			<game>
+				<sensors/>
+				<actuators/>
+			</game>
+			<light name="Spot" shadow="true" type="point">
+				<lightAttenuation constant="1.0" linear="0.03333335240683057" quadratic="0.0" range="5000"/>
+				<colorDiffuse b="1.0" g="1.0" r="1.0"/>
+				<colorSpecular b="1.0" g="1.0" r="1.0"/>
+				<colorShadow b="1.0" g="1.0" r="1.0"/>
+			</light>
+		</node>
+		<node name="zombie1" uuid="8bca84baba03613668639c99e6080c74">
+			<position x="-5.025719" y="-25.27" z="0.850343"/>
+			<quaternion w="0.707107" x="-0.707107" y="0.000000" z="0.000000"/>
+			<scale x="0.140000" y="0.140000" z="0.140000"/>
+			<game>
+				<sensors/>
+				<actuators/>
+			</game>
+			<entity actor="False" anisotropic_friction="False" damping_rot="0.10000000149011612" damping_trans="0.03999999910593033" friction_x="1.0" friction_y="1.0" friction_z="1.0" ghost="False" inertia_tensor="0.4000000059604645" lock_rot_x="False" lock_rot_y="False" lock_rot_z="False" lock_trans_x="False" lock_trans_y="False" lock_trans_z="False" mass="1.0" mass_radius="1.0" meshFile="zombie_one.mesh" name="zombie_one" physics_type="STATIC" velocity_max="0.0" velocity_min="0.0"/>
+			<node name="Lamp.001" uuid="ba7126e9fd55f9c55a57224fc0b23ad2">
+				<position x="47.468578" y="97.131195" z="54.412910"/>
+				<quaternion w="0.845210" x="0.331911" y="0.413826" z="-0.064831"/>
+				<scale x="1.000000" y="1.000000" z="1.000000"/>
+				<game>
+					<sensors/>
+					<actuators/>
+				</game>
+				<light name="Lamp" shadow="true" type="spot">
+					<lightAttenuation constant="1.0" linear="0.05" quadratic="0.0" range="5000"/>
+					<colorDiffuse b="1.0" g="1.0" r="1.0"/>
+					<colorSpecular b="1.0" g="1.0" r="1.0"/>
+					<colorShadow b="1.0" g="1.0" r="1.0"/>
+				</light>
+			</node>
+		</node>
+		<node name="hm" uuid="8bca84baba03613668639c99e6080c76">
+			<position x="0" y="0" z="0"/>
+			<quaternion w="0.0" x="-0.0" y="0.000000" z="0.000000"/>
+			<scale x="1" y="1" z="1"/>
+			<game>
+				<sensors/>
+				<actuators/>
+			</game>
+			<entity actor="False" anisotropic_friction="False" damping_rot="0.10000000149011612" damping_trans="0.03999999910593033" friction_x="1.0" friction_y="1.0" friction_z="1.0" ghost="False" inertia_tensor="0.4000000059604645" lock_rot_x="False" lock_rot_y="False" lock_rot_z="False" lock_trans_x="False" lock_trans_y="False" lock_trans_z="False" mass="1.0" mass_radius="1.0" meshFile="heightmap" name="hm" materialFile="VoxelTexture" physics_type="STATIC" velocity_max="0.0" velocity_min="0.0"/>
+			<node name="heightmapLamp.001" uuid="ba7126e9fd55f9c55a57224fc0b23ad2">
+				<position x="47.468578" y="97.131195" z="54.412910"/>
+				<quaternion w="0.845210" x="0.331911" y="0.413826" z="-0.064831"/>
+				<scale x="1.000000" y="1.000000" z="1.000000"/>
+				<game>
+					<sensors/>
+					<actuators/>
+				</game>
+				<light name="heightmapLamp" shadow="true" type="spot">
+					<lightAttenuation constant="1.0" linear="0.05" quadratic="0.0" range="5000"/>
+					<colorDiffuse b="1.0" g="1.0" r="1.0"/>
+					<colorSpecular b="1.0" g="1.0" r="1.0"/>
+					<colorShadow b="1.0" g="1.0" r="1.0"/>
+				</light>
+			</node>
+		</node>
+		<node name="selection_cube_top" uuid="8bca84baba03613668639c99e6080c77">
+			<position x="0" y="2.621069" z="0"/>
+			<quaternion w="0" x="0" y="0.000000" z="0.000000"/>
+			<scale x="0.501" y="0.501" z="0.501"/>
+			<game>
+				<sensors/>
+				<actuators/>
+			</game>
+			<entity actor="False" anisotropic_friction="False" damping_rot="0.10000000149011612" damping_trans="0.03999999910593033" 
+				friction_x="1.0" friction_y="1.0" friction_z="1.0" ghost="False" inertia_tensor="0.4000000059604645" 
+				lock_rot_x="False" lock_rot_y="False" lock_rot_z="False" lock_trans_x="False" lock_trans_y="False"
+				lock_trans_z="False" mass="1.0" mass_radius="1.0" meshFile="Selection_cube_top.mesh" name="sel_cube_top"
+				physics_type="STATIC" velocity_max="0.0" velocity_min="0.0" materialFile="SelectionCursor"/>
+			<node name="sel_cube_topLamp.003" uuid="ba7126e9fd55f9c55a57224fc0b23dde">
+				<position x="47.468578" y="97.131195" z="54.412910"/>
+				<quaternion w="0.845210" x="0.331911" y="0.413826" z="-0.064831"/>
+				<scale x="1.000000" y="1.000000" z="1.000000"/>
+				<game>
+					<sensors/>
+					<actuators/>
+				</game>
+				<light name="sel_cube_top_Lamp" shadow="true" type="spot">
+					<lightAttenuation constant="1.0" linear="0.05" quadratic="0.0" range="5000"/>
+					<colorDiffuse b="1.0" g="1.0" r="1.0"/>
+					<colorSpecular b="1.0" g="1.0" r="1.0"/>
+					<colorShadow b="1.0" g="1.0" r="1.0"/>
+				</light>
+			</node>
+		</node>
+		<node name="selection_cube_left" uuid="8bca84baba03613668639c99e6080c77">
+			<position x="0" y="2.621069" z="0"/>
+			<quaternion w="0" x="0" y="0.000000" z="0.000000"/>
+			<scale x="0.501" y="0.501" z="0.501"/>
+			<game>
+				<sensors/>
+				<actuators/>
+			</game>
+			<entity actor="False" anisotropic_friction="False" damping_rot="0.10000000149011612" damping_trans="0.03999999910593033" 
+				friction_x="1.0" friction_y="1.0" friction_z="1.0" ghost="False" inertia_tensor="0.4000000059604645" 
+				lock_rot_x="False" lock_rot_y="False" lock_rot_z="False" lock_trans_x="False" lock_trans_y="False"
+				lock_trans_z="False" mass="1.0" mass_radius="1.0" meshFile="Selection_cube_left.mesh" name="sel_cube_left"
+				physics_type="STATIC" velocity_max="0.0" velocity_min="0.0" materialFile="SelectionCursor"/>
+			<node name="sel_cube_leftLamp.003" uuid="ba7126e9fd55f9c55a57224fc0b23dde">
+				<position x="47.468578" y="97.131195" z="54.412910"/>
+				<quaternion w="0.845210" x="0.331911" y="0.413826" z="-0.064831"/>
+				<scale x="1.000000" y="1.000000" z="1.000000"/>
+				<game>
+					<sensors/>
+					<actuators/>
+				</game>
+				<light name="sel_cube_left_Lamp" shadow="true" type="spot">
+					<lightAttenuation constant="1.0" linear="0.05" quadratic="0.0" range="5000"/>
+					<colorDiffuse b="1.0" g="1.0" r="1.0"/>
+					<colorSpecular b="1.0" g="1.0" r="1.0"/>
+					<colorShadow b="1.0" g="1.0" r="1.0"/>
+				</light>
+			</node>
+		</node>
+		<node name="selection_cube_right" uuid="8bca84baba03613668639c99e6080c77">
+			<position x="0" y="2.621069" z="0"/>
+			<quaternion w="0" x="0" y="0.000000" z="0.000000"/>
+			<scale x="0.501" y="0.501" z="0.501"/>
+			<game>
+				<sensors/>
+				<actuators/>
+			</game>
+			<entity actor="False" anisotropic_friction="False" damping_rot="0.10000000149011612" damping_trans="0.03999999910593033" 
+				friction_x="1.0" friction_y="1.0" friction_z="1.0" ghost="False" inertia_tensor="0.4000000059604645" 
+				lock_rot_x="False" lock_rot_y="False" lock_rot_z="False" lock_trans_x="False" lock_trans_y="False"
+				lock_trans_z="False" mass="1.0" mass_radius="1.0" meshFile="Selection_cube_right.mesh" name="sel_cube_right"
+				physics_type="STATIC" velocity_max="0.0" velocity_min="0.0" materialFile="SelectionCursor"/>
+			<node name="sel_cube_rightLamp.003" uuid="ba7126e9fd55f9c55a57224fc0b23dde">
+				<position x="47.468578" y="97.131195" z="54.412910"/>
+				<quaternion w="0.845210" x="0.331911" y="0.413826" z="-0.064831"/>
+				<scale x="1.000000" y="1.000000" z="1.000000"/>
+				<game>
+					<sensors/>
+					<actuators/>
+				</game>
+				<light name="sel_cube_right_Lamp" shadow="true" type="spot">
+					<lightAttenuation constant="1.0" linear="0.05" quadratic="0.0" range="5000"/>
+					<colorDiffuse b="1.0" g="1.0" r="1.0"/>
+					<colorSpecular b="1.0" g="1.0" r="1.0"/>
+					<colorShadow b="1.0" g="1.0" r="1.0"/>
+				</light>
+			</node>
+		</node>
+		<node name="selection_cube_bottom" uuid="8bca84baba03613668639c99e6080c77">
+			<position x="0" y="2.621069" z="0"/>
+			<quaternion w="0" x="0" y="0.000000" z="0.000000"/>
+			<scale x="0.501" y="0.501" z="0.501"/>
+			<game>
+				<sensors/>
+				<actuators/>
+			</game>
+			<entity actor="False" anisotropic_friction="False" damping_rot="0.10000000149011612" damping_trans="0.03999999910593033" 
+				friction_x="1.0" friction_y="1.0" friction_z="1.0" ghost="False" inertia_tensor="0.4000000059604645" 
+				lock_rot_x="False" lock_rot_y="False" lock_rot_z="False" lock_trans_x="False" lock_trans_y="False"
+				lock_trans_z="False" mass="1.0" mass_radius="1.0" meshFile="Selection_cube_bottom.mesh" name="sel_cube_bottom"
+				physics_type="STATIC" velocity_max="0.0" velocity_min="0.0" materialFile="SelectionCursor"/>
+			<node name="sel_cube_bottomLamp.003" uuid="ba7126e9fd55f9c55a57224fc0b23dde">
+				<position x="47.468578" y="97.131195" z="54.412910"/>
+				<quaternion w="0.845210" x="0.331911" y="0.413826" z="-0.064831"/>
+				<scale x="1.000000" y="1.000000" z="1.000000"/>
+				<game>
+					<sensors/>
+					<actuators/>
+				</game>
+				<light name="sel_cube_bottom_Lamp" shadow="true" type="spot">
+					<lightAttenuation constant="1.0" linear="0.05" quadratic="0.0" range="5000"/>
+					<colorDiffuse b="1.0" g="1.0" r="1.0"/>
+					<colorSpecular b="1.0" g="1.0" r="1.0"/>
+					<colorShadow b="1.0" g="1.0" r="1.0"/>
+				</light>
+			</node>
+		</node>
+		<node name="selection_cube_front" uuid="8bca84baba03613668639c99e6080c77">
+			<position x="0" y="2.621069" z="0"/>
+			<quaternion w="0" x="0" y="0.000000" z="0.000000"/>
+			<scale x="0.501" y="0.501" z="0.501"/>
+			<game>
+				<sensors/>
+				<actuators/>
+			</game>
+			<entity actor="False" anisotropic_friction="False" damping_rot="0.10000000149011612" damping_trans="0.03999999910593033" 
+				friction_x="1.0" friction_y="1.0" friction_z="1.0" ghost="False" inertia_tensor="0.4000000059604645" 
+				lock_rot_x="False" lock_rot_y="False" lock_rot_z="False" lock_trans_x="False" lock_trans_y="False"
+				lock_trans_z="False" mass="1.0" mass_radius="1.0" meshFile="Selection_cube_front.mesh" name="sel_cube_front"
+				physics_type="STATIC" velocity_max="0.0" velocity_min="0.0" materialFile="SelectionCursor"/>
+			<node name="sel_cube_frontLamp.003" uuid="ba7126e9fd55f9c55a57224fc0b23dde">
+				<position x="47.468578" y="97.131195" z="54.412910"/>
+				<quaternion w="0.845210" x="0.331911" y="0.413826" z="-0.064831"/>
+				<scale x="1.000000" y="1.000000" z="1.000000"/>
+				<game>
+					<sensors/>
+					<actuators/>
+				</game>
+				<light name="sel_cube_front_Lamp" shadow="true" type="spot">
+					<lightAttenuation constant="1.0" linear="0.05" quadratic="0.0" range="5000"/>
+					<colorDiffuse b="1.0" g="1.0" r="1.0"/>
+					<colorSpecular b="1.0" g="1.0" r="1.0"/>
+					<colorShadow b="1.0" g="1.0" r="1.0"/>
+				</light>
+			</node>
+		</node>
+		<node name="selection_cube_back" uuid="8bca84baba03613668639c99e6080c77">
+			<position x="0" y="2.621069" z="0"/>
+			<quaternion w="0" x="0" y="0.000000" z="0.000000"/>
+			<scale x="0.501" y="0.501" z="0.501"/>
+			<game>
+				<sensors/>
+				<actuators/>
+			</game>
+			<entity actor="False" anisotropic_friction="False" damping_rot="0.10000000149011612" damping_trans="0.03999999910593033" 
+				friction_x="1.0" friction_y="1.0" friction_z="1.0" ghost="False" inertia_tensor="0.4000000059604645" 
+				lock_rot_x="False" lock_rot_y="False" lock_rot_z="False" lock_trans_x="False" lock_trans_y="False"
+				lock_trans_z="False" mass="1.0" mass_radius="1.0" meshFile="Selection_cube_back.mesh" name="sel_cube_back"
+				physics_type="STATIC" velocity_max="0.0" velocity_min="0.0" materialFile="SelectionCursor"/>
+			<node name="sel_cube_backLamp.003" uuid="ba7126e9fd55f9c55a57224fc0b23dde">
+				<position x="47.468578" y="97.131195" z="54.412910"/>
+				<quaternion w="0.845210" x="0.331911" y="0.413826" z="-0.064831"/>
+				<scale x="1.000000" y="1.000000" z="1.000000"/>
+				<game>
+					<sensors/>
+					<actuators/>
+				</game>
+				<light name="sel_cube_back_Lamp" shadow="true" type="spot">
+					<lightAttenuation constant="1.0" linear="0.05" quadratic="0.0" range="5000"/>
+					<colorDiffuse b="1.0" g="1.0" r="1.0"/>
+					<colorSpecular b="1.0" g="1.0" r="1.0"/>
+					<colorShadow b="1.0" g="1.0" r="1.0"/>
+				</light>
+			</node>
+		</node>
+		<node name="Lamp.002" uuid="60566161065ff1a8433080f78a6f2a8c">
+			<position x="-6.198990" y="18.996437" z="-16.394190"/>
+			<quaternion w="0.926176" x="-0.375917" y="0.026589" z="0.013365"/>
+			<scale x="1.000000" y="1.000000" z="1.000000"/>
+			<game>
+				 texture highlight.png 2d 
+			    filtering linear linear linear
+			    
+			    tex<sensors/>
+				<actuators/>
+			</game>
+			<light name="Lamp.001" shadow="true" type="spot">
+				<lightAttenuation constant="1.0" linear="0.05" quadratic="0.0" range="5000"/>
+				<colorDiffuse b="1.0" g="1.0" r="1.0"/>
+				<colorSpecular b="1.0" g="1.0" r="1.0"/>
+				<colorShadow b="1.0" g="1.0" r="1.0"/>
+			</light>
+		</node>
+	</nodes>
+	<environment>
+		<colorDiffuse b="0.4000000059604645" g="0.22081542015075684" r="0.05656290054321289"/>
+		<colorBackground b="0.4000000059604645" g="0.22081542015075684" r="0.05656290054321289"/>
+		<colorAmbient b="0.0" g="0.0" r="0.0"/>
+	</environment>
+</scene>

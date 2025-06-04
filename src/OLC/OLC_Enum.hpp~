@@ -1,0 +1,4 @@
+enum OLC_commands {GetPlayerList,ModifyPlayer,DeletePlayer,LockPlayer,GetPlayerDetails,GetZoneList,
+		   GetModelList, ModifyModel, DeleteModel, LockModel, GetModelDetails, AddModel, ModelTimestamp,
+		   GetItemGlobalList,GetItemLocalList, ModifyItem, DeleteItem, LockItem, GetItemDetails, AddItem
+};

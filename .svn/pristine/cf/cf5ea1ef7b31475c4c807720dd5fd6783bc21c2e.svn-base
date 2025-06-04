@@ -1,0 +1,111 @@
+/**
+ * GAME-ONE APPLICATION FRAMEWORK
+ * Filename: CState_MainMenu_Login.h
+ * Description: Introductory Game State
+ * Legal stuff ~
+ */
+
+
+#ifndef CSTATE_MAINMENU_LOGIN_H
+#define CSTATE_MAINMENU_LOGIN_H
+
+#include <Ogre.h>
+#include <OgreViewport.h>
+
+#include <OIS.h>
+
+#include <CEGUI.h>
+#include <CEGUI/RendererModules/Ogre/CEGUIOgreRenderer.h>
+
+#include <SdkCameraMan.h>
+
+#include "dotscene/dotscene.h"
+
+#include "CState.h"
+#include "CState_MainMenu.h"
+#include "server-map.h"
+
+#include "inet.h"
+enum LoginStatuses {
+	Normal,
+	LoginFailed,
+	LoginTimedout
+};
+class CState_MainMenu_Login : public CState
+{
+public:
+    void Enter();
+    void Exit();
+    
+    void Pause();
+    void Resume();
+    
+    bool frameStarted( const Ogre::FrameEvent & event );
+    
+    bool frameRenderingQueued( const Ogre::FrameEvent &event);
+    bool frameEnded( const Ogre::FrameEvent & event );
+    
+    void keyPressed( const OIS::KeyEvent & event );
+    void keyReleased( const OIS::KeyEvent & event );
+    
+    void mouseMoved( const OIS::MouseEvent & event );
+    void mousePressed( const OIS::MouseEvent & event, OIS::MouseButtonID identifier );
+    
+    void mouseReleased( const OIS::MouseEvent & event, OIS::MouseButtonID identifier );
+    void goodLogin(); 
+    void badLogin(); // no error details from the server.. to not give away usernames etc.
+    void ConnectionSuccess();
+    void ConnectionClosed();
+    void goodRegistration();
+    void shortPasswordRegistration();
+    void invalidPasswordRegistration();
+    void invalidUsernameRegistration();
+    void invalidEmailRegistration();
+	
+    
+    static CState_MainMenu_Login * ReturnInstance() { return & STATE_MAINMENU_LOGIN; }
+    
+    std::string 	mUname;
+    std::string		mPword;
+protected:
+    CState_MainMenu_Login() {};
+    
+    void CreateGUI( void );
+    	bool OnLogin( const CEGUI::EventArgs &event );
+	bool OnBack( const CEGUI::EventArgs &event );
+	bool OnRegisterBack( const CEGUI::EventArgs &event );
+	bool OnNewAccount( const CEGUI::EventArgs &event );
+	bool OnRegisterSubmit(const CEGUI::EventArgs &event);
+	
+// 	bool OnControls( const CEGUI::EventArgs &event );
+// 	bool OnBack( const CEGUI::EventArgs &event );
+    bool ActivateLogin;
+    bool ActivateBack;
+    bool ActivateRegisterBack;
+    bool ActivateNewAccount;
+//     bool ActivateGraphics;
+//     bool ActivateControls;
+//     bool ActivateBack;
+    
+    bool IsRunning;
+    LoginStatuses LoginStatus;
+    bool RegisterWindowOpen;
+    
+    Ogre::Root		* mRoot;
+    Ogre::SceneManager	* mSceneManager;
+    Ogre::Viewport	* mViewport;
+    Ogre::Camera	* mCamera;
+    
+    OgreBites::SdkCameraMan	* mCameraMan;
+    boost::shared_ptr<inet_player> tPlayer;
+    Ogre::Timer LoginTimer;
+    CEGUI::WindowManager	* WinMan;
+    CEGUI::System		* SysMan;
+    CEGUI::Window		* Window;
+    CEGUI::Window		* WindowRegister;
+    
+private:
+    static CState_MainMenu_Login STATE_MAINMENU_LOGIN;
+};
+
+#endif // CSTATE_MAINMENU_LOGIN_H

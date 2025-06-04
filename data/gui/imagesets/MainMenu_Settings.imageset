@@ -1,0 +1,4 @@
+<?xml version="1.0" ?>
+<Imageset Name="MainMenu_Settings" Imagefile="MainMenu_Settings.png" NativeHorzRes="1600" NativeVertRes="971" AutoScaled="true">
+	<Image Name="MainMenu_Settings" XPos="0" YPos="0" Width="1600" Height="971" />
+</Imageset>

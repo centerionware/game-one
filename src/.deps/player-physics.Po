@@ -1,0 +1,3 @@
+player-physics.o: player-physics.cpp tinyxmlfix.h
+
+tinyxmlfix.h:

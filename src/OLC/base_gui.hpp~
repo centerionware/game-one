@@ -1,0 +1,79 @@
+
+class gui_module;
+std::vector<gui_module *> init_list;
+
+struct gui_module {
+	inet_player* mPlayer;
+	CEGUI::Window *Window;
+	CEGUI::WindowManager *WinMan;
+//	boost::shared_ptr<inet_player>* ptrmPlayer;
+	
+	gui_module() :mPlayer(NULL) { add_to_init_list(); }
+	~gui_module() { remove_from_init_list(); }
+	void internal_init() {
+		auto *t = CState_Testing::ReturnInstance();
+		//auto *b = CState_MainMenu_Login::ReturnInstance();
+		Window = t->Window;
+		WinMan = t->WinMan;
+		mPlayer = (inet_player*)t->mPlayer.get();
+		//ptrmPlayer = &(t->mPlayer);
+		if(mPlayer==NULL) return; // Don't initialize on the first inet_player used to test if the server is running and verify pword..
+		initialize();
+	}
+	virtual void initialize()=0;
+	virtual void deinitialize() { }
+
+	virtual void internal_deinit() {
+		Window = NULL;
+		WinMan = NULL;
+		//mPlayer.reset();
+	}
+	void add_to_init_list() {
+		init_list.push_back(this);
+	}
+	void remove_from_init_list() {
+		for(auto i = init_list.begin(), e = init_list.end(); i!=e;++i) 
+			if((*i)==this) { init_list.erase(i); break; }
+	}
+	void create_wait_spinner(std::string name, CEGUI::Window*w) { // The idea behind the wait spinner will be to allow
+	// the code to render an image inside the individual elements while they are waiting for data back from the server
+	      WinMan = CState_Testing::ReturnInstance()->WinMan;
+	      name.append("/spinner");
+	      auto nw = WinMan->createWindow("CEGUI::Image", name.c_str());
+	      w->addChildWindow(nw);
+	      nw->setPosition(CEGUI::UVector2(cegui_reldim(.25), cegui_reldim(.25)));
+	      nw->setSize(CEGUI::UVector2(cegui_reldim(.5), cegui_reldim(.5)));
+	}
+	void spin_window(std::string name) {
+	  
+	}
+	void stop_spin_window(std::string name) {
+	  
+	}
+	CEGUI::Window *basic_window_create(std::string type, std::string name, float x, float y, float sx, float sy, CEGUI::WindowManager *WinMan =  CState_Testing::ReturnInstance()->WinMan) {
+		auto nw = WinMan->createWindow(type.c_str(), name.c_str());
+		nw->setPosition(CEGUI::UVector2(cegui_reldim(x), cegui_reldim(y)));
+		nw->setSize(CEGUI::UVector2(cegui_reldim(sx), cegui_reldim(sy)));
+		return nw;
+	}
+};
+
+
+#define event_subscribe(winname, eventType,eventCallback) { CState_Testing::ReturnInstance()->WinMan->getWindow(winname)->subscribeEvent(eventType,CEGUI::Event::Subscriber(&eventCallback,this)); } 
+#
+void initialize_modules() { 	
+		for(auto i = init_list.begin(), e = init_list.end(); i!=e;++i) 
+			(*i)->internal_init();
+}
+void clean_modules() {
+		for(auto i = init_list.begin(), e = init_list.end(); i!=e;++i) 
+			(*i)->internal_deinit();
+}
+
+#include "PlayerEditor/PlayerEditorGUI.hpp"
+#include "HUD/HUD.hpp"
+#include "ItemEditor/ItemEditorGUI.hpp"
+#include "PlayerZoneEditor/PlayerZoneEditorGUI.hpp"
+#include "FileBrowser/FileBrowserGUI.hpp"
+#include "modeluploader/ModelUploaderGUI.hpp"
+#include "AdminWindow/AdminWindowGUI.hpp"

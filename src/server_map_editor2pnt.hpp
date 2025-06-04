@@ -1,0 +1,139 @@
+struct editor_2pnt {
+  Chunk *c[2];
+  unsigned short idx[2];
+  bool set;
+  vec3 real_pos[2];
+  editor_2pnt() {
+   c[0] = NULL;
+   c[1] = NULL;
+   idx[0] = 0;
+   idx[1] = 0;
+   set = false;
+  }
+  void setup(bool first, Chunk *_c, unsigned short _idx) {
+	  int cnt = 0;
+	  if(!first) cnt =1;
+	  c[cnt] = _c;
+	  idx[cnt] = _idx;
+	  // convert to vec3..
+	   real_pos[cnt] = _c->position;
+	  // 30x60x30.. // follow vertice definition, first is at 0 (-x -z -y),  then goes through z, then y.
+	  // the position of the chunk indicates it's center. The voxel at the exact center of 15x15x30 is equal to {x,y,z} = 0
+	  int j = 31;
+	  int k =j*j;
+	  signed short y = _idx/(k);
+	  signed short x = (_idx - y*k)/j;
+	  signed short z = _idx - y*k - x*j;
+	  // now normalize to between {-15,-15,-30} - {15,15,30}
+	  x-=15; z-=15;y-=30;
+	 real_pos[cnt].x += x;
+	 real_pos[cnt].y += y;
+	 real_pos[cnt].z += z;
+  }
+ 
+  multipoint all_points_between(const NewHeightmapLoader *hm) {
+    	  int j = 31;
+	  int k =j*j;
+	multipoint r;
+	if(c[0] == c[1] && idx[0] == idx[1]) return r;
+	unsigned char tex = c[0]->get_material_id(idx[0]);
+	r.tex = tex;
+	bool shortest_x = false, shortest_y = false, shortest_z = false;
+	unsigned short idx;
+	if(real_pos[0].x > real_pos[1].x) shortest_x = true;
+	if(real_pos[0].y > real_pos[1].y) shortest_y = true;
+	if(real_pos[0].z > real_pos[1].z) shortest_z = true;
+
+	int first = 0, second = 1;
+	first = shortest_x ? 1 : 0, second= shortest_x ? 0 : 1;
+	
+	float x = real_pos[first].x;
+	float xend = real_pos[second].x;
+	
+	first = shortest_y ? 1 : 0, second= shortest_y ? 0 : 1;
+	
+	float y = real_pos[first].y;
+	float oy = y;
+	float yend = real_pos[second].y;
+	
+	first = shortest_z ? 1 : 0, second= shortest_z ? 0 : 1;
+	float z = real_pos[first].z;
+	float oz = z;
+	float zend = real_pos[second].z;
+	std::cout << " x " << x << " xend " << xend << " y " << y << " yend " << yend << " z " << z << " zend " << zend << std::endl;
+	
+	for(;x<=xend;++x,y=oy) for(;y<=yend;++y,z=oz) for(;z<=zend;++z) 
+	  {
+				//begin()+(chunks.size()-1);
+				vec3 newpoint(x,y,z);
+				
+				auto iter = find_by_point(newpoint);
+					//unsigned short idx = (unsigned short)((temp_v.y*31*31)+(temp_v.x*31)+temp_v.z );
+				chunk_iterator_locker itlocker;
+				multipoint::pnt np;
+				np.c = (*iter);
+				vec3 temp_v = newpoint-(*iter)->position;
+				itlocker.unlock();
+				vec3 offset(15,30,15);
+				temp_v += offset;
+				idx = ((temp_v.y*k)+(temp_v.x*j)+temp_v.z );
+				
+				np.idx = idx;
+				
+				r.pnts.push_back(np);
+	  }
+	return r;
+  }
+  multipoint all_existing_between(const NewHeightmapLoader *_hm) {
+  //  	  int j = 31;
+//	  int k =j*j;
+	  NewHeightmapLoader *hm = (NewHeightmapLoader*)(_hm);
+	multipoint r;
+	if(c[0] == c[1] && idx[0] == idx[1]) return r;
+	unsigned char tex = 0;
+	chunk_lock locker(c[0]);
+	//c[0]->temporal_lock();
+		if(c[0]->NewNewVoxels.find(idx[0]) != c[0]->NewNewVoxels.end())
+				tex = c[0]->get_material_id(idx[0]);
+	locker.unlock(); //c[0]->temporal_unlock();
+	r.tex = tex;
+	bool shortest_x = false, shortest_y = false, shortest_z = false;
+	if(real_pos[0].x > real_pos[1].x) shortest_x = true;
+	if(real_pos[0].y > real_pos[1].y) shortest_y = true;
+	if(real_pos[0].z > real_pos[1].z) shortest_z = true;
+
+	int first = 0, second = 1;
+	first = shortest_x ? 1 : 0, second= shortest_x ? 0 : 1;
+	
+	float x = real_pos[first].x;
+	
+	float xend = real_pos[second].x;
+	
+	first = shortest_y ? 1 : 0, second= shortest_y ? 0 : 1;
+	
+	float y = real_pos[first].y;
+	float oy = y;
+	float yend = real_pos[second].y;
+	
+	first = shortest_z ? 1 : 0, second= shortest_z ? 0 : 1;
+	float z = real_pos[first].z;
+	float oz = z;
+	float zend = real_pos[second].z;
+	//std::cout << " x " << x << " xend " << xend << " y " << y << " yend " << yend << " z " << z << " zend " << zend << std::endl;
+	for(;x<=xend;++x,y=oy) for(;y<=yend;++y,z=oz) for(;z<=zend;++z) 
+	  {
+				vec3 npos(x,y,z);
+				Chunk *mc = NULL;
+				unsigned short idx;
+				if( hm->is_voxel(npos, idx, mc) ) {
+					
+					multipoint::pnt np;
+					np.c = mc;
+					np.idx = idx;
+					
+					r.pnts.push_back(np);
+				}
+	  }
+	return r;
+  }
+};

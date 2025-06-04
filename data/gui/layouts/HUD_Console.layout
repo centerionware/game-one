@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<GUILayout >
+    <Window Type="DefaultWindow" Name="Console" >
+	 <Window Type="TaharezLook/Listbox" Name="Console/lstChatBox" >
+                <Property Name="MaxTextLength" Value="1073741823" />
+                <Property Name="UnifiedMaxSize" Value="{{1,0},{1,0}}" />
+                <Property Name="UnifiedAreaRect" Value="{{0.2,0},{0.85,0},{0.675,0},{0.951,0}}" />
+         </Window>
+	 <Window Type="TaharezLook/Editbox" Name="Console/txtChatBox" >
+                <Property Name="MaxTextLength" Value="1073741823" />
+                <Property Name="UnifiedMaxSize" Value="{{1,0},{1,0}}" />
+                <Property Name="UnifiedAreaRect" Value="{{0.2,0},{0.95,0},{0.675,0},{0.990,0}}" />
+         </Window>
+	 <Window Type="TaharezLook/Button" Name="Console/btnSubmit" >
+            <Property Name="Text" Value="Leave" />
+            <Property Name="Alpha" Value="0.8" />
+            <Property Name="UnifiedAreaRect" Value="{{0.45,0},{0.7,0},{0.55,0},{0.74,0}}" />
+        </Window>
+    </Window>
+</GUILayout>

@@ -1,0 +1,159 @@
+<?xml version="1.0" ?>
+<Falagard>
+    <!--
+    ***************************************************
+        GameOneLook/ImageButton
+    ***************************************************
+    -->
+    <WidgetLook name="GameOneLook/ImageButton">
+        <PropertyDefinition name="NormalImage" initialValue="" redrawOnWrite="true" />
+        <PropertyDefinition name="HoverImage" initialValue="" redrawOnWrite="true" />
+        <PropertyDefinition name="VertImageFormatting" initialValue="Stretched" redrawOnWrite="true" />
+        <PropertyDefinition name="HorzImageFormatting" initialValue="Stretched" redrawOnWrite="true" />
+		<Property name="AlwaysOnTop" value="True" />
+        <ImagerySection name="normal">
+            <ImageryComponent>
+                <Area>
+                    <Dim type="LeftEdge" ><AbsoluteDim value="0" /></Dim>
+                    <Dim type="TopEdge" ><AbsoluteDim value="0" /></Dim>
+                    <Dim type="Width" ><UnifiedDim scale="1" type="Width" /></Dim>
+                    <Dim type="Height" ><UnifiedDim scale="1" type="Height" /></Dim>
+                </Area>
+                <ImageProperty name="NormalImage" />
+                <VertFormatProperty name="VertImageFormatting" />
+                <HorzFormatProperty name="HorzImageFormatting" />
+            </ImageryComponent>
+        </ImagerySection>
+        <ImagerySection name="hover">
+            <ImageryComponent>
+                <Area>
+                    <Dim type="LeftEdge" ><AbsoluteDim value="0" /></Dim>
+                    <Dim type="TopEdge" ><AbsoluteDim value="0" /></Dim>
+                    <Dim type="Width" ><UnifiedDim scale="1" type="Width" /></Dim>
+                    <Dim type="Height" ><UnifiedDim scale="1" type="Height" /></Dim>
+                </Area>
+                <ImageProperty name="HoverImage" />
+                <VertFormatProperty name="VertImageFormatting" />
+                <HorzFormatProperty name="HorzImageFormatting" />
+            </ImageryComponent>
+        </ImagerySection>
+        <StateImagery name="Normal">
+            <Layer>
+                <Section section="normal" />
+            </Layer>
+        </StateImagery>
+        <StateImagery name="Hover">
+            <Layer>
+                <Section section="hover" />
+            </Layer>
+        </StateImagery>
+        <StateImagery name="Pushed">
+            <Layer>
+                <Section section="hover" />
+            </Layer>
+        </StateImagery>
+        <StateImagery name="PushedOff">
+            <Layer>
+                <Section section="hover" />
+            </Layer>
+        </StateImagery>
+        <StateImagery name="Disabled">
+            <Layer>
+                <Section section="normal" />
+            </Layer>
+        </StateImagery>
+    </WidgetLook>
+    <!--
+    ***************************************************
+        GameOneLook/StaticImage
+    ***************************************************
+    -->
+    <WidgetLook name="GameOneLook/StaticImage">
+		<PropertyDefinition name="BackgroundImage" initialValue="" redrawOnWrite="true" />
+		<PropertyDefinition name="VertImageFormatting" initialValue="Stretched" redrawOnWrite="true" />
+        <PropertyDefinition name="HorzImageFormatting" initialValue="Stretched" redrawOnWrite="true" />
+		<Property name="BackgroundEnabled" value="True" />
+        <Property name="FrameEnabled" value="False" />
+		<Property name="Disabled" value="True" />
+        <ImagerySection name="Background">
+           <ImageryComponent>
+               <Area>
+                   <Dim type="LeftEdge">
+                       <AbsoluteDim value="0" />
+                   </Dim>
+                   <Dim type="TopEdge">
+                       <AbsoluteDim value="0" />
+                   </Dim>
+                   <Dim type="RightEdge">
+                       <UnifiedDim scale="1" offset="0" type="RightEdge" />
+                   </Dim>
+                   <Dim type="BottomEdge">
+                       <UnifiedDim scale="1" offset="0" type="BottomEdge" />
+                   </Dim>
+               </Area>
+			   <ImageProperty name="BackgroundImage" />
+               <VertFormatProperty name="VertImageFormatting" />
+               <HorzFormatProperty name="HorzImageFormatting" />
+           </ImageryComponent>
+        </ImagerySection>
+		<StateImagery name="Enabled" />
+        <StateImagery name="Disabled" />
+        <StateImagery name="NoFrameEnabledBackground">
+           <Layer>
+               <Section section="Background" />
+           </Layer>
+        </StateImagery>
+        <StateImagery name="NoFrameDisabledBackground">
+           <Layer>
+               <Section section="Background" />
+           </Layer>
+        </StateImagery>
+		<StateImagery name="WithFrameImage">
+           <Layer>
+               <Section section="Background" />
+           </Layer>
+        </StateImagery>
+    </WidgetLook>
+	<!--
+	***************************************************
+		GameOneLook/StaticText
+	***************************************************
+	-->
+	<WidgetLook name="GameOneLook/StaticText">
+		<PropertyDefinition name="VertLabelFormatting" initialValue="CentreAligned" />
+		<PropertyDefinition name="HorzLabelFormatting" initialValue="CentreAligned" />
+		<PropertyDefinition name="TextColours" initialValue="FF00000000" redrawOnWrite="true" />
+		<Property name="Disabled" value="True" />
+		<ImagerySection name="label">
+			<TextComponent>
+				<Area>
+                   <Dim type="LeftEdge">
+                       <AbsoluteDim value="0" />
+                   </Dim>
+                   <Dim type="TopEdge">
+                       <AbsoluteDim value="0" />
+                   </Dim>
+                   <Dim type="RightEdge">
+                       <UnifiedDim scale="1" offset="0" type="RightEdge" />
+                   </Dim>
+                   <Dim type="BottomEdge">
+                       <UnifiedDim scale="1" offset="0" type="BottomEdge" />
+                   </Dim>
+				</Area>
+				<ColourProperty name="TextColours" />
+				<VertFormatProperty name="VertLabelFormatting" />
+				<HorzFormatProperty name="HorzLabelFormatting" />
+			</TextComponent>
+		</ImagerySection>
+		<StateImagery name="Enabled" >
+			<Layer>
+				<Section section="label" />
+			</Layer>
+		</StateImagery>
+		<StateImagery name="Disabled" >
+			<Layer>
+				<Section section="label" />
+			</Layer>
+		</StateImagery>
+	</WidgetLook>
+</Falagard>

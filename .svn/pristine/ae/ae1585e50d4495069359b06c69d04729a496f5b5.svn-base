@@ -1,0 +1,37 @@
+# Resources required by the sample browser and most samples.
+[Essential]
+Zip=..\data\media\packs\SdkTrays.zip
+FileSystem=..\data\media\thumbnails
+
+# Common sample resources needed by many of the samples.
+# Rarely used resources should be separately loaded by the
+# samples which require them.
+[Popular]
+FileSystem=..\data\media\fonts
+FileSystem=..\data\media\materials\programs
+FileSystem=..\data\media\materials\scripts
+FileSystem=..\data\media\materials\textures
+FileSystem=..\data\media\materials\textures\nvidia
+FileSystem=..\data\media\models
+
+
+[General]
+FileSystem=..\data\media
+FileSystem=..\dotscene
+FileSystem=..\data\
+FileSystem=..\data\materials\
+FileSystem=..\data\models\
+[Imagesets] 
+FileSystem=..\data\gui\imagesets
+[Animations]
+FileSystem=..\data\gui\animations
+[Fonts] 
+FileSystem=..\data\gui\fonts
+[Schemes] 
+FileSystem=..\data\gui\schemes
+[LookNFeel] 
+FileSystem=..\data\gui\looknfeel 
+[Layouts] 
+FileSystem=..\data\gui\layouts
+[XmlSchemas]
+FileSystem=..\data\gui\xml_schemas

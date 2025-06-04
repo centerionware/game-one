@@ -1,0 +1,3 @@
+client-map.o: client-map.cpp tinyxmlfix.h
+
+tinyxmlfix.h:

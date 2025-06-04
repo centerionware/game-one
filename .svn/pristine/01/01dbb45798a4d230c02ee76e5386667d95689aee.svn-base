@@ -1,0 +1,178 @@
+void inet_player::call_net_command(std::string &c) {
+	if(c.size() < 2) return; // error.. all commands are at least 2 bytes.
+	char ida,idb;
+	std::string arguments;
+	if(c.size() > 2) arguments = c.substr(2,c.size()-2);
+	ida = c[0];
+	idb = c[1];
+auto i = Players.begin(), e = Players.end();
+	for(;i!=e; ++i) if( (*i).get() == this) {
+	myCommandProcessor.Call(ida,idb,arguments, true,*i);
+	break;
+	}
+	 
+}
+void inet_player::send_to_client(net_commands arg) {
+	send_updates(arg,socket);
+}
+void inet_player::inet_update_other_players(const Ogre::FrameEvent &evt){} // client only
+void inet_player::pump_net_messages(){} // client only
+inet_player::~inet_player() {}
+
+void inet_player::recv_text(std::string &i) {
+	static int size_tsize = sizeof(size_t);
+	commandBuffer.append(i);
+	while(1) {
+		if(commandBuffer.size() < (unsigned int) size_tsize){
+			return;
+		}
+		size_t header_size;
+		memcpy(&header_size, commandBuffer.substr(0,size_tsize).c_str(), size_tsize);
+		if(commandBuffer.size() >= header_size+size_tsize) {
+			std::string comm = commandBuffer.substr(size_tsize,header_size);
+			commandBuffer = commandBuffer.substr(size_tsize+header_size, commandBuffer.size()-(size_tsize+header_size));
+			
+			call_net_command(comm);
+		} else { return; }
+	}
+}
+#include <boost/signals2/mutex.hpp>
+#include <boost/thread.hpp>
+#include <boost/interprocess/sync/interprocess_semaphore.hpp>
+struct threadpool_sendstruct {
+  struct workdata {
+    std::string data;
+    int socket;
+  };
+  
+  boost::thread thread;
+  std::vector<workdata> mData;
+  boost::interprocess::interprocess_semaphore main_t;
+  boost::mutex mDat;
+  static bool on;
+  threadpool_sendstruct() : main_t(0) {
+ 
+   threadpool_sendstruct::on = true;
+   thread = boost::thread(&threadpool_sendstruct::main_thread, this, 0);
+  }
+  void main_thread(int whatever) {
+    std::cout << "Initializing send thread\n";
+    while(threadpool_sendstruct::on){ 
+      std::cout << "Waiting for post to semaphore.\n";
+      main_t.wait();
+      std::cout << "Semaphore posted!\n";
+      while(mData.size()!=0){ 
+      // Send 1kb at a time. This allows mData.unlock() to be called more often for pending 
+      // send() data while the buffers are active, 
+      // ensures fair distribution of the available resources, 
+      // 
+	mDat.lock();
+	std::cout << "Sending data out" << std::endl;
+// 	
+	std::vector<int> run_this_round;
+	for(auto i = mData.begin(), e = mData.end();i!=e;) {
+	    bool go = true;
+	    bool erased = false;
+	    for(auto y = run_this_round.begin(), p= run_this_round.end();y!=p&&go;++y)
+	      if((*y)==(*i).socket) { go = false; }
+	      if(!go) { ++i; continue;}
+	    std::string o = (*i).data.size() > 1024 ? (*i).data.substr(0,1024) : (*i).data;
+	    signed int amt = send((*i).socket, o.c_str(), o.size(), MSG_NOSIGNAL);
+	    while(amt <(signed int)o.size()) {
+	     if( amt==-1) { erased = true; i = mData.erase(i); amt=o.size();}
+	     else {
+	        o = o.substr(amt, o.size()-amt);
+		amt = send((*i).socket, o.c_str(), o.size(), MSG_NOSIGNAL);
+	     }
+	    }
+	    run_this_round.push_back( (*i).socket);
+	    if(erased) continue;
+	    
+	    if( (*i).data.size() > 1024) { 
+	      (*i).data = (*i).data.substr(1024, (*i).data.size()-1024); 
+	    } else { i = mData.erase(i); continue; }
+	    
+	    if(!erased)
+	      ++i;
+	}
+	
+	mDat.unlock();
+      }
+    }
+    std::cout << "Send thread terminated.\n";
+  }
+  
+  void post_data(std::string &in, int i) {
+   workdata p;
+   p.data = in;
+   p.socket = i;
+   mDat.lock();
+   mData.push_back(p);
+   main_t.post();
+   mDat.unlock();
+  }
+  void sudden_close(int socket){ 
+      mDat.lock();
+      auto i = mData.begin();//, e = mData.end();
+      while(i!=mData.end()){ 
+	if( (*i).socket == socket) {
+	  i = mData.erase(i);
+	} else i++;
+      }
+      mDat.unlock();
+  }
+};
+bool threadpool_sendstruct::on = true; // Quick shutoff mechanism... 
+threadpool_sendstruct noblock_sendtext;
+void remove_player(unsigned int socket) {
+  
+	noblock_sendtext.sudden_close(socket);
+	auto iter = Players.begin(), end = Players.end();
+	remove_following(socket);
+	for(;iter!=end;iter++) 
+		  if( (*iter)->socket == socket) { 
+			unsigned int player_id = user_ids[(*iter).get()];
+			std::ostringstream query;
+
+			if( (*iter)->logged_in) {
+				vec3 update_pos((*iter)->position);
+			update_pos.floor();
+			query << "update users set LastPosX=\"" << update_pos.x << "\", LastPosY=\"" << 
+			(int)update_pos.y << "\", LastPosZ=\"" << update_pos.z << "\" where id=\"" << player_id << "\""; 
+			std::cout << update_pos.print("Update Pos") << std::endl;
+			std::string oqr = query.str();
+			database_connection.runQuery(oqr);
+		    }
+			if(chunk_quick_cache::ptr)
+			chunk_quick_cache::ptr->remove_player((*iter).get());
+			 Players.erase(iter); return; 
+			}
+		
+			
+			
+}
+void inet_player::send_text(std::string &i, unsigned int &_socketout) {
+  // This is really a totally aweful way to send stuff. It should be all put into a
+  // structure of (std::string, int socket), and small 1kb sized packets should be sent.
+  // that way no 56k connection can slow it down for everybody (much).
+  // 
+  // Then can be further optimized by timing how long each one takes and putting them
+  // into seperate groups that run in different threads in a pool (Again so something
+  // slow isn't slowing down everything else.... flippin' tcp!)
+	using namespace boost::iostreams;
+	size_t size = i.size();
+	static int size_tsize = sizeof(size_t);
+	char sarr[size_tsize];
+	memcpy(sarr, &size, size_tsize);
+	std::string s;
+	s.append(sarr,size_tsize);
+	s.append(i);
+	noblock_sendtext.post_data(s,_socketout);
+	return;
+/*	size_t amnt = send(_socketout, s.c_str(), s.size(), MSG_NOSIGNAL);
+	
+	while(amnt < s.size()) { // ensure it's ALL sent.
+		s = s.substr(amnt, s.size()-amnt);
+		amnt = send(_socketout, s.c_str(), s.size(), MSG_NOSIGNAL);
+	}*/
+}

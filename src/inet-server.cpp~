@@ -1,0 +1,54 @@
+#include <boost/iostreams/filtering_streambuf.hpp>
+#include <boost/iostreams/copy.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+
+#include "inet.h"
+#include "database_utilities.h"
+// The server and client file are virtually the same but seperated so it will be easier to expand on seperatly.
+#include "CState_MainMenu_Login.h"
+#include "server-map.h"
+/*
+namespace heightmap_globals {
+extern boost::mutex mut_c;
+}
+struct mut_c_locker {
+  bool locked;
+  mut_c_locker() { heightmap_globals::mut_c.lock(); locked = true; }
+  ~mut_c_locker() { if(locked) heightmap_globals::mut_c.unlock(); }
+  void unlock() { heightmap_globals::mut_c.unlock(); locked = false;}
+  void lock() { if(!locked) heightmap_globals::mut_c.lock(); locked = true; }
+};
+*/
+bool is_server = true;
+#include "inet-server_chunk_quick_cache.hpp"
+#include "inet-server_globals.hpp"
+#include "inet-server_network_callbacks.hpp"
+#include "inet-server_create_commands.hpp"
+
+
+
+#include "inet-server_core_stuff.hpp"
+#include "inet-server_changeHeadText.hpp"
+#include "inet-server_changePosition.hpp"
+#include "inet-server_send_updates.hpp"
+#include "inet-server_broadcastNearby.hpp"
+
+
+
+#include "inet-server_PlayerFollowing.hpp"
+#include "inet-server_check_close_player_chunks.hpp"
+#include "inet-server_run_player_server_movements.hpp"
+#include "inet-server_getName.hpp"
+#include "inet-server_db_retrieve_chunk.hpp"
+#include "inet-server_getChunk.hpp"
+#include "inet-server_tick_server.hpp"
+#include "inet-server_add_in_range.hpp"
+#include "inet-server_ensure_not_in_range.hpp"
+#include "inet-server_login_queue.hpp"
+
+#include "inet-server_preAuthenticate.hpp"
+#include "inet-server_TryRegistration.hpp"
+#include "inet-server_clientChunkPush.hpp"
+
+#include "inet-server_loginAuthenticate.hpp"
+#include "inet-server_login_queue_receive.hpp"

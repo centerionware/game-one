@@ -1,0 +1,52 @@
+void CState_Testing::CreateCamera( void )
+{
+    mCamera = mSceneManager->createCamera("mCameraTest");
+
+    mCamera->setPosition( Ogre::Vector3( 0, 0, 0 ) );
+    mCamera->lookAt( Ogre::Vector3( 0, 0, 0 ) );
+    mCamera->setNearClipDistance(0.1f);
+    mCamera->setFarClipDistance(2000);
+    mCamNode = mSceneManager->getRootSceneNode()->createChildSceneNode("CamNode", Ogre::Vector3(0, 25, 0));
+    mCamNode->pitch(Ogre::Degree(-90));
+    mCamNode->attachObject(mCamera);
+//    mCameraMan = new OgreBites::SdkCameraMan(mCamera);   // create a default camera controller
+    //  mCameraMan->setTopSpeed(3);
+//12
+}
+
+void CState_Testing::CreateViewport( void )
+{
+    CGameManager	* gameman_	= CGameManager::ReturnSingletonPointer();
+    Ogre::RenderWindow	* renderwin_	= gameman_->GetRenderWindow();
+    Ogre::Viewport	* viewport_	= renderwin_->addViewport( mCamera );
+
+    viewport_->setBackgroundColour( Ogre::ColourValue( 0, 0, 0 ) );
+    mCamera->setAspectRatio( Ogre::Real( viewport_->getActualWidth() ) / Ogre::Real( viewport_->getActualHeight() ) );
+	//mCamera.setFixedYawAxis(true);
+}
+
+void CState_Testing::CreateScene( void )
+{
+    std::string HeightMap = "../data/heightmap.3.voxmap.gz";
+    Global_Configuration.Values["MAX_RENDER_CHUNKS"].e =15;
+    create_server_heightmap( HeightMap );
+
+    Ogre::DotSceneLoader SceneLoader;
+    SceneLoader.parseDotScene( "zombie_02.scene", "General",  mSceneManager );
+
+//     mSceneManager->setAmbientLight(Ogre::ColourValue(0.5, 0.5, 0.5));
+//      mSceneManager->setSkyDome(true, "Examples/CloudSky",35,5,400,false);
+	/*
+    Ogre::Light* Light = mSceneManager->createLight( "MainLight" );
+    Light->setPosition(0,80,0);
+	Light->setType(Ogre::Light::LT_POINT);
+ 
+    Light->setDiffuseColour(1.0, 1.0, 1.0);
+    Light->setSpecularColour(1.0, 1.0, 1.0);
+	Light->setAttenuation(10,.5,1,6);*/
+    NewHeightmapLoader::get_instance()->create_selection_cursor(mSceneManager);
+    // http://www.ogre3d.org/forums/viewtopic.php?f=2&t=48223
+    
+    
+    
+}

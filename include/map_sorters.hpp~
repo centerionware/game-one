@@ -1,0 +1,390 @@
+
+
+struct insert_sorted_chunks { 
+	boost::mutex mut_array[1];
+	std::vector<Chunk*> _chunks;
+	std::vector<Chunk*> id_sorted;
+	insert_sorted_chunks() {
+	
+	}
+	~insert_sorted_chunks() {
+		this->clear();
+	}
+	void clear() {
+		chunk_iterator_locker itlocker;
+		mut_array[0].lock();
+		while(_chunks.size()) {
+		  Chunk *l = _chunks.back();
+		 delete l;
+		_chunks.pop_back();
+		  
+		}
+		id_sorted.clear();
+		mut_array[0].unlock();
+	}
+	void insert(Chunk * ele, const vec3 &oc){//Ogre::Camera *mCam) {
+		chunk_iterator_locker itlocker;
+		mut_array[0].lock();
+		if(_chunks.size() ==0) {
+			_chunks.push_back(ele);
+			id_sorted.push_back(ele);
+			mut_array[0].unlock();
+			return;
+		}
+		auto y = find_closest_above(ele);
+		if(y == _chunks.end()) {
+			
+			_chunks.push_back(ele);
+		} else {
+			y = _chunks.insert(y, ele);
+			
+		}
+		auto z = find_closest_above_byid(ele->id);
+		if(z == id_sorted.end()) id_sorted.push_back(ele);
+		else if((*z)->id == ele->id && ele->id!=-1) { throw " Trying to insert a duplicate chunk into memory. damnit!. "; }
+		else id_sorted.insert(z,ele);
+		//_chunks.push_back(ele);
+		mut_array[0].unlock();
+		//sort(oc);
+	}
+	std::vector<Chunk*>::iterator slice_above(std::vector<Chunk*>::iterator &a, std::vector<Chunk*>::iterator &b, Chunk*v) {
+		
+		if(a == b) {
+		      if(a==_chunks.end()) return _chunks.end();
+		      if( v->position < (*a)->position) return a;
+		      return a+1;
+		}
+		if(b-a==1) {
+			 if( v->position < (*a)->position ) return a;
+			 if( v->position < (*b)->position ) return b;
+			return b+1;//if(b+1 != _items.end()) return b+1;
+			//return _items.end();
+		}
+		auto mid = a+std::distance(a,b)/2;
+		if(v->position < (*mid)->position) {
+		  return slice_above(a,mid,v);
+		} else if(v->position > (*mid)->position) {
+		  return slice_above(mid,b,v);
+		} else {
+			return mid;
+		}
+
+		return _chunks.end();
+	}
+	std::vector<Chunk*>::iterator find_closest_above(Chunk *v) {
+		auto i = _chunks.begin(), e=_chunks.end();
+		if(i!=e)--e;
+		else _chunks.end();
+		return slice_above(i,e,v);
+
+	}
+
+	std::vector<Chunk*>::iterator slice_above_by_id(std::vector<Chunk*>::iterator &a, std::vector<Chunk*>::iterator &b, size_t id) {
+		
+		if(a == b) {
+		      if(a==id_sorted.end()) return id_sorted.end();
+		      if( id <= (*a)->id) return a;
+		      return id_sorted.end();
+		}
+		if(b-a==1) {
+			 if( id <= (*a)->id ) return a;
+			 if( id <= (*b)->id ) return b;
+			 return b+1;
+		}
+		auto mid = a+std::distance(a,b)/2;
+		if(id < (*mid)->id) {
+		  return slice_above_by_id(a,mid,id);
+		} else if(id > (*mid)->id) {
+		  return slice_above_by_id(mid,b,id);
+		} else {
+			return mid;
+		}
+		return id_sorted.end();
+	}
+	std::vector<Chunk*>::iterator find_closest_above_byid(size_t v) {
+		auto i = id_sorted.begin(), e=id_sorted.end();//,bm=_items.begin();
+		if(i!=e)--e;
+
+		return slice_above_by_id(i,e,v);
+	}
+std::vector<Chunk*>::iterator slice_above_exact_by_id(std::vector<Chunk*>::iterator &a, std::vector<Chunk*>::iterator &b, size_t id) {
+		
+		if(a == b) {
+		      if(a==id_sorted.end()) return id_sorted.end();
+		      if( id == (*a)->id) return a;
+		      return id_sorted.end();
+		}
+		if(b-a==1) {
+			 if( id == (*a)->id ) return a;
+			 if( id == (*b)->id ) return b;
+			 return id_sorted.end();
+		}
+		auto mid = a+std::distance(a,b)/2;
+		if(id < (*mid)->id) {
+		  return slice_above_exact_by_id(a,mid,id);
+		} else if(id > (*mid)->id) {
+		  return slice_above_exact_by_id(mid,b,id);
+		} else {
+			return mid;
+		}
+		return id_sorted.end();
+	}
+	std::vector<Chunk*>::iterator find_closest_above_exact_byid(size_t v) {
+		auto i = id_sorted.begin(), e=id_sorted.end();//,bm=_items.begin();
+		if(i!=e)--e;
+		return slice_above_exact_by_id(i,e,v);
+	}
+	std::vector<Chunk*>::iterator slice_exact(std::vector<Chunk*>::iterator &a, std::vector<Chunk*>::iterator &b, vec3 &v) {
+		
+		if(a == b) {
+		      if(a==_chunks.end()) return _chunks.end();
+		      if( v == (*a)->position) return a;
+		      return _chunks.end();
+		}
+		if(b-a==1) {
+			 if( v == (*a)->position ) return a;
+			 if( v == (*b)->position ) return b;
+			return _chunks.end();//if(b+1 != _items.end()) return b+1;
+			//return _items.end();
+		}
+		auto mid = a+std::distance(a,b)/2;
+		if(v < (*mid)->position) {
+		  return slice_exact(a,mid,v);
+		} else if(v > (*mid)->position) {
+		  return slice_exact(mid,b,v);
+		} else {
+			return mid;
+		}
+		return _chunks.end();
+	}
+	Chunk *find(vec3 &v) {
+		auto i = _chunks.begin(), e = _chunks.end();
+		if(i!=e)--e;
+		else return NULL;
+		auto a = slice_exact(i,e,v);
+		return a!=_chunks.end()?(*a):NULL;
+	}
+	std::vector<Chunk*>::iterator quick_erase_chunk(std::vector<Chunk*>::iterator i) {
+		return _chunks.erase(i);
+	}
+	#define compLTtwo(a,b) (_get3d_vecdistref(cpos,a->position) < _get3d_vecdistref(cpos,b->position))
+	class sorter {
+			const vec3&cpos;
+	public:
+			sorter(const vec3&_cpos) : cpos(_cpos) {}
+			bool operator()(Chunk const* o1,Chunk const* o2) const {
+				if(o1==o2) return false;
+				return compLTtwo(o1,o2);//SortFunction(o1, o2, type_ );
+			}
+	};
+	
+	bool sort(const vec3& cpos) {
+		chunk_iterator_locker itlocker;
+		bool sorted = false;
+		std::sort(_chunks.begin(), _chunks.end(),[&sorted, &cpos](Chunk const* a, Chunk const* b) -> bool {
+			if(a==b) return false;
+			if(compLTtwo(a,b)) {sorted = true; return true; }
+			return false;
+		});
+		
+		return sorted;
+	}
+	Chunk *back() { return _chunks.back(); } 
+};
+
+struct insert_sorted_vec3s { 
+	  struct Cont {
+		//  size_t n; // the index.. why recorded here? I don't know. 
+  
+		  vec3 ele;
+		  unsigned char color;
+	  };
+	  std::vector<Cont> _items;
+	  /*
+	  struct iterator {
+		size_t n;
+		vec3 ele;
+		unsigned char color;
+		iterator():next(NULL),prev(NULL) {}
+		vec3 &operator*() { return ele; }
+		iterator *next,*prev;
+		iterator&operator++(){ return *next; }
+		iterator&operator--(){ return *prev; }
+		bool operator==(iterator &other) { return &other == this ? true : false;}
+	};
+	*/
+	insert_sorted_vec3s() {
+		//first = last = last_inserted = last_find = end();
+	}
+	~insert_sorted_vec3s() {
+		this->clear();
+	}
+	void clear() {
+		while(_items.size()) _items.clear();/*
+		while(first != NULL){
+			std::vector<Cont>::iterator&n = first->next;
+			
+			delete first;
+			first = n;
+		}
+		last = last_inserted = last_find = NULL;*/
+	}
+	/**
+	
+		Avoid using insert_sorted_vec3s::pop_front, as it has to recalc every index.
+	*/
+	void pop_front() { 
+		if(_items.size()){
+			_items.erase(_items.begin());
+//			auto l = _items.begin(), e = _items.end();
+//			for(;l!=e;++l) --((*l).n);
+		}
+	
+		/*
+		insert_sorted_vec3s::iterator  *l = first->next;
+		l->prev=end();
+		delete first;
+		first = l;
+		while(l != end()) {
+		      l->n=l->n-1;
+		      l=l->next;
+		}*/
+	}
+	void pop_back() {
+		_items.pop_back();/*
+		insert_sorted_vec3s::iterator  *l = last->prev;
+		if(l != end()) l->next = end();
+
+		delete last;
+		last = l;
+		if(l == end() || (l != end() && l->prev == end() ) )
+		      first = l;
+			  */
+	}
+	void size_limit(size_t limit, size_t cut_amount) {
+		if(_items.size() && _items.size() >= limit) {
+			// delete 10,000 at random?
+			for(size_t x = 0; x < cut_amount; ++x ){
+				pop_back();
+			}
+		}
+	}
+	/**
+		Avoid using insert_sorted_vec3s::insert_front, as it must re-index everything.
+		Prefer insert_back().
+	*/
+
+	
+	void insert(const vec3 &ele,const unsigned char &color) {
+
+	// This has to search all inserted elements to avoid inserting duplicates. 
+	// The searches still need optimized. It _(should)_ all be sorted if inserted via this function
+	// 	
+//		bool magic_number = false;
+		//(65.5) y (-91.5) z (703.5) 
+		//(34.5) y (-91.5) z (663.5) 
+
+		if(_items.size() ==0) {
+			Cont x;
+			x.ele = ele;
+			x.color = color;
+			_items.push_back(x);
+			return;
+			//if(magic_number)std::cout << "Inserting as first\n";
+		}
+		auto rp = int_find(ele, color);
+		if(rp == _items.end()) {
+			Cont x;
+			x.ele = ele;
+			x.color = color;
+			auto y = find_closest_above(x);
+			if(y == end()) {
+			//	if(magic_number)std::cout << "Inserting end\n";
+				_items.push_back(x);
+			} else {
+				y = _items.insert(y, x);
+			//	if(magic_number)std::cout << "Inserting inside somewhere\n";
+			}
+			return;
+		}
+		//if(magic_number) std::cout << "Insert failed!\n" << "Returned color was: " << (int)((*rp).color) << "\n";
+	}
+	std::vector<Cont>::iterator slice_above(std::vector<Cont>::iterator &a, std::vector<Cont>::iterator &b, vec3&v) {
+		
+		if(a == b) {
+		      if(a==_items.end()) return _items.end();
+		      if( v < (*a).ele) return a;
+		      return a+1;
+		}
+		if(b-a==1) {
+			 if( v < (*a).ele ) return a;
+			 if( v < (*b).ele ) return b;
+			return b+1;//if(b+1 != _items.end()) return b+1;
+			//return _items.end();
+		}
+		auto mid = a+std::distance(a,b)/2;
+		if(v < (*mid).ele) {
+		  return slice_above(a,mid,v);
+		} else if(v > (*mid).ele) {
+		  return slice_above(mid,b,v);
+		} else {
+			return mid;
+		}
+		return _items.end();
+	}
+	std::vector<Cont>::iterator find_closest_above(Cont&v) {
+		std::vector<Cont>::iterator i = _items.begin(), e=_items.end();//,bm=_items.begin();
+		if(i!=_items.end())--e;
+		return slice_above(i,e,v.ele);
+		//for(;i!=e;++i) if((*i).ele < v.ele) continue; else return i;
+		//return e;
+	}
+	std::vector<Cont>::iterator slice_exact(std::vector<Cont>::iterator &a, std::vector<Cont>::iterator &b, const vec3&v, const unsigned char &color) {
+		
+		if(a == b) {
+		      if(a==_items.end()) return _items.end();
+		      if( v == (*a).ele && color == (*a).color) return a;
+		      return _items.end();
+		}
+		//unsigned int mpos = std::distance(a,b)/2;
+		if(b-a==1) {
+			 if( v == (*a).ele && color == (*a).color) return a;
+			 if( v == (*b).ele && color == (*b).color) return b;
+			return _items.end();
+		}
+		auto mid = a+std::distance(a,b)/2;
+		if(v < (*mid).ele) {
+		  return slice_exact(a,mid,v,color);
+		} else if(v > (*mid).ele) {
+		  
+		  return slice_exact(mid,b,v,color);
+		} else {
+		    auto mt = mid,mt2=mid;
+		    
+		    while(mt>_items.begin() && v == (*mt).ele ) --mt;
+		    while(mt2<_items.end() && v == (*mt2).ele ) ++mt2;
+		   
+		    for(;mt<mt2;++mt) if( v == (*mt).ele && color == (*mt).color) return mt;
+		  //  if(ethrow)throw "\nIt was equal but I couldn't find the right color!\n";
+		}
+		return _items.end();
+	}
+	std::vector<Cont>::iterator int_find(const vec3 &v,const unsigned char &color, bool ethrow = false) {
+		std::vector<Cont>::iterator i = _items.begin(), e = _items.end();
+		--e;
+		return slice_exact(i,e,v,color);
+		
+	}
+
+	std::vector<Cont>::iterator find(const vec3 &v, const unsigned char &color) {
+		return int_find(v, color);
+	}
+	inline std::vector<Cont>::iterator end() {
+		return _items.end();
+	}
+	std::vector<Cont>::iterator begin() {
+		return _items.begin();
+	}
+
+	
+};

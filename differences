@@ -1,0 +1,341 @@
+Index: include/database_utilities.h
+===================================================================
+--- include/database_utilities.h	(revision 360)
++++ include/database_utilities.h	(working copy)
+@@ -12,6 +12,7 @@
+ 	std::string _host, _user, _password, _database;
+ 	int numrows;
+ 	int m_errno;
++	int insertid;
+ 	MySQL_Helper() {
+ 		connection = 0x0;
+ 		inited = false;
+@@ -70,8 +71,14 @@
+ 					tresult = 0x0;
+ 				} 
+ 				tresult = result();
+-				if(tresult)
++				insertid = 0;
++				if(tresult) {
+ 					numrows = mysql_num_rows(tresult);
++					if( mysql_field_count(connection) == 0 && mysql_insert_id(connection) != 0)
++					{
++						insertid = mysql_insert_id(connection);
++					}
++				}
+ 				return state;
+ 			}
+ 			
+@@ -80,6 +87,7 @@
+ 		}
+ 		return state;//mysql_query(connection, query.c_str()); 	
+ 	}
++
+ 	string error() {
+ 		return mysql_error(connection);
+ 	}
+Index: src/CState_Testing.cpp
+===================================================================
+--- src/CState_Testing.cpp	(revision 360)
++++ src/CState_Testing.cpp	(working copy)
+@@ -743,6 +743,11 @@
+ 
+ void CState_Testing::mouseMoved( const OIS::MouseEvent  & event)
+ {
++  /*
++	If we are in freelook mode , rotate the camera and lock the mouse position (And hide the cursor) and maybe draw a little bullseye in the center..
++	
++	easiest way to do freelook is just rotate the m_minimap_camera. _should_ be pretty easy.
++  */
+     SysMan->injectMouseMove( event.state.X.rel, event.state.Y.rel );
+ }
+ 
+@@ -757,7 +762,30 @@
+ 	CEGUI::Point mousePos = CEGUI::MouseCursor::getSingleton().getPosition();
+ 	CEGUI::Window* active_window = sheet->getChildAtPosition(mousePos);
+ 	if(active_window && active_window->getName() == "TerrainMinimap") {
+-	  NewHeightmapLoader::get_instance()->editor_add();
++
++
++		  std::string output;
++		  output+=(to_value(NetCommand));
++		  output+=(to_value(PushChunk));
++		  /*
++	Next, switch which "editor" is used based on state of radio buttons on terrain editor, can be set to add, remove, and modify and can call:
++	class NewHeightmapLoader {
++		...
++		std::string editor_add();
++		std::string editor_modify();
++		std::string editor_remove();
++		...
++	};
++	then just send a PushChunk to the server to store it. note: Must have admin flag marked as 1 in database on server for it to not ignore the push_chunk.
++	It's kind of dangerous right now, changes only get a timestamp attached to them, no way yet to monitor all changes from specific user, which
++	would be useful in the long run.
++*/
++		  
++		  output+= NewHeightmapLoader::get_instance()->editor_add();
++		  
++		  //output.append(in[0]);
++		  mPlayer->send_text(output,mPlayer->socket);
++	  
+ 	}
+         break;
+     }
+Index: src/inet-server.cpp
+===================================================================
+--- src/inet-server.cpp	(revision 360)
++++ src/inet-server.cpp	(working copy)
+@@ -10,6 +10,7 @@
+ 	myCommandProcessor.Add(new VecFunctor<inet_player>(this, &inet_player::loginAuthenticate), to_value(LoginCommand), to_value(DoLogin));
+ 	myCommandProcessor.Add(new VecFunctor<inet_player>(this, &inet_player::TryRegistration), to_value(Register), to_value(TryRegister));
+ 	myCommandProcessor.Add(new VecFunctor<inet_player>(this, &inet_player::getChunk), to_value(NetCommand), to_value(GetChunk));
++	myCommandProcessor.Add(new VecFunctor<inet_player>(this, &inet_player::clientChunkPush), to_value(NetCommand), to_value(PushChunk));
+ 	
+ }
+ inet_player::~inet_player() {}
+@@ -41,11 +42,9 @@
+ 	memcpy(&x, in[0].substr(0,float_size).c_str(), float_size);
+ 	memcpy(&y, in[0].substr(float_size,float_size).c_str(), float_size);
+ 	memcpy(&z, in[0].substr((float_size*2),float_size).c_str(), float_size);
+-  	noAnimFrameRenderingQueued();
+ 	orig_position = position;
+ 	targetposition = vec3(x,y,z);
+-	previous_time = 0;
+-	GMT_Clock.reset();	
++	
+ 	broadcastNearby(Position); // pass the user id, the position.
+ }
+ void inet_player::send_updates(net_commands &arg, unsigned int &other_player_socket) {
+@@ -255,10 +254,23 @@
+ //std::cout << ctr <<" chunks nearby plyer " << in << std::endl;
+ 		return r;
+ 	}
++	size_t get_timestamp(size_t chunkid) {
++		std::vector<aChunk>::iterator i = chnks.begin(), e = chnks.end();
++		for(;i!=e;++i) {
++			if( (*i).id == chunkid) return (*i).timestamp;
++		}
++		return 0;
++	}
+ 	bool has_sent(inet_player *in, vec3 p) {
+ 		std::vector<clientChunkRemember>::iterator i = sent_out.begin(), ie = sent_out.end();
+-		for(;i!=ie;++i) 
+-			if((*i).p == in && (*i).c.position == p) return true;
++		for(;i!=ie;++i) {
++			if((*i).p == in && (*i).c.position == p ) {
++				if((*i).c.timestamp == get_timestamp((*i).c.id)) return true;
++				sent_out.erase(i);
++				return false;
++			}
++			
++		}
+ 		
+ 		return false;
+ 	}
+@@ -270,9 +282,13 @@
+ 	}
+ 	chunk_quick_cache() { 
+ //		if(chunk_quick_cache::issetup) return;
++		reset();
++//		chunk_quick_cache::issetup = true;
++	}
++	void reset() {
+ 		std::stringstream query;
+ 		query << "select X,Y,Z,id, (select  DATE_FORMAT(max(lastupdate),'%Y%m%d%H%i%s') from Chunk_Voxels where chunk_id = C.id) from Chunks as C";
+-		
++		while(chnks.size() > 0) chnks.pop_back();
+ 		//"select X,Y,Z,id from Chunks, (max(timestamp) from Chunk_Voxels where chunkid = Chunks.id)";
+ 		database_connection.query(query.str());
+ 		if(database_connection.numrows < 0) return;
+@@ -289,8 +305,7 @@
+ 		  c.timestamp = fromstring<size_t>(mrow[4],lengths[4]);
+ 		  chnks.push_back(c);
+ 		}
+-		chunk_quick_cache::ptr = this;
+-//		chunk_quick_cache::issetup = true;
++		chunk_quick_cache::ptr = this; 
+ 	}
+ 	bool exists(vec3 rc) {
+ 	  std::vector<aChunk>::iterator i = chnks.begin(), ie = chnks.end();
+@@ -426,7 +441,7 @@
+ 	    lengths = mysql_fetch_lengths(database_connection.result());
+ 	    if(fromstring<size_t>(lmrow[2],lengths[2]) > up_chuk.timestamp) up_chuk.timestamp = fromstring<size_t>(lmrow[2],lengths[2]);
+ 	    up_chuk.chunk.voxels.push_back(fromstring<unsigned short>(lmrow[0],lengths[0]));
+-	    up_chuk.chunk.matids.push_back((unsigned char)fromstring<unsigned short>(lmrow[1],lengths[1]));
++	    up_chuk.chunk.matids.push_back(fromstring<unsigned char>(lmrow[1],lengths[1]));
+       }
+       queryc << "select  voxid, DATE_FORMAT(lastupdate,'%Y%m%d%H%i%s') from RemovedVoxels where chunk_id = \""<< chunkid <<"\" and lastupdate > \"" << timestamp << "\"";
+       database_connection.query(queryc.str());
+@@ -721,6 +736,57 @@
+ 	delete[] penc;
+ 	return;
+ }
++void inet_player::clientChunkPush(std::vector<std::string>&in) {
++//	std::cout << "Initialize chunk push - deserialize\n";
++if(!admin) return;
++	basic_chunk_update bcu_n = basic_chunk_update::deserialize(in[0]);
++	basic_chunk &n = bcu_n.chunk;
++//	std::cout << "Initialize chunk push - chunk_update\n";
++//	NewHeightmapLoader::hm_instance->chunk_update(chunklee);
++//	std::cout << "Initialize chunk push - done\n";
++	vec3 v(n.x,n.y,n.z);
++	//Chunk *wo;
++	//bool inserted = false;
++	
++	std::stringstream query;
++		query << "select id from Chunks where X='" << n.x << "' and Y='" << n.y << "' and Z='" << n.z << "'";
++		
++		//"select X,Y,Z,id from Chunks, (max(timestamp) from Chunk_Voxels where chunkid = Chunks.id)";
++		database_connection.query(query.str());
++		int id = 0;
++		if(database_connection.numrows == 0) { 
++			// insert chunk, ? after verifying it's a valid position, ? 
++			query.str("");
++			query << "insert into Chunks (X,Y,Z) values ("<<n.x<<","<<n.y<<","<<n.z<<")";
++			database_connection.query(query.str());
++			id = database_connection.insertid;
++		} else {
++		    if(database_connection.numrows != 1) return;
++		//    int result_rows = database_connection.numrows;
++		    
++		    MYSQL_ROW& lmrow = database_connection.row();
++		    unsigned long *lengths = mysql_fetch_lengths(database_connection.result());
++		    id = fromstring<int>(lmrow[0],lengths[0]);
++		    
++		}
++		if(id == 0) return; // error with the id!
++		for(size_t count = 0;count != n.voxels.size();++count) {
++			query.str("");
++			unsigned short j = n.voxels[count];
++			char m = n.matids[count];
++			query<< "insert into Chunk_Voxels (voxid, matid, chunk_id) values ("<<j<<","<<m<<","<<id<<")";
++			database_connection.query(query.str());
++		}
++		for(size_t count = 0;count != bcu_n.removed_voxels.size();++count) {
++			unsigned short j = bcu_n.removed_voxels[count];
++			query.str("");
++			
++			query <<"delete from Chunk_Voxels  where voxid='"<<j<<"' and chunk_id='"<<id<<"'";//, matid, chunk_id) values ("<<j<<","<<m<<","<<id<<")";
++			database_connection.query(query.str());
++		}
++		chunk_quick_cache::ptr->reset();
++		
++}
+ void inet_player::loginAuthenticate(std::vector<std::string>&in) {
+ 	// database helper run query select username from users where password = password, if rows == 1, true, else false.
+ 	// if true, run login, else send logout, to prompt going back to login_menu state.
+@@ -734,7 +800,6 @@
+ 		update += to_value(LoginCommand);
+ 		update += to_value(BadLogin);
+ 		send_text(update, socket);
+-		std::cout << "Invalid login, unamesize = " << unamesize << std::endl;
+ 		deleteMe = true;
+ 		return;
+ 		  
+@@ -759,7 +824,7 @@
+ 	query.append(penc, pencsize);
+ 	query.append("\"");
+ 	database_connection.runQuery(query);
+-	
++	admin = false;
+ 	if(database_connection.numrows == 1) {
+ //		std::string update;
+ //		update += to_value(LoginCommand);
+@@ -779,6 +844,7 @@
+ 			update += to_value(NetCommand);
+ 			update += to_value(AdminAuth);
+ 			send_text(update, socket);
++			admin = true;
+ 		}
+ 		
+ 	} else {
+@@ -816,7 +882,6 @@
+ 	auth_array[2] = 0xbb;
+ 	
+ 	if(memcmp(data.c_str(),auth_array, 3) == 0) {
+-		std::cout << "Received application auth, beginning user auth.\n";
+ 		std::vector<queue_obj>::iterator iter = login_queue.begin(), end = login_queue.end();
+ 		for(;iter!=end;iter++) {
+ 			if((*iter).socket == fd) {
+@@ -830,7 +895,6 @@
+ 				Players.back()->logged_in = false;
+ 				/*Players.back()->broadcastNearby(AddPlayer); // sends a global broadcast.*/
+ 				login_queue.erase(iter);
+-				std::cout << "Moved player off login queue.\n";
+ 				return;
+ 			}
+ 		}
+@@ -843,7 +907,6 @@
+ 				close((*iter).socket);
+ 				FD_CLR((*iter).socket, &master);
+ 				login_queue.erase(iter);
+-				std::cout << "Application auth failed, closing socket\n";
+ 				return;
+ 			}
+ 		}
+Index: src/server-map.cpp
+===================================================================
+--- src/server-map.cpp	(revision 360)
++++ src/server-map.cpp	(working copy)
+@@ -1694,60 +1694,7 @@
+ 	
+ }
+ void NewHeightmapLoader::full_chunk_update(basic_chunk&n) {
+-  /*
+-      Basically, this was v1, don't even try to use it.
+-  */ 
+-	heightmap_globals::mut_c.lock();
+-	vec3 v(n.x,n.y,n.z);
+-	Chunk *wo;
+-	bool inserted = false;
+-	if(chunks.begin() == NULL) {
+-		wo = new Chunk(v);
+-		chunks.insert(wo,zerovec);
+-		
+-		inserted = true;
+-	}
+-	if(!inserted) {
+-		insert_sorted_chunks::iterator *iter = chunks.last_inserted;
+-		bool inserted = false;
+-		
+-		insert_sorted_chunks::iterator *iteri= iter;
+-		while(iter != NULL || iteri != NULL) {
+-			if(iteri != NULL && (iteri)->ele->position == v) {
+-				inserted = true;
+-				wo = (iteri)->ele;
+-				break;
+-			} else if(iteri!=NULL){
+-				iteri=iteri->next;
+-			}
+-			if(iter != NULL && (iter)->ele->position == v) {
+-				inserted = true;
+-				wo = (iter)->ele;
+-				break;
+-			} else if(iter!= NULL) {
+-				iter=iter->prev;
+-			}
+-		}
+-		if(!inserted) {
+-			wo = new Chunk(v);
+-			chunks.insert(wo,zerovec);
+-		}
+-	}
+-	while(wo->all_voxels.size()>0) { wo->all_voxels.clear(); }
+-	while(wo->voxel_materials.size() > 0 ) {wo->voxel_materials.clear(); }
+ 
+-	
+-	for(size_t count = 0;count != n.voxels.size();++count) {
+-		unsigned short j = n.voxels[count];
+-		char m = n.matids[count];
+-		wo->all_voxels.push_back(j);
+-		wo->voxel_materials[j] = m;
+-	}
+-	
+-	
+-	
+-	wo->id = n.id; // don't leave uninitialized!
+-	heightmap_globals::mut_c.unlock();
+ }
+ 
+ std::string NewHeightmapLoader::editor_modify() {

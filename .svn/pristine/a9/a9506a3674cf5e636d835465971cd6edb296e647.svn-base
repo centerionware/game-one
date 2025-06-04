@@ -1,0 +1,343 @@
+#ifndef SERVER_MAP_H
+#define SERVER_MAP_H 1
+#define get_opposite_cube_num(X) (5-X)
+
+#include "tga_loader.h"
+#include "generic_utilities.h"
+#include <vector>
+#include "inet.h"
+// the roof is the heighest allowed heightmap defined voxel.. in game voxels have no restrictions.
+
+#define ROOF (1024/16)
+
+#define CUBE_SIZE theactual_cube_size
+#define max(X,Y) ( ( X > Y) ? X : Y )
+#define min(X,Y) ( ( X < Y) ? X : Y )
+
+#define ARRAY_SIZE(X) (sizeof(X)/sizeof *(X))
+#define chunk_min_x 15.0
+#define chunk_min_y 30.0
+#define chunk_max_y (chunk_min_y*2)
+#define chunk_max_x (chunk_min_x*2)
+
+enum selected_face { left, right, top, bottom, front, back };
+
+struct Selection_cursor {
+  /*
+    self-reminder:
+    selection_cube_ XX is defined in the .scene (Which right now is zombie_02.scene
+  */
+	Ogre::SceneNode *m_top;
+	Ogre::SceneNode *m_bottom;
+	Ogre::SceneNode *m_left;
+	Ogre::SceneNode *m_right;
+	Ogre::SceneNode *m_front;
+	Ogre::SceneNode *m_back;
+	Ogre::SceneNode *m_last;
+	
+	Selection_cursor(Ogre::SceneManager*e) {
+		m_top = e->getSceneNode("selection_cube_top");
+		m_bottom=e->getSceneNode("selection_cube_bottom");
+		m_left=e->getSceneNode("selection_cube_left");
+		m_right=e->getSceneNode("selection_cube_right");
+		m_front=e->getSceneNode("selection_cube_front");
+		m_back=e->getSceneNode("selection_cube_back");
+		m_last = NULL;
+		m_top->setVisible(false);
+		m_bottom->setVisible(false);
+		m_right->setVisible(false);
+		m_left->setVisible(false);
+		m_front->setVisible(false);
+		m_back->setVisible(false);
+	}
+	void turnOff() {
+	      if(m_last != NULL) m_last->setVisible(false);
+	}
+	void setFace(Ogre::Vector3 pos, selected_face which) {
+		if(m_last != NULL) m_last->setVisible(false);
+		
+		if(which == top) 
+			m_last = m_top;
+		else if(which == bottom)
+			m_last = m_bottom;
+		else if(which == left)
+			m_last = m_left;
+		else if(which == right)
+			m_last = m_right;
+		else if(which == front)
+			m_last = m_front;
+		else if(which == back)
+			m_last = m_back;
+		m_last->setPosition(pos);
+		m_last->setVisible(true);
+	}
+};
+
+class Chunk;
+using std::vector;
+// Creates the heightmap mesh on the server from the image filename (Specify a TGA image)
+void create_server_heightmap(std::string filename);
+void create_heightmap_each_frame(Ogre::Camera *mCamera);
+void stop_heightmap_background_thread(); // put this in the main() function just before it exits. 
+void clear_terrain_not_close_to_players();
+struct ViewportClickReturnVoxel {
+	Ogre::Vector3 position;
+	bool found;
+};
+
+
+inline std::string torf(bool f) {
+	std::string r;
+	if(f) r = "true";
+	else r = "false";
+	return r;
+}
+struct vec8 {
+	vec3 _int[8];
+	vec8() {}
+	vec8(vec8&&o) {
+		std::swap(_int, o._int);
+	}
+	vec3& operator[](const size_t index) {
+		return _int[index];
+	}
+}; 
+// the heightmap loader class. use the get_instance(...) function to get the static instance,
+// calling it with a string (should) load a new heightmap image. currently very unsafe and will likely crash due to the internal_threading_func,
+// need to end the thread first, then rebuild voxel list, then restart the thread.
+// 
+
+struct basic_chunk {
+	basic_chunk() : id(0), x(0),y(0),z(0){}
+	basic_chunk(const basic_chunk &other):id(other.id),x(other.x),y(other.y),z(other.z) {
+		std::copy(other.voxels.begin(), other.voxels.end(), std::back_inserter(voxels));
+		std::copy(other.matids.begin(), other.matids.end(), std::back_inserter(matids));
+	}
+	unsigned int id;
+	float x,y,z;
+	std::vector<unsigned short> voxels;
+	std::vector<unsigned char> matids;
+};
+struct basic_chunk_update {
+  basic_chunk chunk;
+  std::vector<unsigned short> removed_voxels;
+  unsigned int timestamp;
+  std::string serialize();
+  basic_chunk_update() { chunk.id = 0; timestamp = 0; }
+  
+  basic_chunk_update &merge(basic_chunk_update&other);
+  static basic_chunk_update deserialize(std::string in);
+};
+class NewHeightmapLoader {
+	int weight;
+ // voxel *curVoxel;
+	internal_image loader;
+    
+//  std::vector<voxel*> voxels;
+	// iw is the width of the image
+	// for the 'case (number)' numbers I used the middle image from the 3
+	// numbered squares at the top of this file.
+	//voxel *comp_neighbor_from_heightmap(size_t count, int iw, int neighbor_id);
+	//void set_neighbor(voxel *i, int number, voxel *v);
+	void load(std::string filename);
+	void load_img(internal_image &img);
+	//void fill_in_gaps(voxel *_p);
+	bool moveCurVoxel(const Ogre::Camera *mCam);
+	vec3 CameraPosition;
+	void _internal_threading_func();
+	/*
+		The next three are set by the RunVoxelSelection function. If it fails to select, selectedChunk will become NULL.
+		
+		The editing commands will be run in the background thread, queued by the main thread when an event (such as a mouse click) happens.
+		
+		They should be given priority over the rendering.
+		
+		Maybe yet another thread, that can pause the render thread while running.. a lot would have to be done to do it in a non-volatile way like that though.
+		But it would be fast........
+	
+	*/
+	Chunk *selectedChunk; // the chunk the voxel lies in
+	unsigned short selectedVoxel; // the voxel that intersects with the camera ray first
+	selected_face selectedFace; // closest face to the camera that intersects with the ray
+	
+public:
+	Selection_cursor *selcur;
+	size_t updatets; // quick value, only stable immediatly after a call to needs_chunk_update
+	void full_chunk_update(basic_chunk&);
+	void chunk_update(basic_chunk_update&);
+	bool needs_chunk_update(size_t chunkid, size_t timestamp);
+	
+	const Ogre::Camera *mCam;
+	std::vector<Ogre::Camera*> cameras;
+	static NewHeightmapLoader *hm_instance;
+	void create_scene(const Ogre::Camera *mCam);
+	NewHeightmapLoader(std::string &dataFilename, bool image=true);
+	NewHeightmapLoader(){player_position = Ogre::Vector3(0,0,0);};//
+	void saveDatafile(std::string dataFilename);
+	void loadDatafile(std::string dataFilename);
+	void changePage(std::string dataFilename,int x,int y);
+	~NewHeightmapLoader();
+	static NewHeightmapLoader*get_instance(string filename = "", bool image=true);
+	static void clean_instance();
+	void RunVoxelSelection(); // cast a ray from mCam, find the 'selected voxel' (Which is the closest in front of the camera)
+	ViewportClickReturnVoxel viewportRightClicked(float x, float y, const Ogre::Camera *inCam = NULL);
+	void viewportSelectionArea(float x, float y, const Ogre::Camera *inCam = NULL, unsigned short selArea = 1);
+	std::string editor_add();
+	std::string editor_addpnt(vec3 pnt);
+	std::string editor_modify(int texnum);
+	std::string editor_remove();
+	
+	bool is_voxel(vec3 &pnt, unsigned short &idx, Chunk *&c);
+	bool is_voxel(vec3 &pnt, unsigned short &idx);
+	bool is_voxel(vec3 &pnt);
+	Chunk *contains(vec3 &pnt);
+	void create_selection_cursor(Ogre::SceneManager *e);
+	
+	void editor_select_p1();
+	void editor_select_p2();
+	std::vector<std::string> editor_add_between();
+	std::vector<std::string> editor_modify_between(int texnum);
+	std::vector<std::string> editor_remove_between();
+	std::string editor_building_gen1();
+	std::string editor_stair_gen1();
+	void AddCamera(const Ogre::Camera *mCam);
+	void clearCameras();
+	void transparent_roofs(inet_player *);
+	void ClipboardCopy();
+	inet_player *localPlayer;
+	Ogre::Vector3 player_position;
+};
+
+
+struct chunkbbox {
+	vec3 position;
+	chunkbbox(){};
+	chunkbbox(vec3&_p) : position(_p){};
+	chunkbbox(const chunkbbox &o) : position(o.position){};
+	inline bool contains(vec3&point) {
+		return (point.x >= position.x-chunk_min_x && point.y >= position.y-chunk_min_y && point.z >= position.z-chunk_min_x &&
+		        point.x <= position.x+chunk_min_x && point.y <= position.y+chunk_min_y && point.z <= position.z+chunk_min_x);
+	}
+
+};
+struct voxel_attributes {
+  unsigned char matid;
+  bool render;
+  voxel_attributes();
+  voxel_attributes(unsigned char &l):matid(l),render(false){}
+  voxel_attributes(const voxel_attributes &o):matid(o.matid),render(o.render){}
+};
+struct OgreObjectWrapper {
+	Ogre::MeshPtr msh;
+	Ogre::SubMesh *sub;
+	Ogre::RenderSystem *rs;
+	//static OgreObjectWrapper *_stinstance;
+	Ogre::HardwareVertexBufferSharedPtr vbuf;
+	Ogre::HardwareVertexBufferSharedPtr vibuf;
+	Ogre::HardwareVertexBufferSharedPtr mcbuf;
+	Ogre::VertexBufferBinding* bind;
+	Ogre::VertexDeclaration *decl;
+	bool need_resize;
+	size_t curIntCnt;
+	std::string _name, _group;
+	bool entity_loaded;
+	Ogre::SceneNode *node;
+	Ogre::Entity *entity;
+	Ogre::SceneManager *scnMgr;
+	OgreObjectWrapper(const char *name, const char *group);
+	~OgreObjectWrapper();
+//	static OgreObjectWrapper& get_instance(const char *name="", const char *group="");
+	void create_ogre_object(GOREAL*vertices,size_t nVertices,Ogre::AxisAlignedBox &_bbox,Ogre::RGBA *colours,float *mcWeights,bool _export = false);
+  };
+
+class Chunk;
+struct chunk_lock {
+	/* µ c(_c) µ */
+	static std::map<Chunk*,std::pair<std::unique_ptr<boost::mutex>,unsigned int> > chunk_locks;
+	static void clear_locks() {
+		for(auto i = chunk_locks.begin(); i!=chunk_locks.end();i=chunk_locks.erase(i)) {
+			(*i).second.first->lock();
+		}
+	}
+	Chunk *c;
+	chunk_lock(Chunk* _c) : c(_c) { 
+		static boost::mutex prevent_races;
+		prevent_races.lock();
+		if(chunk_locks.find(c) == chunk_locks.end()) chunk_locks.insert(
+			std::make_pair(c,
+				std::make_pair(std::unique_ptr<boost::mutex>(new boost::mutex),0)));
+		lock();
+		prevent_races.unlock();
+		
+	}
+	~chunk_lock() { unlock(); }
+	void lock() { auto &a = (*(chunk_locks.find(c))).second; a.first->lock(); a.second+=1; }
+	void unlock() {if( (*(chunk_locks.find(c))).second.second==0)return; (*(chunk_locks.find(c))).second.first->unlock(); (*(chunk_locks.find(c))).second.second-=1;}
+};
+class Chunk {
+public:
+	GOREAL *myVertexList;
+	float *mcWeights;
+	bool generated;
+	#ifndef SERVER
+	OgreObjectWrapper *ogre_plugin;
+	#endif
+	Ogre::RGBA *pColor;
+	short lod;	
+	vec3 position;
+	size_t vertex_count;
+	size_t id; // database chunk id. generated by db when inserting new chunk.
+	size_t lastupdate;
+	Ogre::AxisAlignedBox bbox;
+	chunkbbox v3bbox;
+	bool _in_view;
+	//boost::mutex uss_temporality;
+	//bool locked;
+	bool changed_from_last_render;
+	bool re_render_needed;
+	//void temporal_lock() { uss_temporality.lock(); locked = true;}
+	//void temporal_unlock() { if(locked) uss_temporality.unlock(); locked = false;}
+	//std::vector<unsigned short> newVoxels; // used for rendering
+	//std::vector<unsigned short> all_voxels; // used for building render list..
+	std::map<unsigned short, voxel_attributes> NewNewVoxels; // index'd by all_voxels;
+	std::map<unsigned short, voxel_attributes> NewNewVoxelsSelCpy; // index'd by all_voxels;
+	std::vector<unsigned short> selected_voxels;
+	bool voxel_exists(unsigned short);
+	Chunk(vec3 &_position);
+
+	~Chunk();
+	bool check_voxel(vec3 &_position);
+	bool can_contain_voxel(vec3 &_position);
+	void cleanup();
+	bool in_view(vec3 &cp, std::vector<Ogre::Camera *>&cams);//, Ogre::Ray&r1, Ogre::Ray&r2, Ogre::Ray&r3, Ogre::Ray&r4, Ogre::Ray&r5);
+	unsigned char get_material_id(unsigned short voxid);
+	vec8 gen_vox_vertex_data(unsigned short voxid);
+	bool is_selected(unsigned short voxid);
+	void select_voxid(unsigned short voxid);
+	void unselect_voxid(unsigned short voxid);
+	void generate_chunk(int aseed, int bseed);
+	void render_chunk();
+	
+
+	
+	
+};
+namespace heightmap_globals {
+extern boost::mutex chunk_iterator_lock;
+extern boost::mutex chunk_iterator_lock_two;
+}
+struct basic_mut_locker {
+	bool locked;
+	boost::mutex &_ilock;
+	basic_mut_locker(boost::mutex &i):locked(false),_ilock(i){lock();}
+	~basic_mut_locker() { unlock(); }
+	void lock(){  _ilock.lock(); locked=true; } //heh..
+	void unlock() { if(locked) { _ilock.unlock(); locked = false; } }
+};
+struct chunk_iterator_locker : public basic_mut_locker {
+  chunk_iterator_locker() : basic_mut_locker(heightmap_globals::chunk_iterator_lock) {}
+};
+struct chunk_iterator_locker2 : public basic_mut_locker {
+  chunk_iterator_locker2() : basic_mut_locker(heightmap_globals::chunk_iterator_lock_two) {}
+};
+#endif

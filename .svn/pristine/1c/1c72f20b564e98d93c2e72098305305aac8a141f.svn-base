@@ -1,0 +1,171 @@
+#version 150
+#extension GL_EXT_geometry_shader4 : enable
+
+layout (points) in;
+layout (triangle_strip,max_vertices=64) out;
+uniform vec4 isGlass;
+uniform float curTime;
+
+struct IOStruct {
+
+ vec4 textureAtlasOffset;
+ vec3 worldPosition;
+ float glass;
+ float water;
+ float lava;
+ float stained_glass;
+ vec4 vertex;
+ vec4 color;
+ bool inView;
+ bool isGrass;
+ bool isWater;
+};
+in IOStruct vsOutput[];
+out IOStruct gsOutput;
+uniform mat4x4 worldMatrix;
+uniform mat4x4 viewProj;
+uniform mat4x4 worldViewProj;
+uniform mat4x4 viewMatrix;
+uniform mat4x4 projMatrix;
+uniform vec4 cameraPos;
+#define CVEC3(x,y,z) vec4(x, y, z,0)
+// From the CPP: (The order it's encoded, so do it in reverse while decoding..)
+
+// left, right,  bottom, top, back, front. Why? Because.
+// Then upper left back, upper right back, upper left front, upper right front
+// then lower left back, lower right back, lower left front, lower left back
+const int faces[6] = int[]( 32, 16, 8, 4, 2, 1 ); 
+const int cubeFaceIndices[24] = int[]( 
+	1,0,5,4, //front  
+	6,2,7,3, // back
+	3,1,7,5, // top 
+	4,0,6,2,  //bottom
+	5,4,7,6,  //right
+	0,1,2,3  // left
+); 
+const vec4 cubeVerts[8] = vec4[](
+	CVEC3(-0.5, -0.5, 0.5), CVEC3(-0.5,0.5,0.5), CVEC3(-0.5,-0.5,-0.5), CVEC3(-0.5,0.5,-0.5),
+	CVEC3(0.5, -0.5, 0.5), CVEC3(0.5,0.5,0.5), CVEC3(0.5,-0.5,-0.5), CVEC3(0.5,0.5,-0.5)
+);
+#define GOREAL float
+float _get3d_vecdistref(vec3 p, vec3 y) {
+		GOREAL c_x = p.x-y.x;
+		GOREAL c_y = p.y-y.y;
+		GOREAL c_z = p.z-y.z;
+		return sqrt((c_x*c_x)+(c_y*c_y)+(c_z*c_z));
+}
+
+float rand(vec2 co){
+    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
+float random(vec4 i) { return rand(i.xy); }
+
+void create_grass(vec4 vert, float time, float rand_seed) {
+/***
+ 4
+2^3
+/_\
+1  0
+1-0-2-3-4 should do it.
+***/
+//time=mod(time,10);
+	time += rand(vec2((vert.x+vert.y+vert.z)*rand_seed,rand_seed))*5;
+	const vec4 grass_verts[5] = vec4[](
+		CVEC3(.004, 0, 0),CVEC3(-.004, 0,0),
+		CVEC3(.003,.17,0),CVEC3(-.003,.17,0),
+		CVEC3(0,.2,0) );
+	
+	vec4 otpos = vert+vec4(0,0.5,0,0);
+	otpos.x += rand(vec2((vert.x+vert.y+vert.z)*rand_seed,rand_seed))-0.5;
+	otpos.z += rand(vec2((vert.x+vert.y+vert.z)*rand_seed,rand_seed))-0.5;
+	{
+	const int tristrip[5] = int[] (0,1,2,3,4);
+
+	for(int lp = 0; lp < 5; lp++) {
+		vec4 ld = grass_verts[tristrip[lp]];
+		vec4 tpos = otpos;
+		 if(lp>1)ld.z += sin(0.3 * ld.x + time) * cos(0.03 * ld.y + time) * 0.1;
+		 if(lp==4) ld.z += sin(0.3 * ld.x + time) * cos(0.03 * ld.y + time) * 0.1;
+		tpos = tpos+ld;
+		gl_Position = viewProj*tpos;
+		gsOutput = vsOutput[0];
+		gsOutput.worldPosition = tpos.xyz+vec3(0.5,0.5,0.5);	
+		EmitVertex();
+	}
+	EndPrimitive(); 
+	}
+	{
+	const int tristrip[5] = int[] (1,0,3,2,4);
+	for(int lp = 0; lp < 5; lp++) {
+		vec4 ld = grass_verts[tristrip[lp]];
+		vec4 tpos =otpos;
+		 if(lp>1)ld.z += sin(0.3 * ld.x + time) * cos(0.03 * ld.y + time) * 0.1;
+		 if(lp==4) ld.z += sin(0.3 * ld.x + time) * cos(0.03 * ld.y + time) * 0.1;
+		tpos = tpos+ld;
+		gl_Position = viewProj*tpos;
+		gsOutput = vsOutput[0];
+		gsOutput.worldPosition = tpos.xyz+vec3(0.5,0.5,0.5);	
+		EmitVertex();
+	}
+	EndPrimitive(); 
+	}
+}
+void main()
+{
+	int zed = int(vsOutput[0].color.b);// color.zed encodes which faces to render in base 10.
+	//check faces from highest number to lowest
+	if(!vsOutput[0].inView) return;
+	for(int ctr = 0; ctr < 1; ctr++) {
+		for(int i = 0; i < 6; i++) { // Hack around the pre-marching cubes stuff to test if things work
+			if(zed >= faces[i]) {
+				zed -= faces[i];
+				for(int lp = 0; lp < 4; lp++) {
+					vec4 tpos = vsOutput[ctr].vertex + cubeVerts[cubeFaceIndices[(i*4)+lp]];
+					if(_get3d_vecdistref(cameraPos.xyz,vsOutput[ctr].vertex.xyz) < 70)
+					if(vsOutput[ctr].isWater) {
+						float oset = mod(tpos.x+tpos.z,3);
+						float time = curTime+oset;
+						tpos.y -= sin(0.7 * tpos.x + time) * cos(0.02 * tpos.z + time) * 0.6;
+					}
+					gl_Position = viewProj*tpos;
+					gsOutput = vsOutput[ctr];
+					gsOutput.worldPosition = tpos.xyz+vec3(0.5,0.5,0.5);	
+					EmitVertex();
+				}
+				EndPrimitive(); 
+				
+			}
+		}
+		if(vsOutput[ctr].isGrass) {
+			if(_get3d_vecdistref(cameraPos.xyz,vsOutput[ctr].vertex.xyz) < 30)
+			for(int x = 1; x < 6; x++) create_grass(vsOutput[ctr].vertex, curTime,x);
+		}
+	}
+}
+
+		
+		/*****************************
+
+			Cube vertice order             
+						definition                       +Y
+                                                          |
+						3_______7_                        | +Z
+						/|       /| |                     | /
+                       / |      / | | +                   |/
+                      /  |     /  | | Y          -X-------/--------+X
+                    1/___|___5/_ 6| | -                  /| 
+                    |   /2   |   / /                  -Z  |
+                    |  /        / / +                     |
+                    | /      | / / Z                     -Y
+                    |/_______|/ / -
+                    0--------4-/ 
+                      - X +
+
+		Winding: Clockwise: (TWO TRI OR QUAD)
+		Left: 0-1-3,0-3-2 OR 1,3,0,2
+		Right: 4-5-7,4-7-6 OR 5,7,4,6
+		Front: 0-1-5,0,5,4 OR 1,5,0,4
+		back:6-7-3,6-3-2 OR 7,3,6,2
+		top: 1-3-7,1-7-5 OR 3,7,1,5
+		bottom: 6-4-0,6-0-2 OR 2,0,6,4
+		******************************/

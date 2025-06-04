@@ -1,0 +1,58 @@
+libSILLY_la-SILLYImageContext.lo: SILLYImageContext.cpp ../config.h \
+ ../include/SILLYImageContext.h ../include/SILLYBase.h \
+ /usr/include/c++/4.4/cassert /usr/include/assert.h \
+ /usr/include/features.h /usr/include/bits/predefs.h \
+ /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
+ /usr/include/gnu/stubs.h /usr/include/gnu/stubs-32.h \
+ /usr/include/c++/4.4/cstddef \
+ /usr/include/c++/4.4/i486-linux-gnu/bits/c++config.h \
+ /usr/include/c++/4.4/i486-linux-gnu/bits/os_defines.h \
+ /usr/include/c++/4.4/i486-linux-gnu/bits/cpu_defines.h \
+ /usr/lib/gcc/i486-linux-gnu/4.4.3/include/stddef.h \
+ ../include/SILLYOptions.h ../include/SILLYImageContext.icpp \
+ /usr/include/c++/4.4/cstring /usr/include/string.h \
+ /usr/include/xlocale.h /usr/include/bits/string3.h
+
+../config.h:
+
+../include/SILLYImageContext.h:
+
+../include/SILLYBase.h:
+
+/usr/include/c++/4.4/cassert:
+
+/usr/include/assert.h:
+
+/usr/include/features.h:
+
+/usr/include/bits/predefs.h:
+
+/usr/include/sys/cdefs.h:
+
+/usr/include/bits/wordsize.h:
+
+/usr/include/gnu/stubs.h:
+
+/usr/include/gnu/stubs-32.h:
+
+/usr/include/c++/4.4/cstddef:
+
+/usr/include/c++/4.4/i486-linux-gnu/bits/c++config.h:
+
+/usr/include/c++/4.4/i486-linux-gnu/bits/os_defines.h:
+
+/usr/include/c++/4.4/i486-linux-gnu/bits/cpu_defines.h:
+
+/usr/lib/gcc/i486-linux-gnu/4.4.3/include/stddef.h:
+
+../include/SILLYOptions.h:
+
+../include/SILLYImageContext.icpp:
+
+/usr/include/c++/4.4/cstring:
+
+/usr/include/string.h:
+
+/usr/include/xlocale.h:
+
+/usr/include/bits/string3.h:

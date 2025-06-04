@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<GUILayout >
+    <Window Type="DefaultWindow" Name="Splash" >
+        <Property Name="UnifiedAreaRect" Value="{{0.0,0},{0.0,0},{1.0,0},{1.0,0}}" />
+        <Window Type="GameOneLook/StaticImage" Name="Splash/imgSplash" >
+                <Property Name="UnifiedMaxSize" Value="{{1,0},{1,0}}" />
+                <Property Name="BackgroundImage" Value="set:Splash image:Splash" />
+			<Property Name="Alpha" Value="0.5" />
+
+
+			<Window Type="TaharezLook/StaticImage" Name="Splash/WaitSpinner" >
+				<Property Name="UnifiedAreaRect" Value="{{.49,0},{.40,0},{.53,0},{.44,0}}" />
+	                <Property Name="UnifiedMaxSize" Value="{{1,0},{1,0}}" />
+				<Property Name="Image" Value="set:WaitSpinner image:WaitSpinner0" />
+			</Window>
+        </Window>
+	<Window Type="GameOneLook/StaticImage" Name="Splash/imgSplashAlpha" >
+                <Property Name="UnifiedMaxSize" Value="{{1,0},{1,0}}" />
+                <Property Name="BackgroundImage" Value="set:SplashAlpha image:SplashAlpha" />
+        </Window>
+    </Window>
+</GUILayout>

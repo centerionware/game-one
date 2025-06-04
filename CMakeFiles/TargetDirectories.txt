@@ -1,0 +1,3 @@
+/media/MySpace/From_Laptop/Game-One/src/CMakeFiles/gameoneclient.dir
+/media/MySpace/From_Laptop/Game-One/src/CMakeFiles/gameonelobbyserver.dir
+/media/MySpace/From_Laptop/Game-One/src/CMakeFiles/gameoneserver.dir

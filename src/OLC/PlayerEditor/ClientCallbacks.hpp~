@@ -1,0 +1,54 @@
+struct ServerNetmodule : public net_module {
+    void initialize() {
+	mPlayer->netbind(mPlayer,&inet_player::getPlayerList, OLC, GetPlayerList);
+	mPlayer->netbind(mPlayer,&inet_player::modifyPlayer, OLC, ModifyPlayer);
+	mPlayer->netbind(mPlayer,&inet_player::deletePlayer, OLC, DeletePlayer);
+	mPlayer->netbind(mPlayer,&inet_player::lockPlayer, OLC, LockPlayer);
+	mPlayer->netbind(mPlayer,&inet_player::getPlayerDetails, OLC, GetPlayerDetails);
+    }
+};
+ServerNetmodule sleepytimetea;
+void inet_player::getPlayerList(std::vector<std::string>&i){
+  std::string &b = i[0];
+  ((CEGUI::Listbox*)(CState_Testing::ReturnInstance()->WinMan->getWindow("PlayerEditor/SearchResultsListbox")))->resetList();
+  std::string lm = non_safe_string_deserialize(b);
+  while(lm != "") {
+    CEGUI::String un = lm;
+    ((CEGUI::Listbox*)(CState_Testing::ReturnInstance()->WinMan->getWindow("PlayerEditor/SearchResultsListbox")))->addItem(new CEGUI::ListboxTextItem(un));
+    lm = non_safe_string_deserialize(b);
+  }
+  CState_Testing::ReturnInstance()->WinMan->getWindow("PlayerEditor/PlayerViewRTT")->hide();
+  CState_Testing::ReturnInstance()->WinMan->getWindow("PlayerEditor/SearchResultsListbox")->show();
+}
+void inet_player::modifyPlayer(std::vector<std::string>&in){
+  
+}
+void inet_player::deletePlayer(std::vector<std::string>&in){
+  
+}
+void inet_player::lockPlayer(std::vector<std::string>&in){
+  
+}
+void inet_player::getPlayerDetails(std::vector<std::string>&in){
+  std::string &b = in[0];
+#define discern(X,Y) std::string X = non_safe_string_deserialize(b); \
+   WinMan->getWindow("PlayerEditor/"#Y)->setText(X); 
+
+  auto WinMan = CState_Testing::ReturnInstance()->WinMan;
+
+  discern(id,IDNumber)
+  discern(name,NameEditor)
+  discern(email,EmailAddress)
+  discern(LastPosX,LastX)
+  discern(LastPosY,LastY)
+  discern(LastPosZ,LastZ)
+  std::string locked = non_safe_string_deserialize(b);
+  WinMan->getWindow("lblCurrentEditMode")->setText(locked);
+  if(locked.compare("1") == 0) 
+  ((CEGUI::Checkbox*)WinMan->getWindow("PlayerEditor/LockCheckbox"))->setSelected(true); 
+  else ((CEGUI::Checkbox*)WinMan->getWindow("PlayerEditor/LockCheckbox"))->setSelected(false); 
+  discern(AdminLevel,AdminLevel)
+  WinMan->getWindow("PlayerEditor/PlayerViewRTT")->show();
+  WinMan->getWindow("PlayerEditor/SearchResultsListbox")->hide();
+  
+}

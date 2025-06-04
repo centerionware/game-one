@@ -1,0 +1,3 @@
+player-items.o: player-items.cpp tinyxmlfix.h
+
+tinyxmlfix.h:
